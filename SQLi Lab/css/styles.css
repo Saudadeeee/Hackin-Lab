@@ -1,0 +1,10 @@
+.level-button.completed {
+    background-color: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+}
+
+.level-button.completed:hover {
+    background-color: #218838 !important;
+    border-color: #1e7e34 !important;
+}
