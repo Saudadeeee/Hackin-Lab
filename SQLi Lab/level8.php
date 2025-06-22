@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Level 8 - XPATH Injection</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
@@ -42,7 +42,6 @@
             }
             ?>
             
-            <!-- Form input for custom payload -->
             <h3>🔧 Try Your Own Payload:</h3>
             <form method="get" style="margin: 20px 0;">
                 <div class="form-group">
@@ -117,7 +116,8 @@
         }
     }
     </script>
-
+</body>
+</html>
     <style>
     .hint-container {
         margin: 20px 0;

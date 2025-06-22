@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Level 7 Setup - Second Order SQLi</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
@@ -110,21 +110,5 @@
         }
     }
     </script>
-
-    <style>
-    .hint-container {
-        margin: 20px 0;
-    }
-    .hint-box {
-        margin: 15px 0;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border-left: 4px solid #6c757d;
-    }
-    .hint-btn {
-        margin-bottom: 10px;
-    }
-    </style>
 </body>
 </html>

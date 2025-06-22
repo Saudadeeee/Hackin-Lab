@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Submit Flag</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
@@ -61,8 +61,7 @@
             <form method="post">
                 <div class="form-group">
                     <label for="flag">Flag for Level <?php echo $level; ?>:</label>
-                    <input type="text" id="flag" name="flag" placeholder="FLAG{...}" 
-                           style="font-family: 'Courier New', monospace;">
+                    <input type="text" id="flag" name="flag" placeholder="FLAG{...}">
                 </div>
                 <button type="submit" class="btn">🚀 Submit Flag</button>
             </form>
@@ -75,7 +74,7 @@
                         json_decode($_COOKIE['completed_levels'], true) : [];
                     for($i = 1; $i <= 13; $i++): 
                         $isLevelCompleted = in_array($i, $completed ?? []);
-                        $buttonClass = $isLevelCompleted ? 'btn completed' : 'btn';
+                        $buttonClass = $isLevelCompleted ? 'btn level-button completed' : 'btn level-button';
                         $completedIcon = $isLevelCompleted ? ' ✅' : '';
                     ?>
                         <a href="?level=<?php echo $i; ?>" class="<?php echo $buttonClass; ?>" style="font-size: 14px; padding: 8px 16px;">
@@ -91,17 +90,5 @@
             <a href="sandbox.php">🔬 Sandbox</a>
         </div>
     </div>
-    
-    <style>
-    .btn.completed {
-        background: #28a745;
-        border-color: #28a745;
-        color: white;
-    }
-    .btn.completed:hover {
-        background: #218838;
-        border-color: #1e7e34;
-    }
-    </style>
 </body>
 </html>

@@ -1,14 +1,13 @@
 CREATE DATABASE IF NOT EXISTS sqli_lab;
 USE sqli_lab;
 
--- Bảng người dùng cơ bản
 CREATE TABLE users (
   id INT PRIMARY KEY AUTO_INCREMENT,
-  username VARCHAR(50)
+  username VARCHAR(50),
+  password VARCHAR(100) DEFAULT 'password123'
 );
 INSERT INTO users (username) VALUES ('alice'),('bob');
 
--- Thêm nhiều user ngẫu nhiên để làm nhiễu
 INSERT INTO users (username) VALUES 
   ('admin'),('root'),('test'),('guest'),('user123'),('demo'),
   ('flag_hunter'),('security'),('hacker'),('pentester'),('student'),
@@ -17,7 +16,6 @@ INSERT INTO users (username) VALUES
   ('isabel'),('jack'),('kate'),('lucas'),('mary'),('nick'),
   ('oliver'),('paul'),('queen'),('robert'),('sarah'),('tom');
 
--- Bảng chứa flag cho các cấp độ
 CREATE TABLE levels (
   id INT PRIMARY KEY,
   flag VARCHAR(100)
@@ -50,7 +48,6 @@ INSERT INTO levels (id, flag) VALUES
   (32,'WARNING{trap_detected}'),
   (33,'ERROR{invalid_flag}');
 
--- Bảng hỗ trợ second-order injection
 CREATE TABLE meta (
   id INT PRIMARY KEY AUTO_INCREMENT,
   mkey VARCHAR(50),
@@ -88,8 +85,7 @@ INSERT INTO meta (mkey, mvalue) VALUES
   ('lock_file', '/var/lock/app.lock'),
   ('secret_message', 'The real treasure was the friends we made along the way');
 
--- Thêm cột password cho authentication bypass
-ALTER TABLE users ADD COLUMN password VARCHAR(100) DEFAULT 'password123';
+-- Update admin password for authentication bypass
 UPDATE users SET password = 'admin123' WHERE username = 'admin';
 
 -- Thêm metadata cho các level mới

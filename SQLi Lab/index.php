@@ -18,7 +18,60 @@ if ($conn->connect_error) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SQLi Labs - Security Training Platform</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+    .level-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .level-card {
+        background: #faf7f0;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        border: 2px solid #e8dcc6;
+        transition: all 0.3s ease;
+    }
+    
+    .level-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .level-card h3 {
+        color: #2c2c2c;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+    
+    .level-card p {
+        color: #4a4a4a;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    .level-card a {
+        background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        text-decoration: none;
+        border-radius: 8px;
+        display: inline-block;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+    }
+    
+    .level-card a:hover {
+        background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
+    }
+    </style>
 </head>
 <body>
     <div class="container">
