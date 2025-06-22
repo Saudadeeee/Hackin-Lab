@@ -158,6 +158,24 @@ if ($conn->connect_error) {
                 <p>Exploit JSON-based query construction vulnerabilities.</p>
                 <a href="level13.php?filter={&quot;username&quot;:&quot;alice&quot;}">Start Level 13</a>
             </div>
+            
+            <div class="level-card">
+                <h3>💬 Level 14 - Comment Bypass</h3>
+                <p>Use SQL comments to break up blocked keywords and bypass filters.</p>
+                <a href="level14.php?id=1">Start Level 14</a>
+            </div>
+            
+            <div class="level-card">
+                <h3>🔤 Level 15 - Encoding Bypass</h3>
+                <p>Use various encoding techniques to bypass character-based filters.</p>
+                <a href="level15.php?id=1">Start Level 15</a>
+            </div>
+            
+            <div class="level-card">
+                <h3>🚀 Level 16 - Space Filter Bypass</h3>
+                <p>Bypass filters that remove spaces using alternative whitespace characters.</p>
+                <a href="level16.php?id=1">Start Level 16</a>
+            </div>
         </div>
         
         <div class="navigation">

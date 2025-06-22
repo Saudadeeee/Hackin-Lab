@@ -34,6 +34,9 @@ INSERT INTO levels (id, flag) VALUES
   (11,'FLAG{update_injection}'),
   (12,'FLAG{waf_bypass}'),
   (13,'FLAG{json_injection}'),
+  (14,'FLAG{comment_bypass}'),
+  (15,'FLAG{encoding_bypass}'),
+  (16,'FLAG{space_bypass}'),
   (21,'FAKE{not_a_real_flag}'),
   (22,'TEST{dummy_flag_123}'),
   (23,'DECOY{red_herring}'),
@@ -95,7 +98,10 @@ INSERT INTO meta (mkey, mvalue) VALUES
   ('level10_hint', 'INSERT can be dangerous too'),
   ('level11_hint', 'UPDATE statements can leak data'),
   ('level12_hint', 'WAFs can be bypassed with encoding'),
-  ('level13_hint', 'JSON parsing can introduce vulnerabilities');
+  ('level13_hint', 'JSON parsing can introduce vulnerabilities'),
+  ('level14_hint', 'Comments can break up blocked keywords'),
+  ('level15_hint', 'Try different encoding methods'),
+  ('level16_hint', 'Spaces are not the only whitespace');
 
 -- Thêm chỉ mục để tối ưu hóa hiệu suất
 CREATE INDEX idx_username ON users(username);
