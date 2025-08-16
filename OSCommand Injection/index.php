@@ -110,6 +110,46 @@
                 </div>
                 <a href="level6.php" class="btn">Bắt đầu Level 6</a>
             </div>
+
+            <div class="level-card">
+                <h3>Level 7 - Encoding Bypass</h3>
+                <p>Advanced encoding và output redirection</p>
+                <div class="level-info">
+                    <span class="difficulty hard">Khó</span>
+                    <span class="objective">Advanced bypass</span>
+                </div>
+                <a href="level7.php" class="btn">Bắt đầu Level 7</a>
+            </div>
+
+            <div class="level-card">
+                <h3>Level 8 - WAF Bypass</h3>
+                <p>Bypass Web Application Firewall</p>
+                <div class="level-info">
+                    <span class="difficulty hard">Khó</span>
+                    <span class="objective">WAF evasion</span>
+                </div>
+                <a href="level8.php" class="btn">Bắt đầu Level 8</a>
+            </div>
+
+            <div class="level-card">
+                <h3>Level 9 - Out-of-Band</h3>
+                <p>Data exfiltration qua network channels</p>
+                <div class="level-info">
+                    <span class="difficulty hard">Khó</span>
+                    <span class="objective">Network exfiltration</span>
+                </div>
+                <a href="level9.php" class="btn">Bắt đầu Level 9</a>
+            </div>
+
+            <div class="level-card">
+                <h3>Level 10 - Race Conditions</h3>
+                <p>Khai thác race conditions và automation</p>
+                <div class="level-info">
+                    <span class="difficulty hard">Khó</span>
+                    <span class="objective">Timing attacks</span>
+                </div>
+                <a href="level10.php" class="btn">Bắt đầu Level 10</a>
+            </div>
         </div>
 
         <div class="tools-section">

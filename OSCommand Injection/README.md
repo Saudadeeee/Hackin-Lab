@@ -21,8 +21,10 @@ OS Command Injection là một lỗ hổng bảo mật cho phép kẻ tấn côn
 4. **Level 4** - Filter Bypass (Keyword filtering)
 5. **Level 5** - Blind Command Injection
 6. **Level 6** - Time-based Detection
-7. **Level 7** - Output Redirection
-8. **Level 8** - Advanced Filter Bypass
+7. **Level 7** - Output Redirection & Encoding
+8. **Level 8** - WAF Bypass & Context Breaking
+9. **Level 9** - Out-of-Band Injection
+10. **Level 10** - Race Condition & Automation
 
 ## 🚀 Cách sử dụng
 

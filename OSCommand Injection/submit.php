@@ -26,6 +26,10 @@
                 '4' => ['FLAG{keyword_Linux_bypass_complete}', 'FLAG{keyword_linux_bypass_complete}'], // Dynamic based on OS
                 '5' => 'FLAG{blind_execution_confirmed}',
                 '6' => 'FLAG{timing_attack_successful}',
+                '7' => 'FLAG{advanced_encoding_bypass_successful}',
+                '8' => 'FLAG{waf_bypass_master_level}',
+                '9' => 'FLAG{out_of_band_data_exfiltration}',
+                '10' => 'FLAG{race_condition_automation_bypass}',
             ];
             
             if ($submitted_flag && $level) {

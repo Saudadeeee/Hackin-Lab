@@ -33,7 +33,11 @@ RUN mkdir -p /var/flags && \
     echo 'Use: /usr/local/bin/generate_flag.sh 3' > /var/flags/level3_cmd.txt && \
     echo 'Use: /usr/local/bin/generate_flag.sh 4' > /var/flags/level4_cmd.txt && \
     echo 'FLAG{blind_execution_confirmed}' > /var/flags/level5_proof.txt && \
-    echo 'FLAG{timing_attack_successful}' > /var/flags/level6_timing.txt
+    echo 'FLAG{timing_attack_successful}' > /var/flags/level6_timing.txt && \
+    echo 'FLAG{advanced_encoding_bypass_successful}' > /var/flags/level7_encoding.txt && \
+    echo 'FLAG{waf_bypass_master_level}' > /var/flags/level8_waf.txt && \
+    echo 'FLAG{out_of_band_data_exfiltration}' > /var/flags/level9_oob.txt && \
+    echo 'FLAG{race_condition_automation_bypass}' > /var/flags/level10_race.txt
 
 # Set working directory
 WORKDIR /var/www/html
