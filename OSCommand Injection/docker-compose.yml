@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web:
+    image: php:8.1-apache
+    container_name: oscommand_injection_lab
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./apache-config:/etc/apache2/sites-available/
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    command: >
+      bash -c "
+        apt-get update &&
+        apt-get install -y curl wget net-tools iputils-ping &&
+        echo 'FLAG{hidden_in_system}' > /etc/flag.txt &&
+        echo 'FLAG{command_injection_master}' > /var/www/secret_flag.txt &&
+        echo 'FLAG{blind_injection_success}' > /tmp/blind_flag.txt &&
+        chmod 644 /etc/flag.txt /var/www/secret_flag.txt /tmp/blind_flag.txt &&
+        a2enmod rewrite &&
+        apache2-foreground
+      "
+    restart: unless-stopped
