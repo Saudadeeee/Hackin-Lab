@@ -62,18 +62,18 @@
             </div>
 
             <div class="level-card">
-                <h3>Level 2 - Command Chaining</h3>
-                <p>Sử dụng command chaining để bypass giới hạn</p>
+                <h3>Level 2 - Basic Filter Bypass</h3>
+                <p>Bypass filter đơn giản bằng các toán tử thay thế</p>
                 <div class="level-info">
                     <span class="difficulty easy">Dễ</span>
-                    <span class="objective">Kết hợp nhiều lệnh</span>
+                    <span class="objective">Bypass semicolon filter</span>
                 </div>
                 <a href="level2.php" class="btn">Bắt đầu Level 2</a>
             </div>
 
             <div class="level-card">
-                <h3>Level 3 - Filter Bypass</h3>
-                <p>Bypass các filter đơn giản</p>
+                <h3>Level 3 - Space Filter Bypass</h3>
+                <p>Bypass space character filtering</p>
                 <div class="level-info">
                     <span class="difficulty medium">Trung bình</span>
                     <span class="objective">Bypass space filter</span>

@@ -133,10 +133,10 @@
                 </div>
                 <div id="hint-7" class="hint-box" style="display: none;">
                     <h4>🎯 Hint 7: Extract Complete Flag!</h4>
-                    <p><strong>🚀 Target file:</strong> <code>/tmp/blind_flag.txt</code></p>
-                    <p><strong>Quick verification:</strong> <code>apache2; [ -f /tmp/blind_flag.txt ] && sleep 10</code></p>
-                    <p><strong>Content confirmation:</strong> <code>apache2; grep -q "FLAG{blind_injection_success}" /tmp/blind_flag.txt && sleep 15</code></p>
-                    <p><strong>🎯 Final payload:</strong> If the above takes 15+ seconds, the flag is: <code>FLAG{blind_injection_success}</code></p>
+                    <p><strong>🚀 Target file:</strong> <code>/var/flags/level6_timing.txt</code></p>
+                    <p><strong>Quick verification:</strong> <code>apache2; [ -f /var/flags/level6_timing.txt ] && sleep 10</code></p>
+                    <p><strong>Content confirmation:</strong> <code>apache2; grep -q "timing_attack_successful" /var/flags/level6_timing.txt && sleep 15</code></p>
+                    <p><strong>🎯 Final payload:</strong> If the above takes 15+ seconds, the flag is: <code>FLAG{timing_attack_successful}</code></p>
                     <p><strong>📋 Validation steps:</strong></p>
                     <p>1. Confirm file exists (should delay 10s)</p>
                     <p>2. Confirm exact content (should delay 15s)</p>

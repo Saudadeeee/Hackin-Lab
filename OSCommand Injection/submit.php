@@ -20,16 +20,41 @@
             
             // Define correct flags for each level
             $correct_flags = [
-                '1' => 'FLAG{hidden_in_system}',
-                '2' => 'FLAG{command_injection_master}',
-                '3' => 'FLAG{blind_injection_success}',
-                '4' => 'FLAG{command_injection_master}',
-                '5' => 'FLAG{blind_injection_success}',
-                '6' => 'FLAG{blind_injection_success}',
+                '1' => 'FLAG{basic_injection_discovered}',
+                '2' => 'FLAG{semicolon_filter_bypassed}',
+                '3' => ['FLAG{space_filter_0_bypassed}', 'FLAG{space_filter_1000_bypassed}'], // Dynamic based on user ID
+                '4' => ['FLAG{keyword_Linux_bypass_complete}', 'FLAG{keyword_linux_bypass_complete}'], // Dynamic based on OS
+                '5' => 'FLAG{blind_execution_confirmed}',
+                '6' => 'FLAG{timing_attack_successful}',
             ];
             
             if ($submitted_flag && $level) {
-                if (isset($correct_flags[$level]) && $submitted_flag === $correct_flags[$level]) {
+                $is_correct = false;
+                
+                if (isset($correct_flags[$level])) {
+                    $expected = $correct_flags[$level];
+                    
+                    // Handle array of possible flags (for dynamic flags)
+                    if (is_array($expected)) {
+                        $is_correct = in_array($submitted_flag, $expected);
+                    } else {
+                        $is_correct = ($submitted_flag === $expected);
+                    }
+                    
+                    // Additional check for dynamic flags with patterns
+                    if (!$is_correct) {
+                        switch($level) {
+                            case '3':
+                                $is_correct = preg_match('/^FLAG\{space_filter_\d+_bypassed\}$/', $submitted_flag);
+                                break;
+                            case '4':
+                                $is_correct = preg_match('/^FLAG\{keyword_[A-Za-z]+_bypass_complete\}$/', $submitted_flag);
+                                break;
+                        }
+                    }
+                }
+                
+                if ($is_correct) {
                     echo '<div class="success">';
                     echo '<h2>🎉 Congratulations!</h2>';
                     echo '<p><strong>Correct Flag:</strong> ' . htmlspecialchars($submitted_flag) . '</p>';
@@ -62,32 +87,32 @@
                     case '1':
                         echo '<p><strong>Mục tiêu:</strong> Thực hiện command injection cơ bản</p>';
                         echo '<p><strong>Kỹ thuật:</strong> Sử dụng ; && || | để nối lệnh</p>';
-                        echo '<p><strong>Flag location:</strong> /etc/flag.txt</p>';
+                        echo '<p><strong>Flag location:</strong> /var/flags/level1_hint.txt</p>';
                         break;
                     case '2':
-                        echo '<p><strong>Mục tiêu:</strong> Hiểu về command chaining operators</p>';
-                        echo '<p><strong>Kỹ thuật:</strong> Phân biệt ; && || | và cách sử dụng</p>';
-                        echo '<p><strong>Flag location:</strong> /var/www/secret_flag.txt</p>';
+                        echo '<p><strong>Mục tiêu:</strong> Bypass basic character filtering</p>';
+                        echo '<p><strong>Kỹ thuật:</strong> Sử dụng &&, ||, |, command substitution</p>';
+                        echo '<p><strong>Flag location:</strong> /var/flags/level2_hint.txt</p>';
                         break;
                     case '3':
                         echo '<p><strong>Mục tiêu:</strong> Bypass space character filtering</p>';
                         echo '<p><strong>Kỹ thuật:</strong> ${IFS}, $IFS$9, %09, brace expansion</p>';
-                        echo '<p><strong>Flag location:</strong> /tmp/blind_flag.txt</p>';
+                        echo '<p><strong>Flag source:</strong> Dynamic generation with user ID</p>';
                         break;
                     case '4':
                         echo '<p><strong>Mục tiêu:</strong> Bypass keyword filtering</p>';
                         echo '<p><strong>Kỹ thuật:</strong> String concatenation, variables, wildcards</p>';
-                        echo '<p><strong>Flag location:</strong> /var/www/secret_flag.txt</p>';
+                        echo '<p><strong>Flag source:</strong> Dynamic generation with system info</p>';
                         break;
                     case '5':
                         echo '<p><strong>Mục tiêu:</strong> Blind command injection</p>';
                         echo '<p><strong>Kỹ thuật:</strong> Time-based, file-based detection</p>';
-                        echo '<p><strong>Flag location:</strong> /tmp/blind_flag.txt</p>';
+                        echo '<p><strong>Flag location:</strong> /var/flags/level5_proof.txt</p>';
                         break;
                     case '6':
                         echo '<p><strong>Mục tiêu:</strong> Time-based blind injection</p>';
                         echo '<p><strong>Kỹ thuật:</strong> Conditional timing, binary search</p>';
-                        echo '<p><strong>Flag location:</strong> /tmp/blind_flag.txt</p>';
+                        echo '<p><strong>Flag location:</strong> /var/flags/level6_timing.txt</p>';
                         break;
                     default:
                         echo '<p>Level không tồn tại hoặc chưa được implement.</p>';

