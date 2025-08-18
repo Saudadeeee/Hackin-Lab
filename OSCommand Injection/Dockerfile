@@ -26,18 +26,25 @@ RUN echo '#!/bin/bash' > /usr/local/bin/generate_flag.sh && \
     echo 'esac' >> /usr/local/bin/generate_flag.sh && \
     chmod +x /usr/local/bin/generate_flag.sh
 
-# Create level-specific flag files that require specific commands
+# Copy flag system and level access control
+COPY flag_system.php /var/www/html/flag_system.php
+COPY level_access.sh /usr/local/bin/level_access.sh
+RUN chmod +x /usr/local/bin/level_access.sh
+
+# Create decoy flag structure to prevent cheating
 RUN mkdir -p /var/flags && \
-    echo 'FLAG{basic_injection_discovered}' > /var/flags/level1_hint.txt && \
-    echo 'FLAG{semicolon_filter_bypassed}' > /var/flags/level2_hint.txt && \
-    echo 'Use: /usr/local/bin/generate_flag.sh 3' > /var/flags/level3_cmd.txt && \
-    echo 'Use: /usr/local/bin/generate_flag.sh 4' > /var/flags/level4_cmd.txt && \
-    echo 'FLAG{blind_execution_confirmed}' > /var/flags/level5_proof.txt && \
-    echo 'FLAG{timing_attack_successful}' > /var/flags/level6_timing.txt && \
-    echo 'FLAG{advanced_encoding_bypass_successful}' > /var/flags/level7_encoding.txt && \
-    echo 'FLAG{waf_bypass_master_level}' > /var/flags/level8_waf.txt && \
-    echo 'FLAG{out_of_band_data_exfiltration}' > /var/flags/level9_oob.txt && \
-    echo 'FLAG{race_condition_automation_bypass}' > /var/flags/level10_race.txt
+    echo 'DECOY_FLAG{these_are_fake_flags_complete_levels_properly}' > /var/flags/README.txt && \
+    echo 'DECOY_FLAG{level_1_fake_flag}' > /var/flags/level1_decoy.txt && \
+    echo 'DECOY_FLAG{level_2_fake_flag}' > /var/flags/level2_decoy.txt && \
+    echo 'DECOY_FLAG{level_3_fake_flag}' > /var/flags/level3_decoy.txt && \
+    echo 'DECOY_FLAG{level_4_fake_flag}' > /var/flags/level4_decoy.txt && \
+    echo 'DECOY_FLAG{level_5_fake_flag}' > /var/flags/level5_decoy.txt && \
+    echo 'DECOY_FLAG{level_6_fake_flag}' > /var/flags/level6_decoy.txt && \
+    echo 'DECOY_FLAG{level_7_fake_flag}' > /var/flags/level7_decoy.txt && \
+    echo 'DECOY_FLAG{level_8_fake_flag}' > /var/flags/level8_decoy.txt && \
+    echo 'DECOY_FLAG{level_9_fake_flag}' > /var/flags/level9_decoy.txt && \
+    echo 'DECOY_FLAG{level_10_fake_flag}' > /var/flags/level10_decoy.txt && \
+    chmod 644 /var/flags/*
 
 # Set working directory
 WORKDIR /var/www/html

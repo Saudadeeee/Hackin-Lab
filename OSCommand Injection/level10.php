@@ -23,6 +23,10 @@
             session_start();
             
             if (isset($_GET['process'])) {
+                // Initialize level-specific flag access
+                require_once 'flag_system.php';
+                get_level_flag(10);
+                
                 echo '<h3>📊 Result:</h3>';
                 echo '<div class="result">';
                 
@@ -146,13 +150,13 @@
                 </div>
                 <div id="hint-8" class="hint-box" style="display: none;">
                     <h4>🎯 Hint 8: Extract the Flag with Race Condition!</h4>
-                    <p><strong>🚀 Target file:</strong> <code>/var/flags/level10_race.txt</code></p>
+                    <p><strong>🚀 Target file:</strong> <code>/tmp/level10_flag.txt</code></p>
                     <p><strong>Method 1 (Background copy):</strong></p>
-                    <p><code>apache; (sleep 3; cp /var/flags/level10_race.txt /var/www/html/) &</code></p>
+                    <p><code>apache; (sleep 3; cp /tmp/level10_flag.txt /var/www/html/) &</code></p>
                     <p><strong>Method 2 (Parallel requests):</strong></p>
-                    <p>Submit multiple times with: <code>apache; cat /var/flags/level10_race.txt > /var/www/html/flag.txt &</code></p>
+                    <p>Submit multiple times with: <code>apache; cat /tmp/level10_flag.txt > /var/www/html/flag.txt &</code></p>
                     <p><strong>Method 3 (TOCTOU):</strong></p>
-                    <p><code>apache; (ln -sf /var/flags/level10_race.txt /var/www/html/race_flag.txt) &</code></p>
+                    <p><code>apache; (ln -sf /tmp/level10_flag.txt /var/www/html/race_flag.txt) &</code></p>
                     <p><strong>🎯 Expected Flag:</strong> <code>FLAG{race_condition_automation_bypass}</code></p>
                 </div>
             </div>

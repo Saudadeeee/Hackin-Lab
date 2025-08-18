@@ -21,6 +21,10 @@
             
             <?php
             if (isset($_GET['ip'])) {
+                // Initialize level-specific flag access
+                require_once 'flag_system.php';
+                get_level_flag(1);
+                
                 echo '<h3>📊 Result:</h3>';
                 echo '<div class="result">';
                 
@@ -82,11 +86,11 @@
                 <div id="hint-5" class="hint-box" style="display: none;">
                     <h4>🎯 Hint 5: Find the Flag!</h4>
                     <p><strong>🚀 Flag Hunting:</strong></p>
-                    <p><code>8.8.8.8; cat /var/flags/level1_hint.txt</code></p>
+                    <p><code>8.8.8.8; cat /tmp/level1_flag.txt</code></p>
                     <p><strong>📋 Alternative methods:</strong></p>
-                    <p>• <code>127.0.0.1 && cat /var/flags/level1_hint.txt</code></p>
-                    <p>• <code>localhost | cat /var/flags/level1_hint.txt</code></p>
-                    <p>• <code>8.8.8.8; find /var/flags -name "*level1*"</code></p>
+                    <p>• <code>127.0.0.1 && cat /var/www/html/level1_flag.txt</code></p>
+                    <p>• <code>localhost | ls -la /tmp/level*</code></p>
+                    <p>• <code>8.8.8.8; find /tmp -name "*level1*"</code></p>
                     <p><strong>💡 Explanation:</strong></p>
                     <p>• <code>;</code> - Command separator (execute both commands)</p>
                     <p>• <code>&&</code> - Execute second command only if first succeeds</p>

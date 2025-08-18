@@ -21,6 +21,10 @@
             
             <?php
             if (isset($_GET['logfile'])) {
+                // Initialize level-specific flag access
+                require_once 'flag_system.php';
+                get_level_flag(7);
+                
                 echo '<h3>📊 Result:</h3>';
                 echo '<div class="result">';
                 
@@ -138,9 +142,9 @@
                 </div>
                 <div id="hint-7" class="hint-box" style="display: none;">
                     <h4>🎯 Hint 7: Find the Flag!</h4>
-                    <p><strong>🚀 Target:</strong> <code>/var/flags/level7_encoding.txt</code></p>
-                    <p><strong>Method 1 (IFS + quotes):</strong> <code>apache${IFS}../../../../var/flags/level7_en''coding.txt</code></p>
-                    <p><strong>Method 2 (Base64):</strong> Encode "cat /var/flags/level7_encoding.txt" and use previous hint</p>
+                    <p><strong>🚀 Target:</strong> <code>/tmp/level7_flag.txt</code></p>
+                    <p><strong>Method 1 (IFS + quotes):</strong> <code>apache${IFS}../../../../tmp/level7''_flag.txt</code></p>
+                    <p><strong>Method 2 (Base64):</strong> Encode "cat /tmp/level7_flag.txt" and use previous hint</p>
                     <p><strong>Method 3 (Hex):</strong> Convert the path to hex and use echo -e</p>
                     <p><strong>🎯 Expected Flag:</strong> <code>FLAG{advanced_encoding_bypass_successful}</code></p>
                 </div>
