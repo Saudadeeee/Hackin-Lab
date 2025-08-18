@@ -26,25 +26,22 @@ RUN echo '#!/bin/bash' > /usr/local/bin/generate_flag.sh && \
     echo 'esac' >> /usr/local/bin/generate_flag.sh && \
     chmod +x /usr/local/bin/generate_flag.sh
 
-# Copy flag system and level access control
+# Copy flag system and anti-cheat components
 COPY flag_system.php /var/www/html/flag_system.php
-COPY level_access.sh /usr/local/bin/level_access.sh
-RUN chmod +x /usr/local/bin/level_access.sh
+COPY init_anticheat.sh /usr/local/bin/init_anticheat.sh
+RUN chmod +x /usr/local/bin/init_anticheat.sh
 
-# Create decoy flag structure to prevent cheating
-RUN mkdir -p /var/flags && \
-    echo 'DECOY_FLAG{these_are_fake_flags_complete_levels_properly}' > /var/flags/README.txt && \
-    echo 'DECOY_FLAG{level_1_fake_flag}' > /var/flags/level1_decoy.txt && \
-    echo 'DECOY_FLAG{level_2_fake_flag}' > /var/flags/level2_decoy.txt && \
-    echo 'DECOY_FLAG{level_3_fake_flag}' > /var/flags/level3_decoy.txt && \
-    echo 'DECOY_FLAG{level_4_fake_flag}' > /var/flags/level4_decoy.txt && \
-    echo 'DECOY_FLAG{level_5_fake_flag}' > /var/flags/level5_decoy.txt && \
-    echo 'DECOY_FLAG{level_6_fake_flag}' > /var/flags/level6_decoy.txt && \
-    echo 'DECOY_FLAG{level_7_fake_flag}' > /var/flags/level7_decoy.txt && \
-    echo 'DECOY_FLAG{level_8_fake_flag}' > /var/flags/level8_decoy.txt && \
-    echo 'DECOY_FLAG{level_9_fake_flag}' > /var/flags/level9_decoy.txt && \
-    echo 'DECOY_FLAG{level_10_fake_flag}' > /var/flags/level10_decoy.txt && \
-    chmod 644 /var/flags/*
+# Initialize anti-cheat system
+RUN /usr/local/bin/init_anticheat.sh
+
+# Ensure anti-cheat runs on container startup
+RUN echo '#!/bin/bash' > /usr/local/bin/startup.sh && \
+    echo '/usr/local/bin/init_anticheat.sh' >> /usr/local/bin/startup.sh && \
+    echo 'apache2-foreground' >> /usr/local/bin/startup.sh && \
+    chmod +x /usr/local/bin/startup.sh
+
+# Override default command to run anti-cheat first
+CMD ["/usr/local/bin/startup.sh"]
 
 # Set working directory
 WORKDIR /var/www/html

@@ -1,6 +1,9 @@
 <?php
-// Level-specific flag access control
+// Level-specific flag access control with enhanced security
 function get_level_flag($level) {
+    // Clear any existing flags from other levels first
+    cleanup_other_levels($level);
+    
     // Create level-specific temporary access
     $flag_content = '';
     $allowed_flag_file = '';
@@ -61,28 +64,68 @@ function get_level_flag($level) {
     file_put_contents($web_flag_file, $flag_content);
     chmod($web_flag_file, 0644);
     
-    // Create decoy files for other levels
-    create_decoy_flags($level);
+    // Override /var/flags with strict decoys
+    create_strict_decoy_flags($level);
     
     return $flag_content;
 }
 
-function create_decoy_flags($current_level) {
-    // Create decoy files in /var/flags to confuse direct access
-    $decoy_content = "DECOY_FLAG{complete_level_{LEVEL}_properly_to_get_real_flag}";
-    
+function cleanup_other_levels($current_level) {
+    // Remove any real flags that might exist from other levels
     for($i = 1; $i <= 10; $i++) {
         if($i != $current_level) {
-            $decoy_file = "/var/flags/level{$i}_decoy.txt";
-            $fake_content = str_replace('{LEVEL}', $i, $decoy_content);
-            @file_put_contents($decoy_file, $fake_content);
-            @chmod($decoy_file, 0644);
+            @unlink("/tmp/level{$i}_flag.txt");
+            @unlink("/var/www/html/level{$i}_flag.txt");
         }
     }
-    
-    // Make /var/flags directory browsable but containing only decoys
-    @file_put_contents('/var/flags/README.txt', 
-        "These are decoy flags. Real flags are only accessible when you properly exploit each level.\n" .
-        "Listing /var/flags will only show decoy files to prevent cheating.");
 }
+
+function create_strict_decoy_flags($current_level) {
+    // Ensure /var/flags contains ONLY decoy content
+    $decoy_message = "DECOY_FLAG{this_is_fake_you_are_cheating_complete_level_{LEVEL}_properly}";
+    
+    // Remove any real content that might have been placed in /var/flags
+    shell_exec('rm -rf /var/flags/level* 2>/dev/null');
+    
+    // Recreate decoy structure
+    for($i = 1; $i <= 10; $i++) {
+        $level_dir = "/var/flags/level{$i}";
+        @mkdir($level_dir, 0755, true);
+        
+        $fake_content = str_replace('{LEVEL}', $i, $decoy_message);
+        
+        // Create multiple decoy files with convincing names
+        @file_put_contents("{$level_dir}/flag.txt", $fake_content);
+        @file_put_contents("/var/flags/level{$i}_hint.txt", $fake_content);
+        @file_put_contents("/var/flags/level{$i}_timing.txt", $fake_content);
+        @file_put_contents("/var/flags/level{$i}_encoding.txt", $fake_content);
+        @file_put_contents("/var/flags/level{$i}_waf.txt", $fake_content);
+        @file_put_contents("/var/flags/level{$i}_oob.txt", $fake_content);
+        @file_put_contents("/var/flags/level{$i}_race.txt", $fake_content);
+        
+        @chmod("{$level_dir}/flag.txt", 0644);
+        @chmod("/var/flags/level{$i}_hint.txt", 0644);
+        @chmod("/var/flags/level{$i}_timing.txt", 0644);
+        @chmod("/var/flags/level{$i}_encoding.txt", 0644);
+        @chmod("/var/flags/level{$i}_waf.txt", 0644);
+        @chmod("/var/flags/level{$i}_oob.txt", 0644);
+        @chmod("/var/flags/level{$i}_race.txt", 0644);
+    }
+    
+    // Create warning file
+    $warning = "⚠️  ANTI-CHEATING SYSTEM ACTIVE ⚠️\n\n";
+    $warning .= "All flags in this directory are DECOY FLAGS.\n";
+    $warning .= "Real flags are dynamically generated only when you properly exploit each level.\n\n";
+    $warning .= "Current level generating real flag: {$current_level}\n";
+    $warning .= "Real flag location: /tmp/level{$current_level}_flag.txt\n\n";
+    $warning .= "To get real flags:\n";
+    $warning .= "1. Visit the specific level page\n";
+    $warning .= "2. Exploit the vulnerability correctly\n";
+    $warning .= "3. Access the dynamically created flag file\n\n";
+    $warning .= "Accessing flags from /var/flags is considered cheating!\n";
+    
+    @file_put_contents("/var/flags/ANTI_CHEAT_WARNING.txt", $warning);
+    @chmod("/var/flags/ANTI_CHEAT_WARNING.txt", 0644);
+}
+?>
 ?>
