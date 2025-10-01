@@ -1,127 +1,218 @@
+<?php
+// Level 1: Basic Login Form - Error Based SQL Injection
+// Goal: Login as admin using SQL injection
+
+// Database connection
+$host = $_ENV['DB_HOST'] ?? 'db';
+$user = $_ENV['DB_USER'] ?? 'root'; 
+$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$message = "";
+$success = false;
+
+if ($_POST) {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    // Vulnerable SQL query - directly concatenating user input
+    $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
+    
+    try {
+        $result = $conn->query($sql);
+        
+        if ($result && $result->num_rows > 0) {
+            $user_data = $result->fetch_assoc();
+            if ($user_data['role'] === 'admin') {
+                $success = true;
+                $message = "🎉 Congratulations! You successfully logged in as admin!<br>";
+                $message .= "🏁 <strong>FLAG: LEVEL1_BASIC_LOGIN_BYPASS</strong><br>";
+                $message .= "Username: " . htmlspecialchars($user_data['username']) . "<br>";
+                $message .= "Role: " . htmlspecialchars($user_data['role']);
+            } else {
+                $message = "✅ Login successful, but you need to login as admin!<br>";
+                $message .= "Current user: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
+            }
+        } else {
+            $message = "❌ Login failed: Invalid username or password";
+        }
+    } catch (Exception $e) {
+        // Show SQL error to help with injection
+        $message = "💥 Database Error: " . $e->getMessage();
+        $message .= "<br><br>📝 SQL Query: " . htmlspecialchars($sql);
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 1 - Error Based SQLi</title>
+    <title>Level 1 - Basic Login | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .login-container {
+            max-width: 500px;
+            margin: 2rem auto;
+            background: #faf7f0;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #2c2c2c;
+        }
+        
+        .form-group input {
+            padding: 0.8rem;
+            border: 2px solid #e8dcc6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+        
+        .login-btn {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
+        }
+        
+        .message {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .message.success {
+            background: #f0fff4;
+            border-color: #38a169;
+            color: #2f855a;
+        }
+        
+        .message.error {
+            background: #fed7d7;
+            border-color: #e53e3e;
+            color: #c53030;
+        }
+        
+        .message.info {
+            background: #ebf8ff;
+            border-color: #3182ce;
+            color: #2c5282;
+        }
+        
+        .hints {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .hints h3 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+        
+        .hints ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .hints li {
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚨 Level 1 - Error Based Injection</h1>
-            <p><strong>Objective:</strong> Extract data by triggering database errors that reveal sensitive information</p>
+            <h1>🚨 Level 1 - Basic Login</h1>
+            <p>Your first SQL injection challenge! This login form shows error messages that can help you.</p>
+            <a href="index.php" class="back-btn">← Back to Labs</a>
         </div>
-
-        <div class="form-container">
-            <h3>🔍 Current Query:</h3>
-            <div class="code-block">SELECT id, username FROM users WHERE id = <?php echo htmlspecialchars($_GET['id'] ?? 'NULL'); ?></div>
+        
+        <div class="login-container">
+            <h2>🔐 Admin Login Portal</h2>
+            <p><strong>Objective:</strong> Login as 'admin' user using SQL injection</p>
             
-            <?php
-            if (isset($_GET['id'])) {
-                echo '<h3>📊 Result:</h3>';
-                echo '<div class="result">';
-                
-                $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                $id = $_GET['id'];
-                $sql = "SELECT id, username FROM users WHERE id = $id";
-                if ($res = $mysqli->query($sql)) {
-                    if ($res->num_rows > 0) {
-                        while ($row = $res->fetch_row()) {
-                            echo '<strong>ID:</strong> ' . htmlspecialchars($row[0]) . ' - <strong>Username:</strong> ' . htmlspecialchars($row[1]) . '<br>';
-                        }
-                    } else {
-                        echo 'No results found';
-                    }
-                } else {
-                    echo '<div class="error">❌ Error: '.$mysqli->error.'</div>';
-                }
-                echo '</div>';
-            }
-            ?>
+            <?php if ($message): ?>
+                <div class="message <?= $success ? 'success' : (strpos($message, 'Error') !== false ? 'error' : 'info') ?>">
+                    <?= $message ?>
+                </div>
+            <?php endif; ?>
             
-            <h3>🔧 Try Your Payload:</h3>
-            <form method="get" style="margin: 20px 0;">
+            <form method="POST" class="login-form">
                 <div class="form-group">
-                    <label for="id">ID Parameter:</label>
-                    <input type="text" id="id" name="id" value="<?php echo htmlspecialchars($_GET['id'] ?? ''); ?>" placeholder="Enter your payload here..." oninput="updateQuery()">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Enter username" required>
                 </div>
-                <button type="submit" class="btn">🚀 Execute Query</button>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required>
+                </div>
+                
+                <button type="submit" class="login-btn">🚀 Login</button>
             </form>
-
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding the Query</h4>
-                    <p><strong>Original Query:</strong> <code>SELECT id, username FROM users WHERE id = [YOUR_INPUT]</code></p>
-                    <p>📝 <strong>First Step:</strong> Try entering the number <code>1</code> to see normal behavior.</p>
-                    <p>🎯 <strong>Purpose:</strong> Observe how the query works with valid data.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Breaking the Query</h4>
-                    <p><strong>Concept:</strong> Error-based SQLi relies on creating meaningful errors.</p>
-                    <p>📝 <strong>Test:</strong> <code>1'</code> - Add a single quote to break the syntax</p>
-                    <p>🎯 <strong>Expected Result:</strong> MySQL syntax error message</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Error-Based Functions</h4>
-                    <p><strong>MySQL has special functions:</strong></p>
-                    <p>• <code>EXTRACTVALUE()</code> - Extracts values from XML</p>
-                    <p>• <code>UPDATEXML()</code> - Updates XML documents</p>
-                    <p>📝 <strong>Test:</strong> <code>1 AND EXTRACTVALUE(1, 'test')</code></p>
-                    <p>🎯 <strong>Explanation:</strong> This function will error when XPath is invalid</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Combining Data</h4>
-                    <p><strong>Using CONCAT():</strong> Combine special characters with data</p>
-                    <p>📝 <strong>Tilde character (~):</strong> <code>0x7e</code> = '~' (helps format output)</p>
-                    <p>🔍 <strong>Test:</strong> <code>1 AND EXTRACTVALUE(1, CONCAT(0x7e, 'TEST', 0x7e))</code></p>
-                    <p>🎯 <strong>Result:</strong> Error will display '~TEST~' in the message</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Hint 5: FINAL PAYLOAD</h4>
-                    <p><strong>🚀 Get flag from levels table:</strong></p>
-                    <p><code>1 AND EXTRACTVALUE(1, CONCAT(0x7e, (SELECT flag FROM levels WHERE id=1), 0x7e))</code></p>
-                    <p><strong>📋 Payload Explanation:</strong></p>
-                    <p>• <code>1 AND</code> - True condition to run the query</p>
-                    <p>• <code>EXTRACTVALUE(1, ...)</code> - Function that creates error</p>
-                    <p>• <code>CONCAT(0x7e, ..., 0x7e)</code> - Combine with ~ for easy identification</p>
-                    <p>• <code>(SELECT flag FROM levels WHERE id=1)</code> - Subquery to get flag</p>
-                </div>
-            </div>
+        </div>
+        
+        <div class="hints">
+            <h3>💡 Hints for Level 1:</h3>
+            <ul>
+                <li><strong>Start Simple:</strong> Try basic payloads like <code>' OR '1'='1</code></li>
+                <li><strong>Read Errors:</strong> SQL error messages will show you the exact query structure</li>
+                <li><strong>Comment Out:</strong> Use <code>--</code> or <code>#</code> to comment out the rest of the query</li>
+                <li><strong>Test Goal:</strong> You need to login as 'admin' specifically, not just any user</li>
+                <li><strong>Try:</strong> <code>admin'--</code> in username field (ignore password)</li>
+            </ul>
         </div>
         
         <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level2.php">➡️ Next Level</a>
-            <a href="submit.php?level=1">🏆 Submit Flag</a>
+            <a href="level2.php">Next Level →</a>
         </div>
     </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function updateQuery() {
-        const input = document.getElementById('id').value;
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.innerHTML = 'SELECT id, username FROM users WHERE id = ' + (input || 'NULL');
-    }
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').textContent = '✅ All hints viewed';
-                document.querySelector('.hint-btn').disabled = true;
-                document.querySelector('.hint-btn').style.opacity = '0.6';
-            } else {
-                document.querySelector('.hint-btn').textContent = `💡 Next Hint (${currentHint}/${maxHints})`;
-            }
-        }
-    }
-    </script>
 </body>
 </html>
+
+<?php $conn->close(); ?>

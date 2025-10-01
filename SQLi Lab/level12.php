@@ -1,36 +1,75 @@
 <?php
-$mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-$id = $_GET['id'] ?? '';
+// Level 12: JSON-based SQL Injection
+// Goal: Exploit JSON parameter parsing in SQL queries
 
-// Only process if id parameter is provided and not empty
-if ($id !== '') {
-    $blocked_keywords = ['union', 'select', 'or', 'and', 'drop', 'delete', 'insert', 'update'];
-    $id_lower = strtolower($id);
+session_start();
 
-    $blocked = false;
-    foreach ($blocked_keywords as $keyword) {
-        if (strpos($id_lower, $keyword) !== false) {
-            $blocked = true;
-            break;
-        }
-    }
+// Database connection
+$host = $_ENV['DB_HOST'] ?? 'db';
+$user = $_ENV['DB_USER'] ?? 'root'; 
+$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
-    if (!$blocked) {
-        $sql = "SELECT username FROM users WHERE id = $id";
-        $result = $mysqli->query($sql);
+$conn = new mysqli($host, $user, $pass, $dbname);
 
-        if (!$result) {
-            die('Error: '.$mysqli->error);
-        }
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-        $row = $result->fetch_row();
-        if ($row) {
-            echo htmlspecialchars($row[0]);
+$message = "";
+$success = false;
+
+if ($_POST) {
+    $json_input = $_POST['json_data'] ?? '';
+    
+    try {
+        // Parse JSON input
+        $data = json_decode($json_input, true);
+        
+        if ($data === null) {
+            $message = "❌ Invalid JSON format!";
         } else {
-            echo 'No user found';
+            $username = $data['username'] ?? '';
+            $password = $data['password'] ?? '';
+            $role_filter = $data['role'] ?? 'user';
+            
+            // VULNERABLE query using JSON parsed data
+            $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password' AND role = '$role_filter'";
+            
+            $result = $conn->query($sql);
+            
+            if ($result && $result->num_rows > 0) {
+                $user_data = $result->fetch_assoc();
+                
+                if ($user_data['role'] === 'admin') {
+                    $success = true;
+                    $message = "🎉 Excellent! You exploited JSON-based SQL injection!<br>";
+                    $message .= "🏁 <strong>FLAG: LEVEL12_JSON_INJECTION_SPECIALIST</strong><br>";
+                    $message .= "📊 JSON Input: <code>" . htmlspecialchars($json_input) . "</code><br>";
+                    $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                    $message .= "👑 Admin access granted!";
+                } else {
+                    $message = "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
+                    $message .= "<br>⚠️ You need admin role to get the flag!";
+                }
+            } else {
+                $message = "❌ Authentication failed: No matching user found";
+                $message .= "<br>📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
+            }
         }
+        
+    } catch (Exception $e) {
+        $message = "💥 JSON Processing Error: " . $e->getMessage();
+        $message .= "<br>📊 JSON Input: <code>" . htmlspecialchars($json_input ?? 'N/A') . "</code>";
     }
 }
+
+// Sample JSON for reference
+$sample_json = json_encode([
+    'username' => 'guest',
+    'password' => 'guest123', 
+    'role' => 'user'
+], JSON_PRETTY_PRINT);
 ?>
 
 <!DOCTYPE html>
@@ -38,330 +77,167 @@ if ($id !== '') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 12 - WAF Bypass</title>
+    <title>Level 12 - JSON Injection | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🛡️ Level 12 - WAF Bypass</h1>
-            <p><strong>Attack Type:</strong> Learn techniques to bypass Web Application Firewalls and filter restrictions</p>
-        </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">SELECT username FROM users WHERE id = <?php echo htmlspecialchars($_GET['id'] ?? 'NULL'); ?></div>
-            
-            <h3>🚨 WAF Rules:</h3>
-            <div class="waf-warning">
-                <strong>Blocked keywords:</strong> union, select, or, and, drop, delete, insert, update
-            </div>
-            
-            <?php
-            if (isset($_GET['id']) && $_GET['id'] !== '') {
-                $id = $_GET['id'];
-                
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                
-                $blocked_keywords = ['union', 'select', 'or', 'and', 'drop', 'delete', 'insert', 'update'];
-                $id_lower = strtolower($id);
-
-                $blocked = false;
-                $blocked_keyword = '';
-                foreach ($blocked_keywords as $keyword) {
-                    if (strpos($id_lower, $keyword) !== false) {
-                        $blocked = true;
-                        $blocked_keyword = $keyword;
-                        break;
-                    }
-                }
-
-                if ($blocked) {
-                    echo '<div class="error">🚨 WAF blocked: Suspicious keyword detected: ' . $blocked_keyword . '</div>';
-                } else {
-                    $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                    $sql = "SELECT username FROM users WHERE id = $id";
-                    $result = $mysqli->query($sql);
-
-                    if (!$result) {
-                        echo '<div class="error">Error: '.$mysqli->error.'</div>';
-                    } else {
-                        $row = $result->fetch_row();
-                        if ($row) {
-                            echo '<strong>Username:</strong> ' . htmlspecialchars($row[0]);
-                        } else {
-                            echo 'No user found';
-                        }
-                    }
-                }
-                echo '</div>';
-            } elseif (isset($_GET['id']) && $_GET['id'] === '') {
-                echo '<h3>Result:</h3>';
-                echo '<div class="error">❌ Please provide an ID parameter</div>';
-            }
-            ?>
-            
-            <h3>🔧 Try Your Own Payload:</h3>
-            <form method="get" style="margin: 20px 0;">
-                <div class="form-group">
-                    <label for="id">ID Parameter:</label>
-                    <input type="text" id="id" name="id" value="<?php echo htmlspecialchars($_GET['id'] ?? ''); ?>" placeholder="Enter your payload here..." oninput="updateQuery()">
-                </div>
-                <button type="submit" class="btn">🚀 Execute Query</button>
-            </form>
-
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Test the WAF</h4>
-                    <p>First, understand how the WAF works by testing blocked keywords.</p>
-                    <p>Try: <code>1 union</code> - This should be blocked by the WAF.</p>
-                    <p>Try: <code>1 select</code> - This should also be blocked.</p>
-                    <p>The WAF converts input to lowercase before checking.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Case Variations Don't Work</h4>
-                    <p>The WAF converts everything to lowercase, so case variations won't help.</p>
-                    <p>Try: <code>1 UnIoN</code> - Still blocked because it becomes "union" after lowercase conversion.</p>
-                    <p>We need a different bypass technique.</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Using Different Operators</h4>
-                    <p>Since basic keywords are blocked, we can try other SQL techniques.</p>
-                    <p>Try: <code>1||1</code> - Double pipe is OR in MySQL</p>
-                    <p>Try: <code>1&&1</code> - Double ampersand is AND in MySQL</p>
-                    <p>These aren't blocked by the keyword filter!</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Using Subqueries and Functions</h4>
-                    <p>We can extract data without using blocked keywords.</p>
-                    <p>Try: <code>1||(ASCII(MID((DATABASE()),1,1))>100)</code></p>
-                    <p>This uses functions to check database name character by character.</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Payload</h4>
-                    <p>Extract the flag using WAF bypass techniques:</p>
-                    <p><code>1||(ASCII(MID((REVERSE((MID((REVERSE((DATABASE()))),1,8)))),1,1))>70)</code></p>
-                    <p>Alternative simpler approach:</p>
-                    <p><code>-1||(1)</code> - This will return true and show results</p>
-                    <p>Then manually check database with: <code>1||(DATABASE()='sqli_lab')</code></p>
-                    <p>Note: This level demonstrates keyword filtering - in real scenarios, you'd need to be more creative!</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level11.php">⬅️ Previous Level</a>
-            <a href="level13.php">➡️ Next Level</a>
-            <a href="submit.php?level=12">🏆 Submit Flag</a>
-        </div>
-    </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function updateQuery() {
-        const input = document.getElementById('id').value;
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.innerHTML = 'SELECT username FROM users WHERE id = ' + (input || 'NULL');
-    }
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
-</body>
-</html>
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .navigation a {
-            background: #64748b;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-        
-        .navigation a:hover {
-            background: #475569;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🛡️ Level 12 - WAF Bypass</h1>
-            <p><strong>Attack Type:</strong> Learn techniques to bypass Web Application Firewalls and filter restrictions</p>
-        </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">SELECT username FROM users WHERE id = <?php echo htmlspecialchars($_GET['id'] ?? 'NULL'); ?></div>
-            
-            <h3>🚨 WAF Rules:</h3>
-            <div class="waf-warning">
-                <strong>Blocked keywords:</strong> union, select, or, and, drop, delete, insert, update
-            </div>
-            
-            <?php
-            if (isset($_GET['id']) && $_GET['id'] !== '') {
-                $id = $_GET['id'];
-                
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                
-                $blocked_keywords = ['union', 'select', 'or', 'and', 'drop', 'delete', 'insert', 'update'];
-                $id_lower = strtolower($id);
-
-                $blocked = false;
-                $blocked_keyword = '';
-                foreach ($blocked_keywords as $keyword) {
-                    if (strpos($id_lower, $keyword) !== false) {
-                        $blocked = true;
-                        $blocked_keyword = $keyword;
-                        break;
-                    }
-                }
-
-                if ($blocked) {
-                    echo '<div class="error">🚨 WAF blocked: Suspicious keyword detected: ' . $blocked_keyword . '</div>';
-                } else {
-                    $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                    $sql = "SELECT username FROM users WHERE id = $id";
-                    $result = $mysqli->query($sql);
-
-                    if (!$result) {
-                        echo '<div class="error">Error: '.$mysqli->error.'</div>';
-                    } else {
-                        $row = $result->fetch_row();
-                        if ($row) {
-                            echo '<strong>Username:</strong> ' . htmlspecialchars($row[0]);
-                        } else {
-                            echo 'No user found';
-                        }
-                    }
-                }
-                echo '</div>';
-            } elseif (isset($_GET['id']) && $_GET['id'] === '') {
-                echo '<h3>Result:</h3>';
-                echo '<div class="error">❌ Please provide an ID parameter</div>';
-            }
-            ?>
-            
-            <!-- Form input for custom payload -->
-            <h3>🔧 Try Your Own Payload:</h3>
-            <form method="get" style="margin: 20px 0;">
-                <div class="form-group">
-                    <label for="id">ID Parameter:</label>
-                    <input type="text" id="id" name="id" value="<?php echo htmlspecialchars($_GET['id'] ?? ''); ?>" placeholder="Enter your payload here..." oninput="updateQuery()">
-                </div>
-                <button type="submit" class="btn">🚀 Execute Query</button>
-            </form>
-
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Test the WAF</h4>
-                    <p>First, understand how the WAF works by testing blocked keywords.</p>
-                    <p>Try: <code>1 union</code> - This should be blocked by the WAF.</p>
-                    <p>Try: <code>1 select</code> - This should also be blocked.</p>
-                    <p>The WAF converts input to lowercase before checking.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Case Variations Don't Work</h4>
-                    <p>The WAF converts everything to lowercase, so case variations won't help.</p>
-                    <p>Try: <code>1 UnIoN</code> - Still blocked because it becomes "union" after lowercase conversion.</p>
-                    <p>We need a different bypass technique.</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Using Different Operators</h4>
-                    <p>Since basic keywords are blocked, we can try other SQL techniques.</p>
-                    <p>Try: <code>1||1</code> - Double pipe is OR in MySQL</p>
-                    <p>Try: <code>1&&1</code> - Double ampersand is AND in MySQL</p>
-                    <p>These aren't blocked by the keyword filter!</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Using Subqueries and Functions</h4>
-                    <p>We can extract data without using blocked keywords.</p>
-                    <p>Try: <code>1||(ASCII(MID((DATABASE()),1,1))>100)</code></p>
-                    <p>This uses functions to check database name character by character.</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Payload</h4>
-                    <p>Extract the flag using WAF bypass techniques:</p>
-                    <p><code>1||(ASCII(MID((REVERSE((MID((REVERSE((DATABASE()))),1,8)))),1,1))>70)</code></p>
-                    <p>Alternative simpler approach:</p>
-                    <p><code>-1||(1)</code> - This will return true and show results</p>
-                    <p>Then manually check database with: <code>1||(DATABASE()='sqli_lab')</code></p>
-                    <p>Note: This level demonstrates keyword filtering - in real scenarios, you'd need to be more creative!</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level11.php">⬅️ Previous Level</a>
-            <a href="level13.php">➡️ Next Level</a>
-            <a href="submit.php?level=12">🏆 Submit Flag</a>
-        </div>
-    </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function updateQuery() {
-        const input = document.getElementById('id').value;
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.innerHTML = 'SELECT username FROM users WHERE id = ' + (input || 'NULL');
-    }
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
-
     <style>
-    .hint-container {
-        margin: 20px 0;
-    }
-    .hint-box {
-        margin: 15px 0;
-        padding: 15px;
-        background: #fff3cd;
-        border-radius: 8px;
-        border-left: 4px solid #ffc107;
-        animation: fadeIn 0.5s ease-in;
-    }
-    .hint-btn {
-        margin-bottom: 10px;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+        .json-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            background: #1e1b4b;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(30, 27, 75, 0.4);
+            border: 1px solid #6366f1;
+        }
+        
+        .json-viewer {
+            background: #0f0f23;
+            border: 2px solid #4f46e5;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #a5b4fc;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        
+        .form-group textarea {
+            background: #0f0f23;
+            color: #e2e8f0;
+            border: 2px solid #4f46e5;
+            min-height: 120px;
+            font-family: 'JetBrains Mono', monospace;
+            resize: vertical;
+        }
+        
+        .form-group textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .json-info {
+            background: #0f0f23;
+            border: 2px solid #6366f1;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #a5b4fc;
+        }
+        
+        .sample-btn {
+            background: #374151;
+            color: #e2e8f0;
+            border: 1px solid #6b7280;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .sample-btn:hover {
+            background: #4b5563;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1e1b4b 100%);
+        }
     </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Level 12 - JSON Injection</h1>
+            <p>Exploit JSON parameter parsing vulnerabilities in API authentication</p>
+            <a href="index.php" class="back-btn">← Back to Labs</a>
+        </div>
+        
+        <div class="json-container">
+            <div class="json-info">
+                <h4>📊 JSON Injection Challenge</h4>
+                <p>This API accepts JSON authentication data and processes it in SQL queries.</p>
+                <p><strong>Goal:</strong> Manipulate JSON parameters to login as admin!</p>
+            </div>
+            
+            <div class="json-viewer"><?= htmlspecialchars($sample_json) ?></div>
+            
+            <?php if ($message): ?>
+                <div class="message <?= $success ? 'success' : 'error' ?>">
+                    <?= $message ?>
+                </div>
+            <?php endif; ?>
+            
+            <h3>📊 JSON Authentication API</h3>
+            <form method="POST" class="login-form">
+                <div class="form-group">
+                    <label for="json_data">JSON Data:</label>
+                    <textarea id="json_data" name="json_data" 
+                              placeholder="Enter JSON authentication data..." required><?= htmlspecialchars($sample_json) ?></textarea>
+                    <button type="button" class="sample-btn" onclick="loadSampleJSON()">📋 Load Sample JSON</button>
+                </div>
+                
+                <button type="submit" class="submit-btn">🚀 Authenticate</button>
+            </form>
+        </div>
+        
+        <div class="hints">
+            <h3>💡 Hints for Level 12:</h3>
+            <ul>
+                <li><strong>JSON Structure:</strong> {"username": "value", "password": "value", "role": "value"}</li>
+                <li><strong>SQL Query:</strong> WHERE username='value' AND password='value' AND role='value'</li>
+                <li><strong>Goal:</strong> Make the role parameter bypass the filter</li>
+                <li><strong>Example Payload:</strong></li>
+            </ul>
+            <div class="code-example">
+{<br>
+&nbsp;&nbsp;"username": "admin' OR '1'='1' -- ",<br>
+&nbsp;&nbsp;"password": "anything",<br>
+&nbsp;&nbsp;"role": "user"<br>
+}
+            </div>
+            <ul>
+                <li><strong>Alternative:</strong> Manipulate the role parameter directly</li>
+                <li><strong>Advanced:</strong> Use UNION SELECT in JSON values</li>
+                <li><strong>Remember:</strong> JSON must be valid format</li>
+                <li><strong>Tip:</strong> All three parameters are vulnerable to injection</li>
+            </ul>
+        </div>
+        
+        <div class="navigation">
+            <a href="level11.php">← Previous Level</a>
+            <a href="level13.php">Next Level →</a>
+        </div>
+    </div>
+    
+    <script>
+        function loadSampleJSON() {
+            document.getElementById('json_data').value = `{
+    "username": "guest",
+    "password": "guest123",
+    "role": "user"
+}`;
+        }
+    </script>
 </body>
 </html>
+
+<?php $conn->close(); ?>

@@ -1,282 +1,269 @@
 <?php
-$mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-$id = $_POST['id'] ?? '';
-$username = $_POST['username'] ?? '';
+// Level 11: UPDATE Injection - Profile Update System
+// Goal: Exploit UPDATE statement to escalate privileges to admin
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id && $username) {
-    $sql = "UPDATE users SET username = '$username' WHERE id = $id";
-    if ($mysqli->query($sql)) {
-        echo 'User updated successfully';
-    } else {
-        die('Error: '.$mysqli->error);
+session_start();
+
+// Database connection
+$host = $_ENV['DB_HOST'] ?? 'db';
+$user = $_ENV['DB_USER'] ?? 'root'; 
+$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$message = "";
+$success = false;
+$current_user = null;
+
+// Initialize session with default user if not set
+if (!isset($_SESSION['user_id'])) {
+    $_SESSION['user_id'] = 2; // guest user
+}
+
+// Get current user info
+$user_sql = "SELECT * FROM users WHERE id = " . $_SESSION['user_id'];
+$user_result = $conn->query($user_sql);
+if ($user_result && $user_result->num_rows > 0) {
+    $current_user = $user_result->fetch_assoc();
+}
+
+if ($_POST) {
+    $email = $_POST['email'] ?? '';
+    $phone = $_POST['phone'] ?? '';
+    $bio = $_POST['bio'] ?? '';
+    $website = $_POST['website'] ?? '';
+    
+    $user_id = $_SESSION['user_id'];
+    
+    // VULNERABLE UPDATE query - directly concatenating user input
+    $sql = "UPDATE users SET email = '$email', phone = '$phone', bio = '$bio', website = '$website' WHERE id = $user_id";
+    
+    try {
+        // Execute the UPDATE query
+        if ($conn->query($sql)) {
+            // Get updated user info
+            $check_sql = "SELECT * FROM users WHERE id = $user_id";
+            $result = $conn->query($check_sql);
+            
+            if ($result && $result->num_rows > 0) {
+                $updated_user = $result->fetch_assoc();
+                
+                if ($updated_user['role'] === 'admin') {
+                    $success = true;
+                    $message = "🎉 Brilliant! You exploited UPDATE injection for privilege escalation!<br>";
+                    $message .= "🏁 <strong>FLAG: LEVEL11_UPDATE_INJECTION_PRIVILEGE_ESCALATION</strong><br>";
+                    $message .= "🆔 User ID: " . $updated_user['id'] . "<br>";
+                    $message .= "👤 Username: " . htmlspecialchars($updated_user['username']) . "<br>";
+                    $message .= "👑 New Role: " . htmlspecialchars($updated_user['role']) . "<br>";
+                    $message .= "📝 UPDATE Query: <code>" . htmlspecialchars($sql) . "</code>";
+                } else {
+                    $message = "✅ Profile updated successfully!<br>";
+                    $message .= "👤 Username: " . htmlspecialchars($updated_user['username']) . "<br>";
+                    $message .= "📧 Email: " . htmlspecialchars($updated_user['email']) . "<br>";
+                    $message .= "👥 Role: " . htmlspecialchars($updated_user['role']) . "<br>";
+                    $message .= "⚠️ You need to escalate to admin role to get the flag!";
+                }
+                
+                $current_user = $updated_user; // Update display
+            }
+        } else {
+            $message = "❌ Profile update failed: " . $conn->error;
+            $message .= "<br>📝 UPDATE Query: <code>" . htmlspecialchars($sql) . "</code>";
+        }
+        
+    } catch (Exception $e) {
+        $message = "💥 UPDATE Error: " . $e->getMessage();
+        $message .= "<br>📝 UPDATE Query: <code>" . htmlspecialchars($sql) . "</code>";
+        $message .= "<br>🎯 Error might indicate successful injection!";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 11 - UPDATE-based SQL Injection</title>
+    <title>Level 11 - UPDATE Injection | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>✏️ Level 11 - UPDATE-based SQL Injection</h1>
-            <p><strong>Attack Type:</strong> Exploit UPDATE statements to modify data and extract sensitive information</p>
-        </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">UPDATE users SET username = '<?php echo htmlspecialchars($_POST['username'] ?? 'NULL'); ?>' WHERE id = <?php echo htmlspecialchars($_POST['id'] ?? 'NULL'); ?></div>
-            
-            <?php
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                
-                $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                $id = $_POST['id'];
-                $username = $_POST['username'] ?? '';
-
-                if ($id && $username) {
-                    $sql = "UPDATE users SET username = '$username' WHERE id = $id";
-                    if ($mysqli->query($sql)) {
-                        echo '✅ User updated successfully';
-                        echo '<br>Affected rows: ' . $mysqli->affected_rows;
-                    } else {
-                        echo '<div class="error">❌ Error: '.$mysqli->error.'</div>';
-                    }
-                } else {
-                    echo '<div class="error">❌ Please fill in all fields</div>';
-                }
-                echo '</div>';
-            }
-            ?>
-            
-            <h3>🔧 Update User Form:</h3>
-            <form method="post">
-                <div class="form-group">
-                    <label for="id">User ID:</label>
-                    <input type="text" id="id" name="id" value="<?php echo htmlspecialchars($_POST['id'] ?? ''); ?>" placeholder="Enter user ID">
-                </div>
-                <div class="form-group">
-                    <label for="username">New Username:</label>
-                    <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>" placeholder="Enter new username">
-                </div>
-                <button type="submit" class="btn">🚀 Update User</button>
-            </form>
-
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding UPDATE Injection</h4>
-                    <p>UPDATE statements modify existing data and can be exploited when user input is not properly sanitized.</p>
-                    <p>Try a normal update first: ID = <code>1</code>, Username = <code>alice_updated</code></p>
-                    <p>This should update user with ID 1.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Breaking Out of SET Clause</h4>
-                    <p>We can break out of the SET clause and add additional SQL commands.</p>
-                    <p>Try: ID = <code>1</code>, Username = <code>alice' WHERE id=1#</code></p>
-                    <p>The # comments out the rest of the query.</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Using Subqueries in UPDATE</h4>
-                    <p>We can use subqueries to extract data during the update process.</p>
-                    <p>Try: ID = <code>1</code>, Username = <code>alice', password=(SELECT flag FROM levels WHERE id=11) WHERE id=1#</code></p>
-                    <p>This updates both username and password fields.</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Error-based Extraction</h4>
-                    <p>If direct extraction doesn't work, use error-based techniques.</p>
-                    <p>Try: ID = <code>1</code>, Username = <code>alice' AND (SELECT flag FROM levels WHERE id=11)='</code></p>
-                    <p>This will cause a syntax error that might reveal information.</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Payload</h4>
-                    <p>Extract the flag for level 11 using UPDATE injection:</p>
-                    <p>ID = <code>1</code></p>
-                    <p>Username = <code>test', username=(SELECT CONCAT('FLAG:', flag) FROM levels WHERE id=11) WHERE id=1#</code></p>
-                    <p>This updates the username field with the flag value.</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level10.php">⬅️ Previous Level</a>
-            <a href="level12.php">➡️ Next Level</a>
-            <a href="submit.php?level=11">🏆 Submit Flag</a>
-        </div>
-    </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
-</body>
-</html>
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
+    <style>
+        .update-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            background: #1f2937;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(31, 41, 55, 0.4);
+            border: 1px solid #10b981;
         }
         
-        .result {
-            background: #eff6ff;
-            border: 1px solid #3b82f6;
-            padding: 1rem;
+        .user-profile {
+            background: #111827;
+            border: 2px solid #10b981;
             border-radius: 8px;
-            margin: 1rem 0;
-        }
-        
-        .error {
-            background: #fef2f2;
-            border: 1px solid #ef4444;
-            color: #dc2626;
             padding: 1rem;
-            border-radius: 8px;
             margin: 1rem 0;
+            color: #6ee7b7;
         }
         
-        .navigation {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
+        .form-group input, .form-group textarea {
+            background: #111827;
+            color: #e2e8f0;
+            border: 2px solid #10b981;
         }
         
-        .navigation a {
-            background: #64748b;
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #34d399;
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            padding: 0.75rem 1.5rem;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: background 0.2s;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        .navigation a:hover {
-            background: #475569;
+        .submit-btn:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .update-info {
+            background: #111827;
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #6ee7b7;
+        }
+        
+        .sql-structure {
+            background: #111827;
+            border: 2px solid #34d399;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #a7f3d0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>✏️ Level 11 - UPDATE-based SQL Injection</h1>
-            <p><strong>Attack Type:</strong> Exploit UPDATE statements to modify data and extract sensitive information</p>
+            <h1>🔄 Level 11 - UPDATE Injection</h1>
+            <p>Exploit UPDATE statement vulnerabilities for privilege escalation</p>
+            <a href="index.php" class="back-btn">← Back to Labs</a>
         </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">UPDATE users SET username = '<?php echo htmlspecialchars($_POST['username'] ?? 'NULL'); ?>' WHERE id = <?php echo htmlspecialchars($_POST['id'] ?? 'NULL'); ?></div>
-            
-            <?php
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                
-                $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                $id = $_POST['id'];
-                $username = $_POST['username'] ?? '';
-
-                if ($id && $username) {
-                    $sql = "UPDATE users SET username = '$username' WHERE id = $id";
-                    if ($mysqli->query($sql)) {
-                        echo '✅ User updated successfully';
-                        echo '<br>Affected rows: ' . $mysqli->affected_rows;
-                    } else {
-                        echo '<div class="error">❌ Error: '.$mysqli->error.'</div>';
-                    }
-                } else {
-                    echo '<div class="error">❌ Please fill in all fields</div>';
-                }
-                echo '</div>';
-            }
-            ?>
-            
-            <h3>🔧 Update User Form:</h3>
-            <form method="post">
-                <div class="form-group">
-                    <label for="id">User ID:</label>
-                    <input type="text" id="id" name="id" value="<?php echo htmlspecialchars($_POST['id'] ?? ''); ?>" placeholder="Enter user ID">
-                </div>
-                <div class="form-group">
-                    <label for="username">New Username:</label>
-                    <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>" placeholder="Enter new username">
-                </div>
-                <button type="submit" class="btn">🚀 Update User</button>
-            </form>
-
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding UPDATE Injection</h4>
-                    <p>UPDATE statements modify existing data and can be exploited when user input is not properly sanitized.</p>
-                    <p>Try a normal update first: ID = <code>1</code>, Username = <code>alice_updated</code></p>
-                    <p>This should update user with ID 1.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Breaking Out of SET Clause</h4>
-                    <p>We can break out of the SET clause and add additional SQL commands.</p>
-                    <p>Try: ID = <code>1</code>, Username = <code>alice' WHERE id=1#</code></p>
-                    <p>The # comments out the rest of the query.</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Using Subqueries in UPDATE</h4>
-                    <p>We can use subqueries to extract data during the update process.</p>
-                    <p>Try: ID = <code>1</code>, Username = <code>alice', password=(SELECT flag FROM levels WHERE id=11) WHERE id=1#</code></p>
-                    <p>This updates both username and password fields.</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Error-based Extraction</h4>
-                    <p>If direct extraction doesn't work, use error-based techniques.</p>
-                    <p>Try: ID = <code>1</code>, Username = <code>alice' AND (SELECT flag FROM levels WHERE id=11)='</code></p>
-                    <p>This will cause a syntax error that might reveal information.</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Payload</h4>
-                    <p>Extract the flag for level 11 using UPDATE injection:</p>
-                    <p>ID = <code>1</code></p>
-                    <p>Username = <code>test', username=(SELECT CONCAT('FLAG:', flag) FROM levels WHERE id=11) WHERE id=1#</code></p>
-                    <p>This updates the username field with the flag value.</p>
-                </div>
+        
+        <div class="update-container">
+            <div class="update-info">
+                <h4>🔄 UPDATE Injection Challenge</h4>
+                <p>Manipulate the UPDATE query to escalate your privileges to admin!</p>
+                <p><strong>Goal:</strong> Change your role from 'user' to 'admin'</p>
             </div>
+            
+            <?php if ($current_user): ?>
+                <div class="user-profile">
+                    <h4>👤 Current Profile</h4>
+                    <p><strong>ID:</strong> <?= htmlspecialchars($current_user['id']) ?></p>
+                    <p><strong>Username:</strong> <?= htmlspecialchars($current_user['username']) ?></p>
+                    <p><strong>Role:</strong> <?= htmlspecialchars($current_user['role']) ?></p>
+                    <p><strong>Email:</strong> <?= htmlspecialchars($current_user['email'] ?? 'Not set') ?></p>
+                </div>
+            <?php endif; ?>
+            
+            <div class="sql-structure">
+                <strong>UPDATE Query Structure:</strong><br>
+                UPDATE users SET email = '$email', phone = '$phone', bio = '$bio', website = '$website' <br>
+                WHERE id = <?= $_SESSION['user_id'] ?>
+            </div>
+            
+            <?php if ($message): ?>
+                <div class="message <?= $success ? 'success' : 'error' ?>">
+                    <?= $message ?>
+                </div>
+            <?php endif; ?>
+            
+            <h3>🔄 Update Profile</h3>
+            <form method="POST" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="text" id="email" name="email" 
+                           value="<?= htmlspecialchars($current_user['email'] ?? '') ?>" 
+                           placeholder="Enter email address (vulnerable field!)" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone:</label>
+                    <input type="text" id="phone" name="phone" 
+                           value="<?= htmlspecialchars($current_user['phone'] ?? '') ?>" 
+                           placeholder="Enter phone number">
+                </div>
+                
+                <div class="form-group">
+                    <label for="bio">Bio:</label>
+                    <textarea id="bio" name="bio" 
+                              placeholder="Enter bio description"><?= htmlspecialchars($current_user['bio'] ?? '') ?></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="website">Website:</label>
+                    <input type="text" id="website" name="website" 
+                           value="<?= htmlspecialchars($current_user['website'] ?? '') ?>" 
+                           placeholder="Enter website URL">
+                </div>
+                
+                <button type="submit" class="submit-btn">🔄 Update Profile</button>
+            </form>
+        </div>
+        
+        <div class="hints">
+            <h3>💡 Hints for Level 11:</h3>
+            <ul>
+                <li><strong>UPDATE Structure:</strong> SET email='input', phone='input', bio='input', website='input'</li>
+                <li><strong>Goal:</strong> Add role='admin' to the SET clause</li>
+                <li><strong>Method:</strong> Add additional SET parameter</li>
+                <li><strong>Example Payload (Email field):</strong></li>
+            </ul>
+            <div class="code-example">
+Email: test@test.com', role='admin', email='test@test.com
+            </div>
+            <ul>
+                <li><strong>Alternative:</strong> Use different fields for injection</li>
+                <li><strong>Advanced:</strong> Update multiple users with WHERE manipulation</li>
+                <li><strong>Syntax:</strong> Close current field, add new SET parameter</li>
+                <li><strong>Remember:</strong> Maintain valid SQL syntax structure</li>
+            </ul>
         </div>
         
         <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level10.php">⬅️ Previous Level</a>
-            <a href="level12.php">➡️ Next Level</a>
-            <a href="submit.php?level=11">🏆 Submit Flag</a>
+            <a href="level10.php">← Previous Level</a>
+            <a href="level12.php">Next Level →</a>
         </div>
     </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
 </body>
 </html>
+
+<?php $conn->close(); ?>

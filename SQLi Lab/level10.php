@@ -1,280 +1,223 @@
 <?php
-$mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-$name = $_POST['name'] ?? '';
-$email = $_POST['email'] ?? '';
+// Level 10: INSERT Injection - User Registration
+// Goal: Exploit INSERT statement to become admin during registration
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $name) {
-    $sql = "INSERT INTO users (username) VALUES ('$name')";
-    if ($mysqli->query($sql)) {
-        echo 'User registered successfully';
-    } else {
-        die('Error: '.$mysqli->error);
+session_start();
+
+// Database connection
+$host = $_ENV['DB_HOST'] ?? 'db';
+$user = $_ENV['DB_USER'] ?? 'root'; 
+$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$message = "";
+$success = false;
+
+if ($_POST) {
+    $username = $_POST['username'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $fullname = $_POST['fullname'] ?? '';
+    $phone = $_POST['phone'] ?? '';
+    
+    // VULNERABLE INSERT query - directly concatenating user input
+    $sql = "INSERT INTO users (username, password, email, role) VALUES ('$username', 'defaultpass', '$email', 'user')";
+    
+    try {
+        // Execute the INSERT query
+        if ($conn->query($sql)) {
+            $user_id = $conn->insert_id;
+            
+            // Check if the newly created user is admin
+            $check_sql = "SELECT * FROM users WHERE id = $user_id";
+            $result = $conn->query($check_sql);
+            
+            if ($result && $result->num_rows > 0) {
+                $user_data = $result->fetch_assoc();
+                
+                if ($user_data['role'] === 'admin') {
+                    $success = true;
+                    $message = "🎉 Outstanding! You exploited INSERT injection to become admin!<br>";
+                    $message .= "🏁 <strong>FLAG: LEVEL10_INSERT_INJECTION_EXPERT</strong><br>";
+                    $message .= "🆔 User ID: " . $user_data['id'] . "<br>";
+                    $message .= "👤 Username: " . htmlspecialchars($user_data['username']) . "<br>";
+                    $message .= "👑 Role: " . htmlspecialchars($user_data['role']) . "<br>";
+                    $message .= "📝 INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
+                } else {
+                    $message = "✅ User registered successfully!<br>";
+                    $message .= "🆔 User ID: " . $user_data['id'] . "<br>";
+                    $message .= "👤 Username: " . htmlspecialchars($user_data['username']) . "<br>";
+                    $message .= "👥 Role: " . htmlspecialchars($user_data['role']) . "<br>";
+                    $message .= "⚠️ You need to become admin to get the flag!";
+                }
+            }
+        } else {
+            $message = "❌ Registration failed: " . $conn->error;
+            $message .= "<br>📝 INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
+        }
+        
+    } catch (Exception $e) {
+        $message = "💥 INSERT Error: " . $e->getMessage();
+        $message .= "<br>📝 INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
+        $message .= "<br>🎯 Error might indicate successful injection!";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 10 - INSERT-based SQL Injection</title>
+    <title>Level 10 - INSERT Injection | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🎯 Level 10 - INSERT-based SQL Injection</h1>
-            <p><strong>Attack Type:</strong> Exploit INSERT statements to manipulate database structure and extract sensitive data</p>
-        </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">INSERT INTO users (username) VALUES ('<?php echo htmlspecialchars($_POST['name'] ?? 'NULL'); ?>')</div>
-            
-            <?php
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                
-                $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                $name = $_POST['name'];
-                $email = $_POST['email'] ?? '';
-
-                if ($name) {
-                    $sql = "INSERT INTO users (username) VALUES ('$name')";
-                    if ($mysqli->query($sql)) {
-                        echo '✅ User registered successfully';
-                        echo '<br>Last inserted ID: ' . $mysqli->insert_id;
-                        
-                        // Show the inserted data to demonstrate the injection
-                        $checkSql = "SELECT username FROM users WHERE id = " . $mysqli->insert_id;
-                        $result = $mysqli->query($checkSql);
-                        if ($result && $result->num_rows > 0) {
-                            echo '<br><strong>Inserted username:</strong> ';
-                            while ($row = $result->fetch_row()) {
-                                echo htmlspecialchars($row[0]) . '<br>';
-                            }
-                        }
-                        
-                        // Also check for any new users that might contain flags
-                        $flagCheck = "SELECT username FROM users WHERE username LIKE '%FLAG%' ORDER BY id DESC LIMIT 5";
-                        $flagResult = $mysqli->query($flagCheck);
-                        if ($flagResult && $flagResult->num_rows > 0) {
-                            echo '<br><strong>🏆 Potential flags found:</strong><br>';
-                            while ($row = $flagResult->fetch_row()) {
-                                echo '• ' . htmlspecialchars($row[0]) . '<br>';
-                            }
-                        }
-                    } else {
-                        echo '<div class="error">❌ Error: '.$mysqli->error.'</div>';
-                    }
-                } else {
-                    echo '<div class="error">❌ Please provide a name</div>';
-                }
-                echo '</div>';
-            }
-            ?>
-            
-            <h3>🔧 User Registration Form:</h3>
-            <form method="post">
-                <div class="form-group">
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>" placeholder="Enter your name">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email (optional for demo):</label>
-                    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" placeholder="Enter your email">
-                </div>
-                <button type="submit" class="btn">🚀 Register User</button>
-            </form>
-
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding INSERT Injection</h4>
-                    <p>INSERT statements can also be vulnerable to SQL injection when user input is directly concatenated.</p>
-                    <p>Try entering a simple name like: <code>alice</code></p>
-                    <p>Notice how it gets inserted into the VALUES clause.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Breaking the INSERT Syntax</h4>
-                    <p>We can break out of the VALUES clause and add our own SQL.</p>
-                    <p>Try: <code>alice'), ('bob</code></p>
-                    <p>This will insert two users instead of one.</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Adding Subqueries</h4>
-                    <p>We can use subqueries within INSERT statements to extract data.</p>
-                    <p>Try: <code>alice'), ((SELECT flag FROM levels WHERE id=10))</code></p>
-                    <p>This attempts to insert the flag as a username.</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Multiple INSERT Technique</h4>
-                    <p>Since we need to close the current INSERT and add our payload:</p>
-                    <p>Try: <code>test'), ((SELECT CONCAT('FLAG_LEVEL_10:', flag) FROM levels WHERE id=10)), ('dummy</code></p>
-                    <p>This inserts three records: 'test', the flag, and 'dummy'.</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Payload</h4>
-                    <p>Extract the flag for level 10 using INSERT injection:</p>
-                    <p><code>exploit'), ((SELECT flag FROM levels WHERE id=10)), ('end</code></p>
-                    <p>This payload will:</p>
-                    <p>1. Insert 'exploit' as first user</p>
-                    <p>2. Insert the flag as second user</p>
-                    <p>3. Insert 'end' as third user</p>
-                    <p>The flag will appear in the results showing inserted usernames!</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level9.php">⬅️ Previous Level</a>
-            <a href="level11.php">➡️ Next Level</a>
-            <a href="submit.php?level=10">🏆 Submit Flag</a>
-        </div>
-    </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
-</body>
-</html>
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
+    <style>
+        .insert-container {
+            max-width: 650px;
+            margin: 2rem auto;
+            background: #2a1810;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(42, 24, 16, 0.4);
+            border: 1px solid #ea580c;
         }
         
-        .navigation a {
-            background: #64748b;
+        .form-group input {
+            background: #1a0f0a;
+            color: #e2e8f0;
+            border: 2px solid #ea580c;
+        }
+        
+        .form-group input:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
             color: white;
-            padding: 0.75rem 1.5rem;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: background 0.2s;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        .navigation a:hover {
-            background: #475569;
+        .submit-btn:hover {
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+        }
+        
+        .insert-info {
+            background: #1a0f0a;
+            border: 2px solid #ea580c;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #fb923c;
+        }
+        
+        .sql-structure {
+            background: #1a0f0a;
+            border: 2px solid #f97316;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #fdba74;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a0f0a 0%, #2a1810 100%);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎯 Level 10 - INSERT-based SQL Injection</h1>
-            <p><strong>Attack Type:</strong> Exploit INSERT statements to manipulate database structure and extract sensitive data</p>
+            <h1>📝 Level 10 - INSERT Injection</h1>
+            <p>Exploit INSERT statement vulnerabilities during user registration</p>
+            <a href="index.php" class="back-btn">← Back to Labs</a>
         </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">INSERT INTO users (username) VALUES ('<?php echo htmlspecialchars($_POST['name'] ?? 'NULL'); ?>')</div>
+        
+        <div class="insert-container">
+            <div class="insert-info">
+                <h4>📝 INSERT Injection Challenge</h4>
+                <p>Manipulate the INSERT query to register as an admin user!</p>
+                <p><strong>Goal:</strong> Become admin during registration process</p>
+            </div>
             
-            <?php
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                
-                $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                $name = $_POST['name'];
-                $email = $_POST['email'] ?? '';
-
-                if ($name && $email) {
-                    $sql = "INSERT INTO users (username) VALUES ('$name')";
-                    if ($mysqli->query($sql)) {
-                        echo '✅ User registered successfully';
-                    } else {
-                        echo '<div class="error">❌ Error: '.$mysqli->error.'</div>';
-                    }
-                } else {
-                    echo '<div class="error">❌ Please fill in all fields</div>';
-                }
-                echo '</div>';
-            }
-            ?>
+            <div class="sql-structure">
+                <strong>INSERT Query Structure:</strong><br>
+                INSERT INTO users (username, password, email, role) <br>
+                VALUES ('$username', 'defaultpass', '$email', 'user')
+            </div>
             
-            <h3>🔧 User Registration Form:</h3>
-            <form method="post">
-                <div class="form-group">
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>" placeholder="Enter your name">
+            <?php if ($message): ?>
+                <div class="message <?= $success ? 'success' : 'error' ?>">
+                    <?= $message ?>
                 </div>
+            <?php endif; ?>
+            
+            <h3>📝 User Registration</h3>
+            <form method="POST" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Enter username (vulnerable field!)" required>
+                </div>
+                
                 <div class="form-group">
                     <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" placeholder="Enter your email">
+                    <input type="email" id="email" name="email" placeholder="Enter email address" required>
                 </div>
-                <button type="submit" class="btn">🚀 Register User</button>
+                
+                <div class="form-group">
+                    <label for="fullname">Full Name:</label>
+                    <input type="text" id="fullname" name="fullname" placeholder="Enter full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone:</label>
+                    <input type="text" id="phone" name="phone" placeholder="Enter phone number">
+                </div>
+                
+                <button type="submit" class="submit-btn">📝 Register Account</button>
             </form>
-
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding INSERT Injection</h4>
-                    <p>INSERT statements can also be vulnerable to SQL injection when user input is directly concatenated.</p>
-                    <p>Try entering a simple name like: <code>alice</code></p>
-                    <p>Notice how it gets inserted into the VALUES clause.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Breaking the INSERT Syntax</h4>
-                    <p>We can break out of the VALUES clause and add our own SQL.</p>
-                    <p>Try: <code>alice'), ('bob</code></p>
-                    <p>This will insert two users instead of one.</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Adding Subqueries</h4>
-                    <p>We can use subqueries within INSERT statements to extract data.</p>
-                    <p>Try: <code>alice'), ((SELECT flag FROM levels WHERE id=10))</code></p>
-                    <p>This attempts to insert the flag as a username.</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Error-based Data Extraction</h4>
-                    <p>If direct insertion doesn't work, we can use error-based techniques.</p>
-                    <p>Try: <code>alice') AND (SELECT flag FROM levels WHERE id=10)='</code></p>
-                    <p>This will cause an error that might reveal the flag.</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Payload</h4>
-                    <p>Extract the flag for level 10 using INSERT injection:</p>
-                    <p><code>test'), ((SELECT CONCAT('FLAG:', flag) FROM levels WHERE id=10)), ('dummy</code></p>
-                    <p>This payload inserts the flag as a new user record.</p>
-                </div>
+        </div>
+        
+        <div class="hints">
+            <h3>💡 Hints for Level 10:</h3>
+            <ul>
+                <li><strong>INSERT Structure:</strong> VALUES ('username', 'defaultpass', 'email', 'user')</li>
+                <li><strong>Goal:</strong> Make role become 'admin' instead of 'user'</li>
+                <li><strong>Method:</strong> Close current INSERT and start new one</li>
+                <li><strong>Example Payload (Username field):</strong></li>
+            </ul>
+            <div class="code-example">
+Username: admin'), ('admin2', 'pass', 'admin@test.com', 'admin'); --
             </div>
+            <ul>
+                <li><strong>Alternative:</strong> Try manipulating multiple VALUES</li>
+                <li><strong>Advanced:</strong> Insert multiple admin users in one query</li>
+                <li><strong>Syntax:</strong> Close parentheses, add comma, start new VALUES</li>
+                <li><strong>Remember:</strong> Comment out the rest with -- or #</li>
+            </ul>
         </div>
         
         <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level9.php">⬅️ Previous Level</a>
-            <a href="level11.php">➡️ Next Level</a>
-            <a href="submit.php?level=10">🏆 Submit Flag</a>
+            <a href="level9.php">← Previous Level</a>
+            <a href="level11.php">Next Level →</a>
         </div>
     </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
 </body>
 </html>
+
+<?php $conn->close(); ?>

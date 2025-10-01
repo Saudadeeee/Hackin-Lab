@@ -1,33 +1,129 @@
 <?php
-$mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-$id = $_GET['id'] ?? '';
+// Level 16: Advanced WAF Bypass - Final Boss Challenge
+// Goal: Bypass multiple sophisticated filtering mechanisms
 
-if ($id !== '') {
-    $id_no_space = str_replace(' ', '', $id);
-    $blocked_keywords = ['union', 'select', 'or', 'and', 'where', 'from'];
-    $id_lower = strtolower($id_no_space);
+session_start();
 
-    $blocked = false;
-    foreach ($blocked_keywords as $keyword) {
-        if (strpos($id_lower, $keyword) !== false) {
-            $blocked = true;
-            break;
+// Database connection
+$host = $_ENV['DB_HOST'] ?? 'db';
+$user = $_ENV['DB_USER'] ?? 'root'; 
+$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
+
+$conn = new mysqli($host, $user, $pass, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$message = "";
+$success = false;
+$blocked_patterns = [];
+$waf_bypass_achieved = false;
+
+if ($_POST) {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    // Advanced WAF simulation with multiple filter layers
+    $original_input = "Username: $username | Password: $password";
+    
+    // Layer 1: Comment filtering
+    $comment_patterns = ['--', '#', '/*', '*/'];
+    $has_comments = false;
+    foreach ($comment_patterns as $pattern) {
+        if (stripos($username . $password, $pattern) !== false) {
+            $blocked_patterns[] = "Comment: $pattern";
+            $has_comments = true;
         }
     }
-
-    if (!$blocked) {
-        $sql = "SELECT username FROM users WHERE id = $id";
-        $result = $mysqli->query($sql);
-
-        if (!$result) {
-            die('Error: '.$mysqli->error);
+    
+    // Layer 2: Common SQL keywords
+    $sql_keywords = ['UNION', 'SELECT', 'FROM', 'WHERE', 'INSERT', 'UPDATE', 'DELETE', 'DROP'];
+    $has_keywords = false;
+    foreach ($sql_keywords as $keyword) {
+        if (stripos($username . $password, $keyword) !== false) {
+            $blocked_patterns[] = "Keyword: $keyword";
+            $has_keywords = true;
         }
-
-        $row = $result->fetch_row();
-        if ($row) {
-            echo htmlspecialchars($row[0]);
-        } else {
-            echo 'No user found';
+    }
+    
+    // Layer 3: Special characters
+    $special_chars = ["'", '"', '=', '<', '>', '(', ')'];
+    $has_special = false;
+    foreach ($special_chars as $char) {
+        if (strpos($username . $password, $char) !== false) {
+            $blocked_patterns[] = "Special: $char";
+            $has_special = true;
+        }
+    }
+    
+    // Layer 4: Logical operators
+    $logical_ops = ['OR', 'AND', 'NOT'];
+    $has_logical = false;
+    foreach ($logical_ops as $op) {
+        if (stripos($username . $password, $op) !== false) {
+            $blocked_patterns[] = "Logic: $op";
+            $has_logical = true;
+        }
+    }
+    
+    // Layer 5: Space and whitespace
+    $has_spaces = false;
+    if (preg_match('/\s/', $username . $password)) {
+        $blocked_patterns[] = "Whitespace detected";
+        $has_spaces = true;
+    }
+    
+    // Calculate WAF bypass score
+    $total_filters = 5;
+    $triggered_filters = ($has_comments ? 1 : 0) + ($has_keywords ? 1 : 0) + 
+                        ($has_special ? 1 : 0) + ($has_logical ? 1 : 0) + ($has_spaces ? 1 : 0);
+    
+    if ($triggered_filters > 0) {
+        $message = "🛡️ Advanced WAF Protection Triggered!<br>";
+        $message .= "❌ Blocked patterns: " . implode(', ', $blocked_patterns) . "<br>";
+        $message .= "📊 Filters triggered: $triggered_filters/$total_filters<br>";
+        $message .= "🎯 You need to bypass ALL filters to proceed!<br>";
+        $message .= "💡 Try more sophisticated encoding, alternatives, or creative bypasses!";
+    } else {
+        $waf_bypass_achieved = true;
+        
+        // If all filters are bypassed, check for actual injection
+        $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
+        
+        try {
+            $result = $conn->query($sql);
+            
+            if ($result && $result->num_rows > 0) {
+                $user_data = $result->fetch_assoc();
+                
+                if ($user_data['role'] === 'admin') {
+                    $success = true;
+                    $message = "🎉🎉 ULTIMATE VICTORY! You defeated the Advanced WAF! 🎉🎉<br>";
+                    $message .= "🏆 <strong>FLAG: LEVEL16_ADVANCED_WAF_BYPASS_CHAMPION</strong><br>";
+                    $message .= "🛡️ All WAF filters bypassed successfully!<br>";
+                    $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                    $message .= "👑 You are now a SQL Injection Grandmaster!<br>";
+                    $message .= "🌟 Congratulations on completing all 16 levels!";
+                } else {
+                    $message = "🟡 WAF Bypassed but injection failed!<br>";
+                    $message .= "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")<br>";
+                    $message .= "⚠️ You bypassed the WAF but need admin access for the final flag!";
+                }
+            } else {
+                $message = "🟡 WAF Bypassed but authentication failed!<br>";
+                $message .= "✅ All filters bypassed successfully!<br>";
+                $message .= "❌ No matching user found<br>";
+                $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                $message .= "💡 Try adjusting your payload to match admin credentials!";
+            }
+            
+        } catch (Exception $e) {
+            $message = "🟡 WAF Bypassed but SQL error occurred!<br>";
+            $message .= "✅ All filters bypassed successfully!<br>";
+            $message .= "💥 SQL Error: " . $e->getMessage() . "<br>";
+            $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
         }
     }
 }
@@ -38,147 +134,222 @@ if ($id !== '') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 16 - Space Filter Bypass</title>
+    <title>Level 16 - Advanced WAF Bypass | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .waf-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: #0f0f0f;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(15, 15, 15, 0.6);
+            border: 2px solid #dc2626;
+        }
+        
+        .waf-status {
+            background: #1a0000;
+            border: 2px solid #dc2626;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #fca5a5;
+            text-align: center;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .filter-layers {
+            background: #1a0000;
+            border: 2px solid #dc2626;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #fca5a5;
+        }
+        
+        .filter-layer {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: #0f0f0f;
+            border-radius: 4px;
+            border-left: 3px solid #dc2626;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .form-group input {
+            background: #1a0000;
+            color: #e2e8f0;
+            border: 2px solid #dc2626;
+        }
+        
+        .form-group input:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+        }
+        
+        .waf-info {
+            background: #1a0000;
+            border: 2px solid #dc2626;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #fca5a5;
+        }
+        
+        .final-boss {
+            text-align: center;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a0000 50%, #0f0f0f 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 6s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Level 16 - Space Filter Bypass</h1>
-            <p><strong>Attack Type:</strong> Bypass filters that remove spaces by using alternative whitespace characters</p>
+            <h1>🛡️ Level 16 - Advanced WAF Bypass</h1>
+            <p>The ultimate challenge - bypass sophisticated Web Application Firewall</p>
+            <a href="index.php" class="back-btn">← Back to Labs</a>
         </div>
-
-        <div class="form-container">
-            <h3>Current Query:</h3>
-            <div class="code-block">SELECT username FROM users WHERE id = <?php echo htmlspecialchars($_GET['id'] ?? 'NULL'); ?></div>
-            
-            <h3>🚨 Filter Rules:</h3>
-            <div class="waf-warning">
-                <strong>Process:</strong> Remove all spaces → Check blocked keywords<br>
-                <strong>Blocked keywords:</strong> union, select, or, and, where, from
+        
+        <div class="final-boss">
+            🏆 FINAL BOSS CHALLENGE 🏆<br>
+            Advanced WAF Protection System
+        </div>
+        
+        <div class="waf-container">
+            <div class="waf-info">
+                <h4>🛡️ Advanced WAF Challenge</h4>
+                <p>This is the final challenge! You must bypass ALL layers of protection.</p>
+                <p><strong>Goal:</strong> Achieve admin access while bypassing every security filter!</p>
             </div>
             
-            <?php
-            if (isset($_GET['id']) && $_GET['id'] !== '') {
-                $id = $_GET['id'];
-                $id_no_space = str_replace(' ', '', $id);
-                
-                echo '<h3>Result:</h3>';
-                echo '<div class="result">';
-                echo '<p><strong>Original input:</strong> ' . htmlspecialchars($id) . '</p>';
-                echo '<p><strong>After space removal:</strong> ' . htmlspecialchars($id_no_space) . '</p>';
-                
-                $blocked_keywords = ['union', 'select', 'or', 'and', 'where', 'from'];
-                $id_lower = strtolower($id_no_space);
-
-                $blocked = false;
-                $blocked_keyword = '';
-                foreach ($blocked_keywords as $keyword) {
-                    if (strpos($id_lower, $keyword) !== false) {
-                        $blocked = true;
-                        $blocked_keyword = $keyword;
-                        break;
-                    }
-                }
-
-                if ($blocked) {
-                    echo '<div class="error">🚨 Filter blocked: Keyword detected: ' . $blocked_keyword . '</div>';
-                } else {
-                    $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
-                    $sql = "SELECT username FROM users WHERE id = $id";
-                    $result = $mysqli->query($sql);
-
-                    if (!$result) {
-                        echo '<div class="error">Error: '.$mysqli->error.'</div>';
-                    } else {
-                        $row = $result->fetch_row();
-                        if ($row) {
-                            echo '<strong>Username:</strong> ' . htmlspecialchars($row[0]);
-                        } else {
-                            echo 'No user found';
-                        }
-                    }
-                }
-                echo '</div>';
-            }
-            ?>
+            <div class="waf-status">
+                🚨 ADVANCED WAF PROTECTION ACTIVE 🚨<br>
+                Multiple Security Layers Engaged
+            </div>
             
-            <h3>🔧 Try Your Own Payload:</h3>
-            <form method="get" style="margin: 20px 0;">
+            <div class="filter-layers">
+                <h4>🔒 Active Security Filters:</h4>
+                
+                <div class="filter-layer">
+                    <strong>Layer 1:</strong> Comment Detection (blocks: --, #, /*, */)
+                </div>
+                
+                <div class="filter-layer">
+                    <strong>Layer 2:</strong> SQL Keyword Filtering (blocks: UNION, SELECT, FROM, WHERE, etc.)
+                </div>
+                
+                <div class="filter-layer">
+                    <strong>Layer 3:</strong> Special Character Detection (blocks: ', ", =, <, >, (, ))
+                </div>
+                
+                <div class="filter-layer">
+                    <strong>Layer 4:</strong> Logical Operator Filtering (blocks: OR, AND, NOT)
+                </div>
+                
+                <div class="filter-layer">
+                    <strong>Layer 5:</strong> Whitespace Detection (blocks: spaces, tabs, newlines)
+                </div>
+            </div>
+            
+            <?php if ($message): ?>
+                <div class="message <?= $success ? 'success' : ($waf_bypass_achieved ? 'warning' : 'error') ?>">
+                    <?= $message ?>
+                </div>
+            <?php endif; ?>
+            
+            <h3>🔐 Ultimate Login Challenge</h3>
+            <form method="POST" class="login-form">
                 <div class="form-group">
-                    <label for="id">ID Parameter:</label>
-                    <input type="text" id="id" name="id" value="<?php echo htmlspecialchars($_GET['id'] ?? ''); ?>" placeholder="Enter your payload here..." oninput="updateQuery()">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Bypass ALL filters..." required>
                 </div>
-                <button type="submit" class="btn">🚀 Execute Query</button>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="text" id="password" name="password" placeholder="Ultimate challenge awaits..." required>
+                </div>
+                
+                <button type="submit" class="submit-btn">🚀 Face the Final Boss</button>
             </form>
+        </div>
+        
+        <div class="hints">
+            <h3>💡 Hints for Level 16 (Final Boss):</h3>
+            <ul>
+                <li><strong>Ultimate Challenge:</strong> Must bypass ALL 5 filter layers simultaneously</li>
+                <li><strong>No Easy Path:</strong> Standard techniques won't work here</li>
+                <li><strong>Think Creative:</strong> Combine multiple advanced bypass techniques</li>
+                <li><strong>Possible Approaches:</strong></li>
+            </ul>
+            <div class="code-example">
+<strong>Approach 1 - Advanced Encoding:</strong><br>
+Use hex encoding, Unicode, double encoding<br><br>
 
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding Space Filtering</h4>
-                    <p>The filter removes all regular spaces before checking for keywords.</p>
-                    <p>Try: <code>1 union select</code> - Becomes "1unionselect" and gets blocked.</p>
-                    <p>We need alternative whitespace characters.</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Alternative Whitespace Characters</h4>
-                    <p>MySQL treats various characters as whitespace:</p>
-                    <p>• Tab character: <code>%09</code></p>
-                    <p>• Line feed: <code>%0a</code></p>
-                    <p>• Carriage return: <code>%0d</code></p>
-                    <p>Try: <code>1%09union%09select</code></p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Using Tab Characters</h4>
-                    <p>Use tab characters instead of spaces:</p>
-                    <p>Try: <code>1%09||%09(ASCII(MID((DATABASE()),1,1))>100)</code></p>
-                    <p>The %09 (tab) won't be removed by the space filter.</p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Combining Multiple Techniques</h4>
-                    <p>Use parentheses and alternative whitespace:</p>
-                    <p>Try: <code>1%0a||%0a(EXTRACTVALUE(1,CONCAT(0x7e,(DATABASE()),0x7e)))</code></p>
-                    <p>%0a is line feed character that MySQL accepts as whitespace.</p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>🎯 Final Payload</h4>
-                    <p>Extract the flag using alternative whitespace:</p>
-                    <p><code>-1%09||%09EXTRACTVALUE(1,CONCAT(0x7e,(MID((MID((DATABASE()),1,100)),1,50)),0x7e))</code></p>
-                    <p>For level 16 flag specifically:</p>
-                    <p><code>1%0a||%0a(ASCII(SUBSTRING((SELECT(flag)FROM(levels)WHERE(id=16)),1,1))>70)</code></p>
-                    <p>Alternative with line breaks:</p>
-                    <p><code>1%0d||%0dEXTRACTVALUE(1,CONCAT(0x7e,(SELECT(flag)FROM(levels)WHERE(id=16)),0x7e))</code></p>
-                </div>
+<strong>Approach 2 - Alternative Functions:</strong><br>
+Use MySQL functions like SUBSTR, ASCII, CHAR<br><br>
+
+<strong>Approach 3 - Conditional Techniques:</strong><br>
+Use IF statements, CASE expressions<br><br>
+
+<strong>Approach 4 - Mathematical Operations:</strong><br>
+Use arithmetic to create logical conditions<br><br>
+
+<strong>Expert Level:</strong> Try combining all previous level techniques!
             </div>
+            <ul>
+                <li><strong>Remember:</strong> You've learned 15 different techniques - use them all!</li>
+                <li><strong>Final Tip:</strong> Sometimes the simplest bypass is the most effective</li>
+                <li><strong>Victory Condition:</strong> Login as admin while bypassing every filter</li>
+            </ul>
         </div>
         
         <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="level15.php">⬅️ Previous Level</a>
-            <a href="submit.php?level=16">🏆 Submit Flag</a>
+            <a href="level15.php">← Previous Level</a>
+            <span style="color: #fca5a5;">🏆 Final Challenge! 🏆</span>
         </div>
     </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 5;
-
-    function updateQuery() {
-        const input = document.getElementById('id').value;
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.innerHTML = 'SELECT username FROM users WHERE id = ' + (input || 'NULL');
-    }
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-    </script>
 </body>
 </html>
+
+<?php $conn->close(); ?>

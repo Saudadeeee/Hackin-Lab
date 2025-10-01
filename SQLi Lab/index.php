@@ -17,7 +17,7 @@ if ($conn->connect_error) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQLi Labs - Security Training Platform</title>
+    <title>Login Challenge Labs - SQL Injection Training</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
     .level-grid {
@@ -76,105 +76,105 @@ if ($conn->connect_error) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔒 SQL Injection Labs</h1>
-            <p>A comprehensive platform for learning SQL injection techniques</p>
+            <h1>🔒 Login Challenge Labs</h1>
+            <p>Master SQL injection through realistic login forms - 16 levels of increasing difficulty</p>
         </div>
         
         <div class="level-grid">
             <div class="level-card">
-                <h3>🚨 Level 1 - Error Based</h3>
-                <p>Learn the basics of error-based SQL injection by exploiting database error messages.</p>
-                <a href="level1.php?id=1">Start Level 1</a>
+                <h3>🚨 Level 1 - Basic Login</h3>
+                <p>Simple login form with error messages. Perfect for beginners to understand SQL injection.</p>
+                <a href="level1.php">Start Level 1</a>
             </div>
             
             <div class="level-card">
-                <h3>🔗 Level 2 - UNION Based</h3>
-                <p>Master UNION-based attacks to extract data from multiple tables.</p>
-                <a href="level2.php?id=1">Start Level 2</a>
+                <h3>🔗 Level 2 - Union Login</h3>
+                <p>Login form vulnerable to UNION-based attacks. Extract user data through login bypass.</p>
+                <a href="level2.php">Start Level 2</a>
             </div>
             
             <div class="level-card">
-                <h3>⚡ Level 3 - Stacked Queries</h3>
-                <p>Execute multiple SQL statements in a single injection attack.</p>
-                <a href="level3.php?id=1">Start Level 3</a>
+                <h3>⚡ Level 3 - Stacked Query Login</h3>
+                <p>Advanced login that allows multiple SQL statements. Execute system commands.</p>
+                <a href="level3.php">Start Level 3</a>
             </div>
             
             <div class="level-card">
-                <h3>🔍 Level 4 - Boolean Blind</h3>
-                <p>Extract data using boolean-based blind injection techniques.</p>
-                <a href="level4.php?cond=alice">Start Level 4</a>
+                <h3>🔍 Level 4 - Blind Login</h3>
+                <p>Login with no error messages. Use boolean-based blind techniques to extract data.</p>
+                <a href="level4.php">Start Level 4</a>
             </div>
             
             <div class="level-card">
-                <h3>⏰ Level 5 - Time Based</h3>
-                <p>Use time delays to infer database information in blind scenarios.</p>
-                <a href="level5.php?cond=alice">Start Level 5</a>
+                <h3>⏰ Level 5 - Time-Based Login</h3>
+                <p>Login vulnerable to time-based blind injection. Use delays to infer information.</p>
+                <a href="level5.php">Start Level 5</a>
             </div>
             
             <div class="level-card">
-                <h3>📁 Level 6 - Out-of-Band</h3>
-                <p>Leverage file system operations for data extraction.</p>
-                <a href="level6.php?cond=alice">Start Level 6</a>
+                <h3>📁 Level 6 - File Upload Login</h3>
+                <p>Login with file operations. Extract data through file system manipulation.</p>
+                <a href="level6.php">Start Level 6</a>
             </div>
             
             <div class="level-card">
-                <h3>🔄 Level 7 - Second Order</h3>
-                <p>Exploit second-order injections through stored payloads.</p>
-                <a href="level7_set.php?key=test&value=1">Setup</a> | <a href="level7.php?key=test">Execute</a>
+                <h3>🔄 Level 7 - Second Order Login</h3>
+                <p>Registration + Login system vulnerable to second-order injection attacks.</p>
+                <a href="level7.php">Start Level 7</a>
             </div>
             
             <div class="level-card">
-                <h3>🗂️ Level 8 - XPATH Injection</h3>
-                <p>Attack applications using XPATH for XML data processing.</p>
-                <a href="level8.php?user=admin&pass=test">Start Level 8</a>
+                <h3>🗂️ Level 8 - XML Login</h3>
+                <p>Login system using XML data processing. Exploit XPATH injection vulnerabilities.</p>
+                <a href="level8.php">Start Level 8</a>
             </div>
             
             <div class="level-card">
-                <h3>🚪 Level 9 - Authentication Bypass</h3>
-                <p>Bypass login mechanisms using SQL injection techniques.</p>
+                <h3>🚪 Level 9 - Admin Portal</h3>
+                <p>Professional admin login interface. Multiple security layers to bypass.</p>
                 <a href="level9.php">Start Level 9</a>
             </div>
             
             <div class="level-card">
-                <h3>➕ Level 10 - INSERT Injection</h3>
-                <p>Exploit vulnerabilities in INSERT statements.</p>
+                <h3>➕ Level 10 - Registration Login</h3>
+                <p>Registration form with INSERT injection. Create accounts to bypass authentication.</p>
                 <a href="level10.php">Start Level 10</a>
             </div>
             
             <div class="level-card">
-                <h3>✏️ Level 11 - UPDATE Injection</h3>
-                <p>Attack UPDATE statements to modify or extract data.</p>
+                <h3>✏️ Level 11 - Profile Update Login</h3>
+                <p>Login with profile update functionality. Exploit UPDATE statement vulnerabilities.</p>
                 <a href="level11.php">Start Level 11</a>
             </div>
             
             <div class="level-card">
-                <h3>🛡️ Level 12 - WAF Bypass</h3>
-                <p>Learn techniques to bypass Web Application Firewalls.</p>
-                <a href="level12.php?id=1">Start Level 12</a>
+                <h3>🛡️ Level 12 - WAF Protected Login</h3>
+                <p>Login protected by Web Application Firewall. Learn advanced bypass techniques.</p>
+                <a href="level12.php">Start Level 12</a>
             </div>
             
             <div class="level-card">
-                <h3>📋 Level 13 - JSON Injection</h3>
-                <p>Exploit JSON-based query construction vulnerabilities.</p>
-                <a href="level13.php?filter={&quot;username&quot;:&quot;alice&quot;}">Start Level 13</a>
+                <h3>📋 Level 13 - JSON API Login</h3>
+                <p>Modern API-based login using JSON. Exploit JSON injection vulnerabilities.</p>
+                <a href="level13.php">Start Level 13</a>
             </div>
             
             <div class="level-card">
-                <h3>💬 Level 14 - Comment Bypass</h3>
-                <p>Use SQL comments to break up blocked keywords and bypass filters.</p>
-                <a href="level14.php?id=1">Start Level 14</a>
+                <h3>💬 Level 14 - Comment Filtered Login</h3>
+                <p>Login with comment-based filters. Use SQL comments to bypass keyword detection.</p>
+                <a href="level14.php">Start Level 14</a>
             </div>
             
             <div class="level-card">
-                <h3>🔤 Level 15 - Encoding Bypass</h3>
-                <p>Use various encoding techniques to bypass character-based filters.</p>
-                <a href="level15.php?id=1">Start Level 15</a>
+                <h3>🔤 Level 15 - Encoded Login</h3>
+                <p>Login with character encoding filters. Master various encoding bypass techniques.</p>
+                <a href="level15.php">Start Level 15</a>
             </div>
             
             <div class="level-card">
-                <h3>🚀 Level 16 - Space Filter Bypass</h3>
-                <p>Bypass filters that remove spaces using alternative whitespace characters.</p>
-                <a href="level16.php?id=1">Start Level 16</a>
+                <h3>🚀 Level 16 - Space Filtered Login</h3>
+                <p>Elite challenge: Login with space character filters. Ultimate bypass techniques.</p>
+                <a href="level16.php">Start Level 16</a>
             </div>
         </div>
         
