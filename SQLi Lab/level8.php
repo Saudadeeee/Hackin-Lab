@@ -244,8 +244,8 @@ Email: test@test.com' UNION SELECT 'admin' as role--
         </div>
         
         <div class="navigation">
-            <a href="level6.php">← Previous Level</a>
-            <a href="level8.php">Next Level →</a>
+            <a href="level7.php">← Previous Level</a>
+            <a href="level9.php">Next Level →</a>
         </div>
     </div>
 </body>

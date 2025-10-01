@@ -260,8 +260,8 @@ if ($_POST) {
         </div>
         
         <div class="navigation">
-            <a href="level4.php">← Previous Level</a>
-            <a href="level6.php">Next Level →</a>
+            <a href="level5.php">← Previous Level</a>
+            <a href="level7.php">Next Level →</a>
         </div>
     </div>
 </body>

@@ -229,8 +229,8 @@ Password: anything
         </div>
         
         <div class="navigation">
-            <a href="level7.php">← Previous Level</a>
-            <a href="level9.php">Next Level →</a>
+            <a href="level8.php">← Previous Level</a>
+            <a href="level10.php">Next Level →</a>
         </div>
     </div>
 </body>

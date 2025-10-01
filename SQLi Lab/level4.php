@@ -263,7 +263,7 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header" style="text-align: center; padding: 2rem; color: white;">
-            <h1>🚪 Level 9 - Professional Admin Portal</h1>
+            <h1>�️ Level 4 - Basic WAF Bypass</h1>
             <p>The ultimate SQL injection challenge with multiple security layers</p>
             <a href="index.php" class="back-btn" style="color: white;">← Back to Labs</a>
         </div>
@@ -334,7 +334,7 @@ if ($_POST) {
         
         <div class="navigation" style="text-align: center; margin-top: 2rem;">
             <a href="level8.php" style="color: white;">← Previous Level</a>
-            <a href="level10.php" style="color: white;">Next Level →</a>
+            <a href="level5.php" style="color: white;">Next Level →</a>
         </div>
     </div>
 </body>

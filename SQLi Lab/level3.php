@@ -61,6 +61,7 @@ if ($_POST) {
             $message .= "<br><br>📝 SQL Query: " . htmlspecialchars($sql);
         }
     }
+}
 ?>
 
 <!DOCTYPE html>
