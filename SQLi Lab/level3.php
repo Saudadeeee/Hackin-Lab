@@ -2,10 +2,12 @@
 // Level 3: Stacked Query Login - Multiple SQL Statements
 // Goal: Use stacked queries to modify data and login as admin
 
+require_once __DIR__ . '/includes/helpers.php';
+
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -27,7 +29,7 @@ if ($_POST) {
     $user_exists = $check_result && $check_result->fetch_assoc()['count'] > 0;
     
     if (!$user_exists) {
-        $message = "❌ User does not exist. Try creating an admin account first.";
+        $message = "User does not exist. Try creating an admin account first.";
     } else {
         // Vulnerable to stacked queries - allows multiple statements  
         $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
@@ -37,15 +39,16 @@ if ($_POST) {
             if ($conn->multi_query($sql)) {
                 do {
                     if ($result = $conn->store_result()) {
-                        if ($result->num_rows > 0) {
-                            $user_data = $result->fetch_assoc();
-                            if ($user_data['role'] === 'admin') {
-                                $success = true;
-                                $message = "🎉 Outstanding! You used stacked queries to login as admin!<br>";
-                                $message .= "🏁 <strong>FLAG: LEVEL3_STACKED_QUERY_MASTERY</strong><br>";
+                            if ($result->num_rows > 0) {
+                                $user_data = $result->fetch_assoc();
+                                if ($user_data['role'] === 'admin') {
+                                    $success = true;
+                                $flag = get_flag_for_level(3);
+                                $message = "Great job! You executed stacked queries to gain admin access.<br>";
+                                $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
                                 $message .= "Admin User: " . htmlspecialchars($user_data['username']);
                             } else {
-                                $message = "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
+                                $message = "Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
                             }
                         }
                         $result->free();
@@ -53,15 +56,16 @@ if ($_POST) {
                 } while ($conn->next_result());
                 
                 if (!$success && !$message) {
-                    $message = "❌ Login failed: Invalid password. Try modifying the user's role or password first.";
+                    $message = "Login failed: Invalid password. Try modifying the user's role or password first.";
                 }
             }
         } catch (Exception $e) {
-            $message = "💥 Database Error: " . $e->getMessage();
-            $message .= "<br><br>📝 SQL Query: " . htmlspecialchars($sql);
+            $message = "Database error: " . $e->getMessage();
+            $message .= "<br><br>SQL Query: " . htmlspecialchars($sql);
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -209,22 +213,22 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚡ Level 3 - Stacked Query Login</h1>
-            <p>Execute multiple SQL statements in a single injection attack</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <h1>Level 3 - Stacked Query Login</h1>
+            <p>Execute multiple SQL statements in a single injection attack.</p>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="login-container">
-            <h2>🏭 Industrial Control Login</h2>
+            <h2>Industrial Control Login</h2>
             <p><strong>Objective:</strong> Use stacked queries to modify database and gain admin access</p>
             
             <div class="warning-box">
-                <h4>⚠️ Advanced Challenge</h4>
+                <h4>Advanced Challenge</h4>
                 <p>This system allows multiple SQL statements. You can INSERT, UPDATE, or even CREATE new admin accounts!</p>
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : (strpos($message, 'Error') !== false ? 'error' : 'info') ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
@@ -240,35 +244,21 @@ if ($_POST) {
                     <input type="password" id="password" name="password" placeholder="Enter password" required>
                 </div>
                 
-                <button type="submit" class="login-btn">🚀 Login</button>
+                <button type="submit" class="login-btn">Login</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 3:</h3>
-            <ul>
-                <li><strong>Prerequisite:</strong> User must exist first (try: test, alice, bob)</li>
-                <li><strong>Stacked Queries:</strong> Use <code>;</code> to separate multiple SQL statements</li>
-                <li><strong>Method 1:</strong> Promote existing user to admin</li>
-            </ul>
-            <div class="code-example">test'; UPDATE users SET role='admin' WHERE username='test';--</div>
-            <ul>
-                <li><strong>Method 2:</strong> Change existing user password then login</li>
-            </ul>
-            <div class="code-example">test'; UPDATE users SET password='newpass' WHERE username='test';--</div>
-            <ul>
-                <li><strong>Method 3:</strong> Create new admin (if username doesn't exist, create it first)</li>
-            </ul>
-            <div class="code-example">newuser'; INSERT INTO users VALUES(NULL,'newuser','pass','admin');--</div>
-            <p><strong>Remember:</strong> After modifying, login with the updated credentials!</p>
-        </div>
+        <?= render_hint_section(get_level_hints(3), 'Hints for Level 3'); ?>
         
         <div class="navigation">
-            <a href="level2.php">← Previous Level</a>
-            <a href="level4.php">Next Level →</a>
+            <a href="level2.php">&larr; Previous Level</a>
+            <a href="level4.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+
+

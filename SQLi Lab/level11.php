@@ -4,10 +4,11 @@
 
 session_start();
 
+require_once __DIR__ . '/includes/helpers.php';
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -55,31 +56,32 @@ if ($_POST) {
                 
                 if ($updated_user['role'] === 'admin') {
                     $success = true;
-                    $message = "🎉 Brilliant! You exploited UPDATE injection for privilege escalation!<br>";
-                    $message .= "🏁 <strong>FLAG: LEVEL11_UPDATE_INJECTION_PRIVILEGE_ESCALATION</strong><br>";
-                    $message .= "🆔 User ID: " . $updated_user['id'] . "<br>";
-                    $message .= "👤 Username: " . htmlspecialchars($updated_user['username']) . "<br>";
-                    $message .= "👑 New Role: " . htmlspecialchars($updated_user['role']) . "<br>";
-                    $message .= "📝 UPDATE Query: <code>" . htmlspecialchars($sql) . "</code>";
+                    $flag = get_flag_for_level(11);
+                    $message = "Great job! You exploited UPDATE injection to escalate privileges.<br>";
+                    $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                    $message .= "User ID: " . $updated_user['id'] . "<br>";
+                    $message .= "Username: " . htmlspecialchars($updated_user['username']) . "<br>";
+                    $message .= "New role: " . htmlspecialchars($updated_user['role']) . "<br>";
+                    $message .= "UPDATE query: <code>" . htmlspecialchars($sql) . "</code>";
                 } else {
-                    $message = "✅ Profile updated successfully!<br>";
-                    $message .= "👤 Username: " . htmlspecialchars($updated_user['username']) . "<br>";
-                    $message .= "📧 Email: " . htmlspecialchars($updated_user['email']) . "<br>";
-                    $message .= "👥 Role: " . htmlspecialchars($updated_user['role']) . "<br>";
-                    $message .= "⚠️ You need to escalate to admin role to get the flag!";
+                    $message = "Profile updated successfully!<br>";
+                    $message .= "Username: " . htmlspecialchars($updated_user['username']) . "<br>";
+                    $message .= "Email: " . htmlspecialchars($updated_user['email']) . "<br>";
+                    $message .= " Role: " . htmlspecialchars($updated_user['role']) . "<br>";
+                    $message .= " You need to escalate to admin role to get the flag!";
                 }
                 
                 $current_user = $updated_user; // Update display
             }
         } else {
-            $message = "❌ Profile update failed: " . $conn->error;
-            $message .= "<br>📝 UPDATE Query: <code>" . htmlspecialchars($sql) . "</code>";
+            $message = " Profile update failed: " . $conn->error;
+            $message .= "<br> UPDATE Query: <code>" . htmlspecialchars($sql) . "</code>";
         }
         
     } catch (Exception $e) {
-        $message = "💥 UPDATE Error: " . $e->getMessage();
-        $message .= "<br>📝 UPDATE Query: <code>" . htmlspecialchars($sql) . "</code>";
-        $message .= "<br>🎯 Error might indicate successful injection!";
+        $message = " UPDATE Error: " . $e->getMessage();
+        $message .= "<br> UPDATE Query: <code>" . htmlspecialchars($sql) . "</code>";
+        $message .= "<br> Error might indicate successful injection!";
     }
 }
 ?>
@@ -172,21 +174,21 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔄 Level 11 - UPDATE Injection</h1>
+            <h1> Level 11 - UPDATE Injection</h1>
             <p>Exploit UPDATE statement vulnerabilities for privilege escalation</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="update-container">
             <div class="update-info">
-                <h4>🔄 UPDATE Injection Challenge</h4>
+                <h4> UPDATE Injection Challenge</h4>
                 <p>Manipulate the UPDATE query to escalate your privileges to admin!</p>
                 <p><strong>Goal:</strong> Change your role from 'user' to 'admin'</p>
             </div>
             
             <?php if ($current_user): ?>
                 <div class="user-profile">
-                    <h4>👤 Current Profile</h4>
+                    <h4> Current Profile</h4>
                     <p><strong>ID:</strong> <?= htmlspecialchars($current_user['id']) ?></p>
                     <p><strong>Username:</strong> <?= htmlspecialchars($current_user['username']) ?></p>
                     <p><strong>Role:</strong> <?= htmlspecialchars($current_user['role']) ?></p>
@@ -201,12 +203,12 @@ if ($_POST) {
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
             
-            <h3>🔄 Update Profile</h3>
+            <h3> Update Profile</h3>
             <form method="POST" class="login-form">
                 <div class="form-group">
                     <label for="email">Email:</label>
@@ -235,35 +237,20 @@ if ($_POST) {
                            placeholder="Enter website URL">
                 </div>
                 
-                <button type="submit" class="submit-btn">🔄 Update Profile</button>
+                <button type="submit" class="submit-btn">Update Profile</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 11:</h3>
-            <ul>
-                <li><strong>UPDATE Structure:</strong> SET email='input', phone='input', bio='input', website='input'</li>
-                <li><strong>Goal:</strong> Add role='admin' to the SET clause</li>
-                <li><strong>Method:</strong> Add additional SET parameter</li>
-                <li><strong>Example Payload (Email field):</strong></li>
-            </ul>
-            <div class="code-example">
-Email: test@test.com', role='admin', email='test@test.com
-            </div>
-            <ul>
-                <li><strong>Alternative:</strong> Use different fields for injection</li>
-                <li><strong>Advanced:</strong> Update multiple users with WHERE manipulation</li>
-                <li><strong>Syntax:</strong> Close current field, add new SET parameter</li>
-                <li><strong>Remember:</strong> Maintain valid SQL syntax structure</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(11), 'Hints for Level 11'); ?>
         
         <div class="navigation">
-            <a href="level10.php">← Previous Level</a>
-            <a href="level12.php">Next Level →</a>
+            <a href="level10.php">&larr; Previous Level</a>
+            <a href="level12.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+

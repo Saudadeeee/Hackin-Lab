@@ -4,6 +4,7 @@
 
 session_start();
 
+require_once __DIR__ . '/includes/helpers.php';
 $message = "";
 $success = false;
 
@@ -55,24 +56,25 @@ if ($_POST) {
             
             if ($role === 'administrator') {
                 $success = true;
-                $message = "🎉 Excellent! You bypassed XPATH authentication!<br>";
-                $message .= "🏁 <strong>FLAG: LEVEL8_XPATH_INJECTION_MASTER</strong><br>";
-                $message .= "🔍 XPATH Query: <code>" . htmlspecialchars($query) . "</code><br>";
-                $message .= "👑 Admin access granted! Email: " . htmlspecialchars($email);
+                $flag = get_flag_for_level(9);
+                $message = "Great job! You bypassed the XPath authentication filter.<br>";
+                $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                $message .= "XPath query: <code>" . htmlspecialchars($query) . "</code><br>";
+                $message .= "Administrator access granted! Email: " . htmlspecialchars($email);
             } else {
-                $message = "✅ Login successful as: " . htmlspecialchars($username) . " (" . htmlspecialchars($role) . ")";
-                $message .= "<br>📧 Email: " . htmlspecialchars($email);
-                $message .= "<br>⚠️ You need administrator role to get the flag!";
+                $message = "Login successful as: " . htmlspecialchars($username) . " (" . htmlspecialchars($role) . ")";
+                $message .= "<br>Email: " . htmlspecialchars($email);
+                $message .= "<br>You need administrator role to get the flag!";
             }
         } else {
-            $message = "❌ Authentication failed: No matching user found";
-            $message .= "<br>🔍 XPATH Query: <code>" . htmlspecialchars($query) . "</code>";
+            $message = " Authentication failed: No matching user found";
+            $message .= "<br> XPATH Query: <code>" . htmlspecialchars($query) . "</code>";
         }
         
     } catch (Exception $e) {
-        $message = "💥 XPATH Error: " . $e->getMessage();
-        $message .= "<br>🔍 XPATH Query: <code>" . htmlspecialchars($query ?? 'N/A') . "</code>";
-        $message .= "<br>🎯 Error indicates successful injection attempt!";
+        $message = " XPATH Error: " . $e->getMessage();
+        $message .= "<br> XPATH Query: <code>" . htmlspecialchars($query ?? 'N/A') . "</code>";
+        $message .= "<br> Error indicates successful injection attempt!";
     }
 }
 ?>
@@ -82,7 +84,7 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 8 - XPATH Authentication | SQL Injection Lab</title>
+    <title>Level 9 - XPath Authentication | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .xpath-container {
@@ -160,14 +162,14 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 Level 8 - XPATH Authentication</h1>
+            <h1> Level 9 - XPath Authentication</h1>
             <p>Bypass XML-based authentication using XPATH injection techniques</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="xpath-container">
             <div class="xpath-info">
-                <h4>🔍 XPATH Injection Challenge</h4>
+                <h4> XPATH Injection Challenge</h4>
                 <p>This system uses XML database with XPATH queries for authentication.</p>
                 <p><strong>Goal:</strong> Login as administrator to capture the flag!</p>
             </div>
@@ -188,12 +190,12 @@ if ($_POST) {
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
             
-            <h3>🔐 XML Authentication</h3>
+            <h3> XML Authentication</h3>
             <form method="POST" class="login-form">
                 <div class="form-group">
                     <label for="username">Username:</label>
@@ -205,33 +207,18 @@ if ($_POST) {
                     <input type="password" id="password" name="password" placeholder="Enter password" required>
                 </div>
                 
-                <button type="submit" class="submit-btn">🚀 Authenticate</button>
+                <button type="submit" class="submit-btn">Authenticate</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 8:</h3>
-            <ul>
-                <li><strong>XPATH Syntax:</strong> //user[username/text()='input' and password/text()='input']</li>
-                <li><strong>Boolean Logic:</strong> Use 'or' operator to bypass authentication</li>
-                <li><strong>Example Payload:</strong></li>
-            </ul>
-            <div class="code-example">
-Username: admin' or '1'='1<br>
-Password: anything
-            </div>
-            <ul>
-                <li><strong>Alternative:</strong> Comment out password check</li>
-                <li><strong>XPATH Comments:</strong> Use (: comment :) syntax</li>
-                <li><strong>Goal:</strong> Make XPATH return the admin user node</li>
-                <li><strong>Advanced:</strong> Try extracting specific admin data</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(9), 'Hints for Level 9'); ?>
         
         <div class="navigation">
-            <a href="level8.php">← Previous Level</a>
-            <a href="level10.php">Next Level →</a>
+            <a href="level8.php">&larr; Previous Level</a>
+            <a href="level10.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
+
+

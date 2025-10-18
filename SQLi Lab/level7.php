@@ -1,11 +1,11 @@
 <?php
 // Level 7: File-Based Login - Out-of-Band data extraction
-// Goal: Use file operations to extract admin credentials
+require_once __DIR__ . '/includes/helpers.php';
 
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -31,25 +31,26 @@ if ($_POST) {
         if ($result && $result->num_rows > 0) {
             $admin_data = $result->fetch_assoc();
             $success = true;
-            $message = "🎉 Outstanding! You used file-based injection to login as admin!<br>";
-            $message .= "🏁 <strong>FLAG: LEVEL6_FILE_BASED_EXTRACTION</strong><br>";
-            $message .= "📁 Welcome, " . htmlspecialchars($admin_data['username']) . "!";
+            $flag = get_flag_for_level(7);
+            $message = "Great job! You used file-based injection to log in as admin.<br>";
+            $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+            $message .= "Welcome, " . htmlspecialchars($admin_data['username']) . "!";
         } else {
-            $message = "❌ Login failed: Invalid credentials";
+           $message = "Login failed: Invalid credentials";
         }
         
         // Check for file operations
         if (strpos($username, 'OUTFILE') !== false || strpos($username, 'DUMPFILE') !== false) {
-            $message .= "<br>📁 File operation detected in injection attempt.";
+            $message .= "<br>File operation detected in injection attempt.";
         }
         
     } catch (Exception $e) {
-        $message = "💥 Database Error: " . $e->getMessage();
+        $message = "Database error: " . $e->getMessage();
         
         // Check if it's a file permission error (indicates successful injection syntax)
         if (strpos($e->getMessage(), 'Access denied') !== false || strpos($e->getMessage(), 'OUTFILE') !== false) {
-            $message .= "<br>📁 File operation attempted but blocked by permissions.";
-            $message .= "<br>💡 Your injection syntax was correct! Try extracting data differently.";
+            $message .= "<br>File operation attempted but blocked by permissions.";
+            $message .= "<br> Your injection syntax was correct! Try extracting data differently.";
         }
     }
 }
@@ -58,7 +59,7 @@ if ($_POST) {
 $extraction_files = ['/tmp/admin_data.txt', '/var/lib/mysql-files/users.txt', '/tmp/passwords.txt'];
 foreach ($extraction_files as $file) {
     if (file_exists($file)) {
-        $file_content .= "📁 Found: $file<br>";
+        $file_content .= " Found: $file<br>";
         $file_content .= "Content: " . htmlspecialchars(file_get_contents($file)) . "<br><br>";
     }
 }
@@ -69,7 +70,7 @@ foreach ($extraction_files as $file) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 6 - File-Based Login | SQL Injection Lab</title>
+    <title>Level 7 - File-Based Login | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .login-container {
@@ -141,29 +142,29 @@ foreach ($extraction_files as $file) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>📁 Level 6 - File-Based Login</h1>
+            <h1>Level 7 - File-Based Login</h1>
             <p>Use file operations for out-of-band data extraction</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="login-container">
-            <h2>🗄️ Document Management Login</h2>
+            <h2>Document Management Login</h2>
             <p><strong>Objective:</strong> Use file-based injection to extract admin credentials</p>
             
             <div class="file-info">
-                <h4>📁 File System Access</h4>
+                <h4>File System Access</h4>
                 <p>This system has MySQL file privileges enabled. You can use INTO OUTFILE for data extraction.</p>
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
             
             <?php if ($file_content): ?>
                 <div class="file-info">
-                    <h4>📄 Extracted Files:</h4>
+                    <h4> Extracted Files:</h4>
                     <?= $file_content ?>
                 </div>
             <?php endif; ?>
@@ -179,38 +180,22 @@ foreach ($extraction_files as $file) {
                     <input type="password" id="password" name="password" placeholder="Enter password" required>
                 </div>
                 
-                <button type="submit" class="login-btn">🚀 Login</button>
+                <button type="submit" class="login-btn">Login</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 6:</h3>
-            <ul>
-                <li><strong>File Operations:</strong> Use INTO OUTFILE to write query results to files</li>
-                <li><strong>Out-of-Band:</strong> Extract data through file system instead of direct response</li>
-                <li><strong>Example 1:</strong> Extract admin password to file</li>
-            </ul>
-            <div class="code-example">admin' UNION SELECT username,password,role FROM users WHERE role='admin' INTO OUTFILE '/tmp/admin.txt'--</div>
-            <ul>
-                <li><strong>Example 2:</strong> Extract all user data</li>
-            </ul>
-            <div class="code-example">admin' UNION SELECT CONCAT(username,':',password,':',role) FROM users INTO OUTFILE '/var/lib/mysql-files/users.txt'--</div>
-            <ul>
-                <li><strong>Alternative:</strong> Use DUMPFILE for binary data</li>
-            </ul>
-            <div class="code-example">admin' UNION SELECT password FROM users WHERE username='admin' INTO DUMPFILE '/tmp/admin_pass.txt'--</div>
-            <ul>
-                <li><strong>Note:</strong> File permissions may block writes, but syntax errors reveal injection success</li>
-                <li><strong>Shortcut:</strong> Known admin credentials: admin / admin123</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(7), 'Hints for Level 7'); ?>
         
         <div class="navigation">
-            <a href="level6.php">← Previous Level</a>
-            <a href="level8.php">Next Level →</a>
+            <a href="level6.php">&larr; Previous Level</a>
+            <a href="level8.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+
+
+

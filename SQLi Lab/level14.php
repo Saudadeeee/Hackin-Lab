@@ -4,10 +4,12 @@
 
 session_start();
 
+require_once __DIR__ . '/includes/helpers.php';
+
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -46,11 +48,11 @@ if ($_POST) {
     }
     
     if (!empty($blocked_chars)) {
-        $message = "🚫 Security Filter Triggered!<br>";
-        $message .= "❌ Dangerous characters detected after decoding: " . implode(', ', $blocked_chars) . "<br>";
-        $message .= "🔍 Raw Input: <code>" . $raw_input . "</code><br>";
-        $message .= "🔓 Decoded Input: <code>" . $decoded_input . "</code><br>";
-        $message .= "🛡️ Try encoding your payload to bypass filters!";
+        $message = "Security filter triggered!<br>";
+        $message .= "Dangerous characters detected after decoding: " . implode(', ', $blocked_chars) . "<br>";
+        $message .= "Raw input: <code>" . $raw_input . "</code><br>";
+        $message .= "Decoded input: <code>" . $decoded_input . "</code><br>";
+        $message .= "Try encoding your payload to bypass filters.";
     } else {
         // VULNERABLE query (if filters are bypassed)
         $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
@@ -63,24 +65,25 @@ if ($_POST) {
                 
                 if ($user_data['role'] === 'admin') {
                     $success = true;
-                    $message = "🎉 Brilliant! You bypassed encoding-based filtering!<br>";
-                    $message .= "🏁 <strong>FLAG: LEVEL14_ENCODING_BYPASS_EXPERT</strong><br>";
-                    $message .= "🔍 Raw Input: <code>" . $raw_input . "</code><br>";
-                    $message .= "🔓 Decoded Input: <code>" . $decoded_input . "</code><br>";
-                    $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
-                    $message .= "👑 Admin access granted through encoding bypass!";
+                    $flag = get_flag_for_level(14);
+                    $message = "Great job! You bypassed the encoding filter to reach admin.<br>";
+                    $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                    $message .= "Raw input: <code>" . $raw_input . "</code><br>";
+                    $message .= "Decoded input: <code>" . $decoded_input . "</code><br>";
+                    $message .= "SQL query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                    $message .= "Administrator access granted through encoding bypass.";
                 } else {
-                    $message = "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
-                    $message .= "<br>⚠️ You need admin role to get the flag!";
+                    $message = "Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
+                    $message .= "<br>You still need the admin role to obtain the flag.";
                 }
             } else {
-                $message = "❌ Authentication failed: No matching user found";
-                $message .= "<br>📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
+                $message = "Authentication failed: no matching user found.";
+                $message .= "<br>SQL query: <code>" . htmlspecialchars($sql) . "</code>";
             }
             
         } catch (Exception $e) {
-            $message = "💥 SQL Error: " . $e->getMessage();
-            $message .= "<br>📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
+            $message = "SQL error: " . $e->getMessage();
+            $message .= "<br>SQL query: <code>" . htmlspecialchars($sql) . "</code>";
         }
     }
 }
@@ -189,29 +192,29 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔤 Level 14 - Encoding Bypass</h1>
+            <h1>Level 14 - Encoding Bypass</h1>
             <p>Bypass input filtering using URL encoding and HTML entities</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="encoding-container">
             <div class="encoding-info">
-                <h4>🔤 Encoding Bypass Challenge</h4>
+                <h4> Encoding Bypass Challenge</h4>
                 <p>This system decodes URL encoding and HTML entities before applying filters.</p>
                 <p><strong>Goal:</strong> Encode your payload to bypass character filtering!</p>
             </div>
             
             <div class="encoding-examples">
-                <strong>🔧 Encoding Examples:</strong><br>
-                <strong>Single Quote:</strong> ' → %27 (URL) → &#39; (HTML)<br>
-                <strong>Double Quote:</strong> " → %22 (URL) → &quot; (HTML)<br>
-                <strong>Equals:</strong> = → %3D (URL) → &#61; (HTML)<br>
-                <strong>Space:</strong> (space) → %20 (URL) → &#32; (HTML)<br>
-                <strong>OR:</strong> OR → %4F%52 (URL) → &#79;&#82; (HTML)
+                <strong> Encoding Examples:</strong><br>
+                <strong>Single Quote:</strong> '  %27 (URL)  &#39; (HTML)<br>
+                <strong>Double Quote:</strong> "  %22 (URL)  &quot; (HTML)<br>
+                <strong>Equals:</strong> =  %3D (URL)  &#61; (HTML)<br>
+                <strong>Space:</strong> (space)  %20 (URL)  &#32; (HTML)<br>
+                <strong>OR:</strong> OR  %4F%52 (URL)  &#79;&#82; (HTML)
             </div>
             
             <div class="encoder-tool">
-                <h4>🛠️ Payload Encoder Tool</h4>
+                <h4> Payload Encoder Tool</h4>
                 <input type="text" id="plain-text" placeholder="Enter text to encode...">
                 <button class="encode-btn" onclick="urlEncode()">URL Encode</button>
                 <button class="encode-btn" onclick="htmlEncode()">HTML Encode</button>
@@ -220,12 +223,12 @@ if ($_POST) {
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
             
-            <h3>🔐 Encoded Login</h3>
+            <h3> Encoded Login</h3>
             <form method="POST" class="login-form">
                 <div class="form-group">
                     <label for="username">Username:</label>
@@ -237,39 +240,15 @@ if ($_POST) {
                     <input type="text" id="password" name="password" placeholder="Enter password (can be encoded)" required>
                 </div>
                 
-                <button type="submit" class="submit-btn">🚀 Login</button>
+                <button type="submit" class="submit-btn">Login</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 14:</h3>
-            <ul>
-                <li><strong>Challenge:</strong> Filters check for: ', ", =, OR, UNION, SELECT after decoding</li>
-                <li><strong>Solution:</strong> URL encode or HTML encode your malicious characters</li>
-                <li><strong>Example Payload (URL Encoded):</strong></li>
-            </ul>
-            <div class="code-example">
-Username: admin%27%20%4F%52%20%27x%27%3D%27x<br>
-Password: anything<br>
-<em>(Decodes to: admin' OR 'x'='x)</em>
-            </div>
-            <ul>
-                <li><strong>Alternative (HTML Entities):</strong></li>
-            </ul>
-            <div class="code-example">
-Username: admin&#39;&#32;&#79;&#82;&#32;&#39;x&#39;&#61;&#39;x<br>
-Password: anything<br>
-<em>(Decodes to: admin' OR 'x'='x)</em>
-            </div>
-            <ul>
-                <li><strong>Mix Encoding:</strong> Combine URL and HTML encoding</li>
-                <li><strong>Tip:</strong> Use the encoder tool above to help craft payloads</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(14), 'Hints for Level 14'); ?>
         
         <div class="navigation">
-            <a href="level13.php">← Previous Level</a>
-            <a href="level15.php">Next Level →</a>
+            <a href="level13.php">&larr; Previous Level</a>
+            <a href="level15.php">Next Level &rarr;</a>
         </div>
     </div>
     
@@ -308,3 +287,4 @@ Password: anything<br>
 </html>
 
 <?php $conn->close(); ?>
+

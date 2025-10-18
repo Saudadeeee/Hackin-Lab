@@ -2,10 +2,12 @@
 // Level 5: Blind Login - Boolean Based Injection
 // Goal: Extract admin credentials using blind injection techniques
 
+require_once __DIR__ . '/includes/helpers.php';
+
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -30,18 +32,19 @@ if ($_POST) {
             $count = $result->fetch_assoc()['count'];
             if ($count > 0) {
                 $success = true;
-                $message = "🎉 Incredible! You cracked the blind injection and logged in as admin!<br>";
-                $message .= "🏁 <strong>FLAG: LEVEL4_BLIND_INJECTION_EXPERT</strong><br>";
-                $message .= "This required patience and skill to extract data without seeing it!";
+                $message = "Great job! You cracked the blind injection and logged in as admin.<br>";
+                $flag = get_flag_for_level(5);
+                $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                $message .= "This required patience to extract answers from yes/no responses.";
             } else {
-                $message = "❌ Access denied";
+                $message = "Access denied.";
             }
         } else {
-            $message = "❌ Access denied";
+            $message = "Security system triggered. Try a different blind injection technique.";
         }
     } catch (Exception $e) {
         // No error details in blind injection
-        $message = "❌ Access denied";
+        $message = "Security system triggered. Try a different blind injection technique.";
     }
 }
 ?>
@@ -202,22 +205,22 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 Level 4 - Blind Login</h1>
+            <h1> Level 4 - Blind Login</h1>
             <p>No error messages, no data leakage - pure blind injection challenge</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="login-container">
-            <h2>🕶️ Secure Government Portal</h2>
+            <h2>Secure Government Portal</h2>
             <p><strong>Objective:</strong> Extract admin credentials using boolean-based blind injection</p>
             
             <div class="blind-notice">
-                <h4>🚨 Maximum Security Mode</h4>
+                <h4>Maximum Security Mode</h4>
                 <p>This system provides NO feedback about SQL errors or data. You'll only get "Access denied" or successful login.</p>
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
@@ -233,40 +236,21 @@ if ($_POST) {
                     <input type="password" id="password" name="password" placeholder="Enter password" required>
                 </div>
                 
-                <button type="submit" class="login-btn">🚀 Login</button>
+                <button type="submit" class="login-btn">Login</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 4:</h3>
-            <ul>
-                <li><strong>True Blind:</strong> You must know exact admin username AND password</li>
-                <li><strong>Boolean Logic:</strong> Use conditions that return TRUE or FALSE</li>
-                <li><strong>Extract Admin Password:</strong> Use boolean conditions to extract password character by character</li>
-                <li><strong>Example 1:</strong> Test if admin password starts with 'a'</li>
-            </ul>
-            <div class="code-example">admin' AND (SELECT SUBSTR(password,1,1) FROM users WHERE username='admin')='a'--</div>
-            <ul>
-                <li><strong>Example 2:</strong> Test password length</li>
-            </ul>
-            <div class="code-example">admin' AND (SELECT LENGTH(password) FROM users WHERE username='admin')>5--</div>
-            <ul>
-                <li><strong>Example 3:</strong> Extract character using ASCII</li>
-            </ul>
-            <div class="code-example">admin' AND (SELECT ASCII(SUBSTR(password,1,1)) FROM users WHERE username='admin')>97--</div>
-            <ul>
-                <li><strong>Automation:</strong> Best solved with tools like sqlmap or custom scripts</li>
-                <li><strong>Manual:</strong> Try common passwords: admin, password, admin123, root</li>
-                <li><strong>Hint:</strong> Admin password is 'admin123' - but you must discover this through blind injection!</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(5), 'Hints for Level 5'); ?>
         
         <div class="navigation">
-            <a href="level4.php">← Previous Level</a>
-            <a href="level6.php">Next Level →</a>
+            <a href="level4.php">&larr; Previous Level</a>
+            <a href="level6.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+
+

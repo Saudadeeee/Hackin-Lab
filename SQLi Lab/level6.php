@@ -2,10 +2,12 @@
 // Level 6: Time-Based Blind Login - Use time delays to extract information
 // Goal: Login as admin using time-based blind injection
 
+require_once __DIR__ . '/includes/helpers.php';
+
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -34,18 +36,19 @@ if ($_POST) {
         if ($result && $result->num_rows > 0) {
             $admin_data = $result->fetch_assoc();
             $success = true;
-            $message = "🎉 Excellent! You used time-based injection to login as admin!<br>";
-            $message .= "🏁 <strong>FLAG: LEVEL5_TIME_BASED_MASTER</strong><br>";
-            $message .= "⏱️ Query execution time: {$time_taken}ms<br>";
-            $message .= "🔑 Welcome, " . htmlspecialchars($admin_data['username']) . "!";
+            $flag = get_flag_for_level(6);
+            $message = "Great job! You used time-based injection to log in as admin.<br>";
+            $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+            $message .= "Query execution time: {$time_taken}ms<br>";
+            $message .= "Welcome, " . htmlspecialchars($admin_data['username']) . "!";
         } else {
-            $message = "❌ Login failed: Invalid credentials<br>";
-            $message .= "⏱️ Query execution time: {$time_taken}ms";
+            $message = "Login failed: Invalid credentials.<br>";
+            $message .= "Query execution time: {$time_taken}ms";
         }
     } catch (Exception $e) {
         $time_taken = round((microtime(true) - $start_time) * 1000, 2);
-        $message = "❌ Login failed: Invalid credentials<br>";
-        $message .= "⏱️ Query execution time: {$time_taken}ms";
+        $message = "Login failed: Invalid credentials.<br>";
+        $message .= "Query execution time: {$time_taken}ms";
     }
 }
 ?>
@@ -55,7 +58,7 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 5 - Time-Based Login | SQL Injection Lab</title>
+    <title>Level 6 - Time-Based Login | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .login-container {
@@ -201,22 +204,22 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>⏰ Level 5 - Time-Based Login</h1>
-            <p>Use time delays to extract information and login as admin</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <h1>Level 6 - Time-Based Login</h1>
+            <p>Use time delays to extract information and log in as admin.</p>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="login-container">
-            <h2>🕐 Temporal Security System</h2>
+            <h2>Temporal Security System</h2>
             <p><strong>Objective:</strong> Use time-based blind injection to extract admin credentials</p>
             
             <div class="time-info">
-                <h4>⏱️ Time Analysis</h4>
+                <h4>Time Analysis</h4>
                 <p>This system is vulnerable to time-based attacks. Monitor response times carefully!</p>
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
@@ -232,39 +235,20 @@ if ($_POST) {
                     <input type="password" id="password" name="password" placeholder="Enter password" required>
                 </div>
                 
-                <button type="submit" class="login-btn">🚀 Login</button>
+                <button type="submit" class="login-btn">Login</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 5:</h3>
-            <ul>
-                <li><strong>Time Delays:</strong> Use SLEEP() function to cause delays</li>
-                <li><strong>Conditional Delays:</strong> IF(condition, SLEEP(5), 0)</li>
-                <li><strong>Extract Password:</strong> Use time delays to determine correct characters</li>
-                <li><strong>Example 1:</strong> Test if admin exists (should cause 5 second delay)</li>
-            </ul>
-            <div class="code-example">admin' AND IF((SELECT COUNT(*) FROM users WHERE username='admin')>0,SLEEP(5),0)--</div>
-            <ul>
-                <li><strong>Example 2:</strong> Extract password length</li>
-            </ul>
-            <div class="code-example">admin' AND IF((SELECT LENGTH(password) FROM users WHERE username='admin')=8,SLEEP(5),0)--</div>
-            <ul>
-                <li><strong>Example 3:</strong> Extract first character</li>
-            </ul>
-            <div class="code-example">admin' AND IF((SELECT SUBSTR(password,1,1) FROM users WHERE username='admin')='a',SLEEP(5),0)--</div>
-            <ul>
-                <li><strong>Fast Solution:</strong> Try common passwords with known timing</li>
-                <li><strong>Hint:</strong> Admin password is 'admin123' - extract it character by character!</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(6), 'Hints for Level 6'); ?>
         
         <div class="navigation">
-            <a href="level5.php">← Previous Level</a>
-            <a href="level7.php">Next Level →</a>
+            <a href="level5.php">&larr; Previous Level</a>
+            <a href="level7.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+

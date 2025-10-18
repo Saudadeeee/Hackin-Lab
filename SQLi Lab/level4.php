@@ -2,10 +2,12 @@
 // Level 4: Basic WAF Bypass - Multiple Security Layers
 // Goal: Bypass multiple security measures to login as admin
 
+require_once __DIR__ . '/includes/helpers.php';
+
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -38,7 +40,7 @@ if ($_POST) {
     // Check for blocked words
     foreach ($blocked_words as $word) {
         if (strpos($username_lower, $word) !== false || strpos($password_lower, $word) !== false) {
-            $message = "🚨 WAF Blocked: Suspicious pattern detected: '$word'";
+            $message = "WAF blocked: Suspicious pattern detected: '$word'";
             break;
         }
     }
@@ -56,15 +58,16 @@ if ($_POST) {
             if ($result && $result->num_rows > 0) {
                 $admin_data = $result->fetch_assoc();
                 $success = true;
-                $message = "🎉 INCREDIBLE! You bypassed the advanced WAF and logged in as admin!<br>";
-                $message .= "🏁 <strong>FLAG: LEVEL4_WAF_BYPASS_MASTER</strong><br>";
-                $message .= "🔑 Welcome, " . htmlspecialchars($admin_data['username']) . "!<br>";
-                $message .= "🛡️ You've demonstrated expert-level bypass skills!";
+                $flag = get_flag_for_level(4);
+                $message = "Great job! You bypassed the filters and logged in as admin.<br>";
+                $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                $message .= "Welcome, " . htmlspecialchars($admin_data['username']) . "!<br>";
+                $message .= "Keep exploring different filter evasion techniques.";
             } else {
-                $message = "❌ Authentication failed. Invalid credentials.";
+                $message = "Authentication failed. Invalid credentials.";
             }
         } catch (Exception $e) {
-            $message = "❌ Authentication failed. Security violation detected.";
+            $message = "Authentication failed. Security violation detected.";
         }
     }
     
@@ -73,6 +76,7 @@ if ($_POST) {
         $show_hint = true;
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -263,24 +267,24 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header" style="text-align: center; padding: 2rem; color: white;">
-            <h1>�️ Level 4 - Basic WAF Bypass</h1>
+            <h1>Level 4 - Basic WAF Bypass</h1>
             <p>The ultimate SQL injection challenge with multiple security layers</p>
-            <a href="index.php" class="back-btn" style="color: white;">← Back to Labs</a>
+            <a href="index.php" class="back-btn" style="color: white;">&larr; Back to Labs</a>
         </div>
         
         <div class="admin-portal">
             <div class="portal-header">
-                <h1>🏢 CyberCorp</h1>
+                <h1>CyberCorp</h1>
                 <div class="subtitle">Administrator Access Portal</div>
-                <span class="security-badge">🛡️ Enhanced Security</span>
+                <span class="security-badge">Enhanced Security</span>
             </div>
             
             <div class="security-info">
-                <strong>🔒 WAF Rules Active:</strong><br>
-                • Blocked keywords: union, select, or, and, admin, --, #<br>
-                • Quote removal: ' and " characters stripped<br>
-                • Semicolon blocking: ; character removed<br>
-                • Pattern detection: Suspicious SQL patterns flagged
+                <strong>WAF Rules Active:</strong><br>
+                Blocked keywords: union, select, or, and, admin, --, #<br>
+                Quote removal: ' and " characters stripped<br>
+                Semicolon blocking: ; character removed<br>
+                Pattern detection: Suspicious SQL patterns flagged
             </div>
             
             <?php if ($message): ?>
@@ -300,7 +304,7 @@ if ($_POST) {
                     <input type="password" id="password" name="password" placeholder="Enter security passphrase" required>
                 </div>
                 
-                <button type="submit" class="login-btn">🚀 Authenticate</button>
+                <button type="submit" class="login-btn">Authenticate</button>
             </form>
             
             <div class="attempts-counter">
@@ -308,36 +312,22 @@ if ($_POST) {
             </div>
         </div>
         
-        <div class="hints">
-            <h3>🎯 WAF Bypass Techniques:</h3>
-            <ul>
-                <li><strong>Case Variation:</strong> Try different cases - ADMIN, Admin, aDmIn</li>
-                <li><strong>Encoding:</strong> Use hex, URL encoding, or double encoding</li>
-                <li><strong>Comments:</strong> Use MySQL comments: /**/ or /*! */</li>
-                <li><strong>Alternative Keywords:</strong> Instead of OR use ||, instead of AND use &&</li>
-                <li><strong>Example 1:</strong> Hex encoding bypass</li>
-            </ul>
-            <div class="code-example">0x61646d696e</div>
-            <ul>
-                <li><strong>Example 2:</strong> Comment-based bypass</li>
-            </ul>
-            <div class="code-example">/**/aDmIn/**/ instead of admin</div>
-            <ul>
-                <li><strong>Example 3:</strong> Space alternative</li>
-            </ul>
-            <div class="code-example">Use /**/ or %20 instead of spaces</div>
-            <ul>
-                <li><strong>Key insight:</strong> You need to bypass WAF to inject admin into username field</li>
-                <li><strong>Remember:</strong> Some bypasses work better in username vs password field</li>
-            </ul>
-        </div>
+        <?php if ($show_hint): ?>
+            <?= render_hint_section(get_level_hints(4), 'WAF Bypass Techniques'); ?>
+        <?php endif; ?>
         
         <div class="navigation" style="text-align: center; margin-top: 2rem;">
-            <a href="level8.php" style="color: white;">← Previous Level</a>
-            <a href="level5.php" style="color: white;">Next Level →</a>
+            <a href="level3.php" style="color: white;">&larr; Previous Level</a>
+            <a href="level5.php" style="color: white;">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+
+
+
+
+

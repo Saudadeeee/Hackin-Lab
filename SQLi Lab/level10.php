@@ -4,10 +4,11 @@
 
 session_start();
 
+require_once __DIR__ . '/includes/helpers.php';
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -42,29 +43,30 @@ if ($_POST) {
                 
                 if ($user_data['role'] === 'admin') {
                     $success = true;
-                    $message = "🎉 Outstanding! You exploited INSERT injection to become admin!<br>";
-                    $message .= "🏁 <strong>FLAG: LEVEL10_INSERT_INJECTION_EXPERT</strong><br>";
-                    $message .= "🆔 User ID: " . $user_data['id'] . "<br>";
-                    $message .= "👤 Username: " . htmlspecialchars($user_data['username']) . "<br>";
-                    $message .= "👑 Role: " . htmlspecialchars($user_data['role']) . "<br>";
-                    $message .= "📝 INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
+                    $flag = get_flag_for_level(10);
+                    $message = "Great job! You exploited INSERT injection to become admin.<br>";
+                    $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                    $message .= "User ID: " . $user_data['id'] . "<br>";
+                    $message .= "Username: " . htmlspecialchars($user_data['username']) . "<br>";
+                    $message .= "Role: " . htmlspecialchars($user_data['role']) . "<br>";
+                    $message .= "INSERT query: <code>" . htmlspecialchars($sql) . "</code>";
                 } else {
-                    $message = "✅ User registered successfully!<br>";
-                    $message .= "🆔 User ID: " . $user_data['id'] . "<br>";
-                    $message .= "👤 Username: " . htmlspecialchars($user_data['username']) . "<br>";
-                    $message .= "👥 Role: " . htmlspecialchars($user_data['role']) . "<br>";
-                    $message .= "⚠️ You need to become admin to get the flag!";
+                    $message = "User registered successfully!<br>";
+                    $message .= "User ID: " . $user_data['id'] . "<br>";
+                    $message .= "Username: " . htmlspecialchars($user_data['username']) . "<br>";
+                    $message .= "Role: " . htmlspecialchars($user_data['role']) . "<br>";
+                    $message .= "You need to become admin to get the flag!";
                 }
             }
         } else {
-            $message = "❌ Registration failed: " . $conn->error;
-            $message .= "<br>📝 INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
+            $message = "Registration failed: " . $conn->error;
+            $message .= "<br> INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
         }
         
     } catch (Exception $e) {
-        $message = "💥 INSERT Error: " . $e->getMessage();
-        $message .= "<br>📝 INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
-        $message .= "<br>🎯 Error might indicate successful injection!";
+        $message = "INSERT Error: " . $e->getMessage();
+        $message .= "<br> INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
+        $message .= "<br> Error might indicate successful injection!";
     }
 }
 ?>
@@ -143,14 +145,14 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>📝 Level 10 - INSERT Injection</h1>
+            <h1>Level 10 - INSERT Injection</h1>
             <p>Exploit INSERT statement vulnerabilities during user registration</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="insert-container">
             <div class="insert-info">
-                <h4>📝 INSERT Injection Challenge</h4>
+                <h4> INSERT Injection Challenge</h4>
                 <p>Manipulate the INSERT query to register as an admin user!</p>
                 <p><strong>Goal:</strong> Become admin during registration process</p>
             </div>
@@ -162,12 +164,12 @@ if ($_POST) {
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
             
-            <h3>📝 User Registration</h3>
+            <h3> User Registration</h3>
             <form method="POST" class="login-form">
                 <div class="form-group">
                     <label for="username">Username:</label>
@@ -189,35 +191,21 @@ if ($_POST) {
                     <input type="text" id="phone" name="phone" placeholder="Enter phone number">
                 </div>
                 
-                <button type="submit" class="submit-btn">📝 Register Account</button>
+                <button type="submit" class="submit-btn">Register Account</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 10:</h3>
-            <ul>
-                <li><strong>INSERT Structure:</strong> VALUES ('username', 'defaultpass', 'email', 'user')</li>
-                <li><strong>Goal:</strong> Make role become 'admin' instead of 'user'</li>
-                <li><strong>Method:</strong> Close current INSERT and start new one</li>
-                <li><strong>Example Payload (Username field):</strong></li>
-            </ul>
-            <div class="code-example">
-Username: admin'), ('admin2', 'pass', 'admin@test.com', 'admin'); --
-            </div>
-            <ul>
-                <li><strong>Alternative:</strong> Try manipulating multiple VALUES</li>
-                <li><strong>Advanced:</strong> Insert multiple admin users in one query</li>
-                <li><strong>Syntax:</strong> Close parentheses, add comma, start new VALUES</li>
-                <li><strong>Remember:</strong> Comment out the rest with -- or #</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(10), 'Hints for Level 10'); ?>
         
         <div class="navigation">
-            <a href="level9.php">← Previous Level</a>
-            <a href="level11.php">Next Level →</a>
+            <a href="level9.php">&larr; Previous Level</a>
+            <a href="level11.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+
+

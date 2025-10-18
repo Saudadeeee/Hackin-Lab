@@ -1,5 +1,5 @@
 <?php
-$mysqli = new mysqli('db','root','rootpassword','sqli_lab');
+$mysqli = new mysqli('db','webapp','webapp123','sqli_lab');
 $query = $_GET['query'] ?? '';
 ?>
 <!DOCTYPE html>
@@ -13,7 +13,7 @@ $query = $_GET['query'] ?? '';
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔬 SQL Sandbox</h1>
+            <h1> SQL Sandbox</h1>
             <p>Practice SQL queries in a safe environment</p>
         </div>
 
@@ -25,11 +25,11 @@ $query = $_GET['query'] ?? '';
                            placeholder="e.g., SELECT * FROM users LIMIT 5" 
                            value="<?php echo htmlspecialchars($_GET['query'] ?? ''); ?>">
                 </div>
-                <button type="submit" class="btn">🚀 Execute Query</button>
+                <button type="submit" class="btn"> Execute Query</button>
             </form>
 
             <?php
-            $mysqli = new mysqli('db','root','rootpassword','sqli_lab');
+            $mysqli = new mysqli('db','webapp','webapp123','sqli_lab');
             $query = $_GET['query'] ?? '';
             
             if ($query) {
@@ -41,11 +41,11 @@ $query = $_GET['query'] ?? '';
                 $delta = microtime(true) - $start;
                 
                 if (!$result) {
-                    echo '<div class="error">❌ Error: ' . $mysqli->error . '</div>';
+                    echo '<div class="error"> Error: ' . $mysqli->error . '</div>';
                 } else {
                     echo '<div class="result">';
-                    echo '<p><strong>✅ Query executed successfully!</strong></p>';
-                    echo '<p>⏱️ Execution time: ' . number_format($delta, 4) . ' seconds</p>';
+                    echo '<p><strong> Query executed successfully!</strong></p>';
+                    echo '<p> Execution time: ' . number_format($delta, 4) . ' seconds</p>';
                     
                     if ($result === true) {
                         echo '<p>Rows affected: ' . $mysqli->affected_rows . '</p>';
@@ -59,7 +59,7 @@ $query = $_GET['query'] ?? '';
             ?>
             
             <div class="info-box">
-                <h4>📚 Available Tables:</h4>
+                <h4> Available Tables:</h4>
                 <ul>
                     <li><strong>users</strong> - id, username, password</li>
                     <li><strong>levels</strong> - id, flag</li>
@@ -69,8 +69,8 @@ $query = $_GET['query'] ?? '';
         </div>
         
         <div class="navigation">
-            <a href="index.php">🏠 Home</a>
-            <a href="submit.php?level=1">🏆 Submit Flags</a>
+            <a href="index.php"> Home</a>
+            <a href="submit.php?level=1"> Submit Flags</a>
         </div>
     </div>
 </body>

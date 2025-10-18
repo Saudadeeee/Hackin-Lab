@@ -4,10 +4,11 @@
 
 session_start();
 
+require_once __DIR__ . '/includes/helpers.php';
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -81,11 +82,11 @@ if ($_POST) {
                         ($has_special ? 1 : 0) + ($has_logical ? 1 : 0) + ($has_spaces ? 1 : 0);
     
     if ($triggered_filters > 0) {
-        $message = "🛡️ Advanced WAF Protection Triggered!<br>";
-        $message .= "❌ Blocked patterns: " . implode(', ', $blocked_patterns) . "<br>";
-        $message .= "📊 Filters triggered: $triggered_filters/$total_filters<br>";
-        $message .= "🎯 You need to bypass ALL filters to proceed!<br>";
-        $message .= "💡 Try more sophisticated encoding, alternatives, or creative bypasses!";
+        $message = "Advanced WAF protection triggered!<br>";
+        $message .= "Blocked patterns: " . implode(', ', $blocked_patterns) . "<br>";
+        $message .= "Filters triggered: $triggered_filters/$total_filters<br>";
+        $message .= "You must bypass every filter to proceed.<br>";
+        $message .= "Try more sophisticated encoding, alternatives, or creative bypasses.";
     } else {
         $waf_bypass_achieved = true;
         
@@ -100,30 +101,29 @@ if ($_POST) {
                 
                 if ($user_data['role'] === 'admin') {
                     $success = true;
-                    $message = "🎉🎉 ULTIMATE VICTORY! You defeated the Advanced WAF! 🎉🎉<br>";
-                    $message .= "🏆 <strong>FLAG: LEVEL16_ADVANCED_WAF_BYPASS_CHAMPION</strong><br>";
-                    $message .= "🛡️ All WAF filters bypassed successfully!<br>";
-                    $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
-                    $message .= "👑 You are now a SQL Injection Grandmaster!<br>";
-                    $message .= "🌟 Congratulations on completing all 16 levels!";
+                    $flag = get_flag_for_level(16);
+                    $message = "Ultimate victory! You defeated the advanced WAF.<br>";
+                    $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                    $message .= "All WAF filters bypassed successfully.<br>";
+                    $message .= "SQL query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                    $message .= "Congratulations on completing all 16 levels!";
                 } else {
-                    $message = "🟡 WAF Bypassed but injection failed!<br>";
-                    $message .= "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")<br>";
-                    $message .= "⚠️ You bypassed the WAF but need admin access for the final flag!";
+                    $message = "WAF bypass succeeded but the injection did not escalate.<br>";
+                    $message .= "Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")<br>";
+                    $message .= "You still need the admin role for the final flag.";
                 }
             } else {
-                $message = "🟡 WAF Bypassed but authentication failed!<br>";
-                $message .= "✅ All filters bypassed successfully!<br>";
-                $message .= "❌ No matching user found<br>";
-                $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
-                $message .= "💡 Try adjusting your payload to match admin credentials!";
+                $message = "WAF bypass succeeded but authentication failed.<br>";
+                $message .= "All filters were bypassed, yet no matching user was found.<br>";
+                $message .= "SQL query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                $message .= "Adjust your payload until it maps to the admin credentials.";
             }
             
         } catch (Exception $e) {
-            $message = "🟡 WAF Bypassed but SQL error occurred!<br>";
-            $message .= "✅ All filters bypassed successfully!<br>";
-            $message .= "💥 SQL Error: " . $e->getMessage() . "<br>";
-            $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
+            $message = "WAF bypass succeeded but the query errored.<br>";
+            $message .= "All filters were bypassed successfully.<br>";
+            $message .= "SQL error: " . $e->getMessage() . "<br>";
+            $message .= "SQL query: <code>" . htmlspecialchars($sql) . "</code>";
         }
     }
 }
@@ -246,30 +246,30 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛡️ Level 16 - Advanced WAF Bypass</h1>
+            <h1>Level 16 - Advanced WAF Bypass</h1>
             <p>The ultimate challenge - bypass sophisticated Web Application Firewall</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="final-boss">
-            🏆 FINAL BOSS CHALLENGE 🏆<br>
+             FINAL BOSS CHALLENGE <br>
             Advanced WAF Protection System
         </div>
         
         <div class="waf-container">
             <div class="waf-info">
-                <h4>🛡️ Advanced WAF Challenge</h4>
+                <h4> Advanced WAF Challenge</h4>
                 <p>This is the final challenge! You must bypass ALL layers of protection.</p>
                 <p><strong>Goal:</strong> Achieve admin access while bypassing every security filter!</p>
             </div>
             
             <div class="waf-status">
-                🚨 ADVANCED WAF PROTECTION ACTIVE 🚨<br>
+                 ADVANCED WAF PROTECTION ACTIVE <br>
                 Multiple Security Layers Engaged
             </div>
             
             <div class="filter-layers">
-                <h4>🔒 Active Security Filters:</h4>
+                <h4> Active Security Filters:</h4>
                 
                 <div class="filter-layer">
                     <strong>Layer 1:</strong> Comment Detection (blocks: --, #, /*, */)
@@ -298,7 +298,7 @@ if ($_POST) {
                 </div>
             <?php endif; ?>
             
-            <h3>🔐 Ultimate Login Challenge</h3>
+            <h3> Ultimate Login Challenge</h3>
             <form method="POST" class="login-form">
                 <div class="form-group">
                     <label for="username">Username:</label>
@@ -310,46 +310,20 @@ if ($_POST) {
                     <input type="text" id="password" name="password" placeholder="Ultimate challenge awaits..." required>
                 </div>
                 
-                <button type="submit" class="submit-btn">🚀 Face the Final Boss</button>
+                <button type="submit" class="submit-btn">Face the Final Boss</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 16 (Final Boss):</h3>
-            <ul>
-                <li><strong>Ultimate Challenge:</strong> Must bypass ALL 5 filter layers simultaneously</li>
-                <li><strong>No Easy Path:</strong> Standard techniques won't work here</li>
-                <li><strong>Think Creative:</strong> Combine multiple advanced bypass techniques</li>
-                <li><strong>Possible Approaches:</strong></li>
-            </ul>
-            <div class="code-example">
-<strong>Approach 1 - Advanced Encoding:</strong><br>
-Use hex encoding, Unicode, double encoding<br><br>
+        <?= render_hint_section(get_level_hints(16), 'Hints for Level 16'); ?>
 
-<strong>Approach 2 - Alternative Functions:</strong><br>
-Use MySQL functions like SUBSTR, ASCII, CHAR<br><br>
-
-<strong>Approach 3 - Conditional Techniques:</strong><br>
-Use IF statements, CASE expressions<br><br>
-
-<strong>Approach 4 - Mathematical Operations:</strong><br>
-Use arithmetic to create logical conditions<br><br>
-
-<strong>Expert Level:</strong> Try combining all previous level techniques!
-            </div>
-            <ul>
-                <li><strong>Remember:</strong> You've learned 15 different techniques - use them all!</li>
-                <li><strong>Final Tip:</strong> Sometimes the simplest bypass is the most effective</li>
-                <li><strong>Victory Condition:</strong> Login as admin while bypassing every filter</li>
-            </ul>
-        </div>
-        
         <div class="navigation">
-            <a href="level15.php">← Previous Level</a>
-            <span style="color: #fca5a5;">🏆 Final Challenge! 🏆</span>
+            <a href="level15.php">&larr; Previous Level</a>
+            <span style="color: #fca5a5;">Final Challenge!</span>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+

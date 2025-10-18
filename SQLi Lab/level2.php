@@ -2,10 +2,12 @@
 // Level 2: Union Based Login Form - Extract Data via UNION
 // Goal: Login as admin and extract sensitive data using UNION attacks
 
+require_once __DIR__ . '/includes/helpers.php';
+
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -42,19 +44,21 @@ if ($_POST) {
             
             if ($admin_found) {
                 $success = true;
-                $message = "🎉 Excellent! You successfully used integer injection with UNION to get admin!<br>";
-                $message .= "🏁 <strong>FLAG: LEVEL2_INTEGER_UNION_INJECTION</strong>";
+                $flag = get_flag_for_level(2);
+                $message = "Great job! You used UNION-based integer injection to recover the admin account.<br>";
+                $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code>";
             } else {
-                $message = "✅ Data extracted, but no admin found. Try UNION SELECT to inject admin data.";
+                $message = "Data extracted, but no admin found. Try UNION SELECT to inject admin data.";
             }
         } else {
-            $message = "❌ Login failed: Invalid credentials";
+            $message = "Login failed: Invalid credentials.";
         }
     } catch (Exception $e) {
-        $message = "💥 Database Error: " . $e->getMessage();
-        $message .= "<br><br>📝 SQL Query: " . htmlspecialchars($sql);
+        $message = "Database error: " . $e->getMessage();
+        $message .= "<br><br>SQL Query: " . htmlspecialchars($sql);
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -200,17 +204,17 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔗 Level 2 - Union Login</h1>
-            <p>Use UNION SELECT to extract data from other tables and login as admin</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <h1>Level 2 - Union Login</h1>
+            <p>Use UNION SELECT to extract data from other tables and log in as admin.</p>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="login-container">
-            <h2>🏢 Corporate Login System</h2>
+            <h2> Corporate Login System</h2>
             <p><strong>Objective:</strong> Use UNION injection to extract admin credentials and login successfully</p>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : (strpos($message, 'Error') !== false ? 'error' : 'info') ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
@@ -226,11 +230,11 @@ if ($_POST) {
                     <input type="password" id="password" name="password" placeholder="Enter password" required>
                 </div>
                 
-                <button type="submit" class="login-btn">🚀 Login</button>
+                <button type="submit" class="login-btn"> Login</button>
             </form>
             
             <?php if ($user_data && count($user_data) > 0): ?>
-                <h3>📊 Extracted Data:</h3>
+                <h3> Extracted Data:</h3>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -252,24 +256,16 @@ if ($_POST) {
             <?php endif; ?>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 2:</h3>
-            <ul>
-                <li><strong>Integer Injection:</strong> This level uses numeric user ID without quotes</li>
-                <li><strong>UNION Attack:</strong> Use <code>UNION SELECT</code> to inject data</li>
-                <li><strong>Column Count:</strong> First find number of columns: <code>1 ORDER BY 3</code></li>
-                <li><strong>Try:</strong> <code>999 UNION SELECT 1,'admin','admin'</code> in user ID field</li>
-                <li><strong>Admin ID:</strong> Admin user has ID = 3, so try: <code>3</code> with password <code>admin123</code></li>
-                <li><strong>Advanced:</strong> <code>1 UNION SELECT 999,'admin','admin'</code></li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(2), 'Hints for Level 2'); ?>
         
         <div class="navigation">
-            <a href="level1.php">← Previous Level</a>
-            <a href="level3.php">Next Level →</a>
+            <a href="level1.php">&larr; Previous Level</a>
+            <a href="level3.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+

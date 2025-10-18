@@ -25,9 +25,11 @@ services:
         condition: service_healthy
     environment:
       - DB_HOST=db
-      - DB_USER=root
-      - DB_PASS=rootpassword
+      - DB_USER=webapp
+      - DB_PASS=webapp123
       - DB_NAME=sqli_lab
+      - FLAG_DB_USER=flagchecker
+      - FLAG_DB_PASS=flagchecker123
     command: >
       bash -c "docker-php-ext-install mysqli pdo pdo_mysql
       && apache2-foreground"

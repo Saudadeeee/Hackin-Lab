@@ -4,10 +4,11 @@
 
 session_start();
 
+require_once __DIR__ . '/includes/helpers.php';
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -27,7 +28,7 @@ if ($_POST) {
         $data = json_decode($json_input, true);
         
         if ($data === null) {
-            $message = "❌ Invalid JSON format!";
+            $message = "Invalid JSON format!";
         } else {
             $username = $data['username'] ?? '';
             $password = $data['password'] ?? '';
@@ -43,24 +44,25 @@ if ($_POST) {
                 
                 if ($user_data['role'] === 'admin') {
                     $success = true;
-                    $message = "🎉 Excellent! You exploited JSON-based SQL injection!<br>";
-                    $message .= "🏁 <strong>FLAG: LEVEL12_JSON_INJECTION_SPECIALIST</strong><br>";
-                    $message .= "📊 JSON Input: <code>" . htmlspecialchars($json_input) . "</code><br>";
-                    $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
-                    $message .= "👑 Admin access granted!";
+                    $flag = get_flag_for_level(12);
+                    $message = "Great job! You exploited JSON-based SQL injection.<br>";
+                    $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                    $message .= "JSON input: <code>" . htmlspecialchars($json_input) . "</code><br>";
+                    $message .= "SQL query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                    $message .= "Administrator access granted!";
                 } else {
-                    $message = "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
-                    $message .= "<br>⚠️ You need admin role to get the flag!";
+                    $message = "Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
+                    $message .= "<br>You need admin role to get the flag!";
                 }
             } else {
-                $message = "❌ Authentication failed: No matching user found";
-                $message .= "<br>📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
+                $message = "Authentication failed: no matching user found.";
+                $message .= "<br>SQL query: <code>" . htmlspecialchars($sql) . "</code>";
             }
         }
         
     } catch (Exception $e) {
-        $message = "💥 JSON Processing Error: " . $e->getMessage();
-        $message .= "<br>📊 JSON Input: <code>" . htmlspecialchars($json_input ?? 'N/A') . "</code>";
+        $message = "JSON processing error: " . $e->getMessage();
+        $message .= "<br>JSON input: <code>" . htmlspecialchars($json_input ?? 'N/A') . "</code>";
     }
 }
 
@@ -166,14 +168,14 @@ $sample_json = json_encode([
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Level 12 - JSON Injection</h1>
+            <h1>Level 12 - JSON Injection</h1>
             <p>Exploit JSON parameter parsing vulnerabilities in API authentication</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="json-container">
             <div class="json-info">
-                <h4>📊 JSON Injection Challenge</h4>
+                <h4> JSON Injection Challenge</h4>
                 <p>This API accepts JSON authentication data and processes it in SQL queries.</p>
                 <p><strong>Goal:</strong> Manipulate JSON parameters to login as admin!</p>
             </div>
@@ -181,50 +183,29 @@ $sample_json = json_encode([
             <div class="json-viewer"><?= htmlspecialchars($sample_json) ?></div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
             
-            <h3>📊 JSON Authentication API</h3>
+            <h3> JSON Authentication API</h3>
             <form method="POST" class="login-form">
                 <div class="form-group">
                     <label for="json_data">JSON Data:</label>
                     <textarea id="json_data" name="json_data" 
                               placeholder="Enter JSON authentication data..." required><?= htmlspecialchars($sample_json) ?></textarea>
-                    <button type="button" class="sample-btn" onclick="loadSampleJSON()">📋 Load Sample JSON</button>
+                    <button type="button" class="sample-btn" onclick="loadSampleJSON()">Load Sample JSON</button>
                 </div>
                 
-                <button type="submit" class="submit-btn">🚀 Authenticate</button>
+                <button type="submit" class="submit-btn">Authenticate</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 12:</h3>
-            <ul>
-                <li><strong>JSON Structure:</strong> {"username": "value", "password": "value", "role": "value"}</li>
-                <li><strong>SQL Query:</strong> WHERE username='value' AND password='value' AND role='value'</li>
-                <li><strong>Goal:</strong> Make the role parameter bypass the filter</li>
-                <li><strong>Example Payload:</strong></li>
-            </ul>
-            <div class="code-example">
-{<br>
-&nbsp;&nbsp;"username": "admin' OR '1'='1' -- ",<br>
-&nbsp;&nbsp;"password": "anything",<br>
-&nbsp;&nbsp;"role": "user"<br>
-}
-            </div>
-            <ul>
-                <li><strong>Alternative:</strong> Manipulate the role parameter directly</li>
-                <li><strong>Advanced:</strong> Use UNION SELECT in JSON values</li>
-                <li><strong>Remember:</strong> JSON must be valid format</li>
-                <li><strong>Tip:</strong> All three parameters are vulnerable to injection</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(12), 'Hints for Level 12'); ?>
         
         <div class="navigation">
-            <a href="level11.php">← Previous Level</a>
-            <a href="level13.php">Next Level →</a>
+            <a href="level11.php">&larr; Previous Level</a>
+            <a href="level13.php">Next Level &rarr;</a>
         </div>
     </div>
     
@@ -241,3 +222,5 @@ $sample_json = json_encode([
 </html>
 
 <?php $conn->close(); ?>
+
+

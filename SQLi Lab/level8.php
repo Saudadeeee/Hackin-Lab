@@ -4,10 +4,11 @@
 
 session_start();
 
+require_once __DIR__ . '/includes/helpers.php';
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -31,12 +32,12 @@ if ($_POST && $mode === 'register') {
     
     try {
         if ($conn->query($sql)) {
-            $message = "✅ Registration successful! You can now login with your credentials.";
+            $message = " Registration successful! You can now login with your credentials.";
         } else {
-            $message = "❌ Registration failed: " . $conn->error;
+            $message = " Registration failed: " . $conn->error;
         }
     } catch (Exception $e) {
-        $message = "❌ Registration failed: " . $e->getMessage();
+        $message = " Registration failed: " . $e->getMessage();
     }
 }
 
@@ -62,20 +63,21 @@ if ($_POST && $mode === 'login') {
                 $admin_check = $result2->fetch_assoc();
                 if ($admin_check['count'] > 0 || $user_data['role'] === 'admin') {
                     $success = true;
-                    $message = "🎉 Brilliant! You exploited second-order injection to become admin!<br>";
-                    $message .= "🏁 <strong>FLAG: LEVEL7_SECOND_ORDER_MASTERY</strong><br>";
-                    $message .= "🔄 Your payload was stored during registration and executed during login!<br>";
-                    $message .= "👤 Welcome, " . htmlspecialchars($user_data['username']) . "!";
+                    $flag = get_flag_for_level(8);
+                    $message = "Great job! You exploited a second-order injection to become admin.<br>";
+                    $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                    $message .= "Your payload was stored during registration and executed during login.<br>";
+                    $message .= "Welcome, " . htmlspecialchars($user_data['username']) . "!";
                 } else {
-                    $message = "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role'] ?? 'user') . ")";
+                    $message = "Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role'] ?? 'user') . ")";
                 }
             }
         } catch (Exception $e) {
-            $message = "💥 Second query error: " . $e->getMessage();
-            $message .= "<br>🔄 Your stored payload triggered an error - injection successful!";
+            $message = "Second query error: " . $e->getMessage();
+            $message .= "<br>Your stored payload triggered an error - injection successful!";
         }
     } else {
-        $message = "❌ Login failed: Invalid credentials";
+        $message = "Login failed: Invalid credentials";
     }
 }
 ?>
@@ -85,7 +87,7 @@ if ($_POST && $mode === 'login') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 7 - Registration System | SQL Injection Lab</title>
+    <title>Level 8 - Registration System | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         .system-container {
@@ -164,30 +166,30 @@ if ($_POST && $mode === 'login') {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔄 Level 7 - Registration System</h1>
+            <h1>Level 8 - Registration System</h1>
             <p>Exploit second-order injection through registration and login process</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="system-container">
             <div class="tab-switcher">
-                <a href="?mode=register" class="tab <?= $mode === 'register' ? 'active' : '' ?>">📝 Register</a>
-                <a href="?mode=login" class="tab <?= $mode === 'login' ? 'active' : '' ?>">🔐 Login</a>
+                <a href="?mode=register" class="tab <?= $mode === 'register' ? 'active' : '' ?>"> Register</a>
+                <a href="?mode=login" class="tab <?= $mode === 'login' ? 'active' : '' ?>"> Login</a>
             </div>
             
             <div class="second-order-info">
-                <h4>🔄 Second-Order Injection Challenge</h4>
+                <h4> Second-Order Injection Challenge</h4>
                 <p>Register with a malicious payload, then trigger it during login!</p>
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
             
             <?php if ($mode === 'register'): ?>
-                <h3>📝 Create Account</h3>
+                <h3> Create Account</h3>
                 <form method="POST" class="login-form">
                     <div class="form-group">
                         <label for="username">Username:</label>
@@ -204,10 +206,10 @@ if ($_POST && $mode === 'login') {
                         <input type="text" id="email" name="email" placeholder="Enter email (vulnerable field!)" required>
                     </div>
                     
-                    <button type="submit" class="submit-btn">📝 Register</button>
+                    <button type="submit" class="submit-btn"> Register</button>
                 </form>
             <?php else: ?>
-                <h3>🔐 Login</h3>
+                <h3> Login</h3>
                 <form method="POST" class="login-form">
                     <div class="form-group">
                         <label for="username">Username:</label>
@@ -219,36 +221,22 @@ if ($_POST && $mode === 'login') {
                         <input type="password" id="password" name="password" placeholder="Enter password" required>
                     </div>
                     
-                    <button type="submit" class="submit-btn">🚀 Login</button>
+                    <button type="submit" class="submit-btn">Login</button>
                 </form>
             <?php endif; ?>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 7:</h3>
-            <ul>
-                <li><strong>Two-Step Process:</strong> 1) Register with payload, 2) Login to trigger</li>
-                <li><strong>Vulnerable Field:</strong> Email field is stored and used in second query</li>
-                <li><strong>Example Registration:</strong></li>
-            </ul>
-            <div class="code-example">
-Username: hacker<br>
-Password: pass<br>
-Email: test@test.com' UNION SELECT 'admin' as role--
-            </div>
-            <ul>
-                <li><strong>Then Login:</strong> Use the same username/password to trigger stored payload</li>
-                <li><strong>Alternative:</strong> Register admin-like data directly in email field</li>
-                <li><strong>Goal:</strong> Make the second query return admin role</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(8), 'Hints for Level 8'); ?>
         
         <div class="navigation">
-            <a href="level7.php">← Previous Level</a>
-            <a href="level9.php">Next Level →</a>
+            <a href="level7.php">&larr; Previous Level</a>
+            <a href="level9.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+
+

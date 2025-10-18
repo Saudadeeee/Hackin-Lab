@@ -4,10 +4,11 @@
 
 session_start();
 
+require_once __DIR__ . '/includes/helpers.php';
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'root'; 
-$pass = $_ENV['DB_PASS'] ?? 'rootpassword';
+$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -27,13 +28,13 @@ if ($_POST) {
     // Check for space characters
     if (strpos($username, ' ') !== false || strpos($password, ' ') !== false) {
         $detected_spaces = true;
-        $message = "🚫 Security Filter: Space characters are not allowed!<br>";
-        $message .= "❌ Detected spaces in: ";
+        $message = " Security Filter: Space characters are not allowed!<br>";
+        $message .= " Detected spaces in: ";
         $space_locations = [];
         if (strpos($username, ' ') !== false) $space_locations[] = "username";
         if (strpos($password, ' ') !== false) $space_locations[] = "password";
         $message .= implode(', ', $space_locations) . "<br>";
-        $message .= "🛡️ Try alternative space bypasses!";
+        $message .= " Try alternative space bypasses!";
     } else {
         // VULNERABLE query (if space filter is bypassed)
         $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
@@ -46,23 +47,24 @@ if ($_POST) {
                 
                 if ($user_data['role'] === 'admin') {
                     $success = true;
-                    $message = "🎉 Exceptional! You bypassed space filtering like a pro!<br>";
-                    $message .= "🏁 <strong>FLAG: LEVEL15_SPACE_BYPASS_MASTER</strong><br>";
-                    $message .= "🚀 No spaces detected in payload!<br>";
-                    $message .= "📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code><br>";
-                    $message .= "👑 Admin access achieved without spaces!";
+                    $flag = get_flag_for_level(15);
+                    $message = "Great job! You bypassed the space filter and reached admin.<br>";
+                    $message .= "<strong>Flag:</strong> <code>" . htmlspecialchars($flag) . "</code><br>";
+                    $message .= "No spaces detected in your payload.<br>";
+                    $message .= "SQL query: <code>" . htmlspecialchars($sql) . "</code><br>";
+                    $message .= "Administrator access achieved without spaces!";
                 } else {
-                    $message = "✅ Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
-                    $message .= "<br>⚠️ You need admin role to get the flag!";
+                    $message = "Login successful as: " . htmlspecialchars($user_data['username']) . " (" . htmlspecialchars($user_data['role']) . ")";
+                    $message .= "<br>You still need the admin role to get the flag.";
                 }
             } else {
-                $message = "❌ Authentication failed: No matching user found";
-                $message .= "<br>📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
+               $message = "Authentication failed: no matching user found.";
+                $message .= "<br>SQL query: <code>" . htmlspecialchars($sql) . "</code>";
             }
             
         } catch (Exception $e) {
-            $message = "💥 SQL Error: " . $e->getMessage();
-            $message .= "<br>📝 SQL Query: <code>" . htmlspecialchars($sql) . "</code>";
+            $message = "SQL error: " . $e->getMessage();
+            $message .= "<br>SQL query: <code>" . htmlspecialchars($sql) . "</code>";
         }
     }
 }
@@ -161,59 +163,59 @@ if ($_POST) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚫 Level 15 - Space Filter Bypass</h1>
+            <h1>Level 15 - Space Filter Bypass</h1>
             <p>Exploit SQL injection without using space characters</p>
-            <a href="index.php" class="back-btn">← Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
         
         <div class="space-container">
             <div class="space-info">
-                <h4>🚫 Space Filter Challenge</h4>
+                <h4> Space Filter Challenge</h4>
                 <p>This system blocks all inputs containing space characters.</p>
                 <p><strong>Goal:</strong> Achieve SQL injection without using any spaces!</p>
             </div>
             
             <div class="space-detector">
-                🔍 SPACE CHARACTER DETECTOR ACTIVE 🔍<br>
+                 SPACE CHARACTER DETECTOR ACTIVE <br>
                 All inputs will be scanned for space characters (ASCII 32)
             </div>
             
             <div class="bypass-techniques">
-                <strong>🛠️ Space Bypass Techniques:</strong><br>
+                <strong> Space Bypass Techniques:</strong><br>
                 
                 <div class="technique">
                     <strong>1. Tab Character:</strong><br>
-                    admin'/**/OR/**/'x'='x → admin'	OR	'x'='x
+                    admin'/**/OR/**/'x'='x  admin'	OR	'x'='x
                 </div>
                 
                 <div class="technique">
                     <strong>2. Newline Characters:</strong><br>
-                    admin'%0AOR%0A'x'='x → admin'<br>OR<br>'x'='x
+                    admin'%0AOR%0A'x'='x  admin'<br>OR<br>'x'='x
                 </div>
                 
                 <div class="technique">
                     <strong>3. Comment-based Spacing:</strong><br>
-                    admin'/**/OR/**/'x'='x → admin'/*comment*/OR/*comment*/'x'='x
+                    admin'/**/OR/**/'x'='x  admin'/*comment*/OR/*comment*/'x'='x
                 </div>
                 
                 <div class="technique">
                     <strong>4. Parentheses Grouping:</strong><br>
-                    admin'OR('x'='x') → admin'OR('x'='x')
+                    admin'OR('x'='x')  admin'OR('x'='x')
                 </div>
                 
                 <div class="technique">
                     <strong>5. Plus Sign (URL encoded):</strong><br>
-                    admin'+OR+'x'='x → admin' OR 'x'='x
+                    admin'+OR+'x'='x  admin' OR 'x'='x
                 </div>
             </div>
             
             <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : 'error' ?>">
+                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
             
-            <h3>🔐 Space-Free Login</h3>
+            <h3> Space-Free Login</h3>
             <form method="POST" class="login-form">
                 <div class="form-group">
                     <label for="username">Username:</label>
@@ -225,47 +227,20 @@ if ($_POST) {
                     <input type="text" id="password" name="password" placeholder="Enter password (NO SPACES!)" required>
                 </div>
                 
-                <button type="submit" class="submit-btn">🚀 Login</button>
+                <button type="submit" class="submit-btn">Login</button>
             </form>
         </div>
         
-        <div class="hints">
-            <h3>💡 Hints for Level 15:</h3>
-            <ul>
-                <li><strong>Challenge:</strong> No space characters (ASCII 32) allowed</li>
-                <li><strong>Goal:</strong> Inject SQL without spaces</li>
-                <li><strong>Example Payloads:</strong></li>
-            </ul>
-            <div class="code-example">
-<strong>Method 1 - Comments:</strong><br>
-Username: admin'/**/OR/**/'x'='x<br>
-Password: anything<br><br>
-
-<strong>Method 2 - Tab Characters:</strong><br>
-Username: admin'	OR	'x'='x<br>
-Password: anything<br><br>
-
-<strong>Method 3 - Newlines (URL encoded):</strong><br>
-Username: admin'%0AOR%0A'x'='x<br>
-Password: anything<br><br>
-
-<strong>Method 4 - Parentheses:</strong><br>
-Username: admin'OR('x'='x')<br>
-Password: anything
-            </div>
-            <ul>
-                <li><strong>Advanced:</strong> Try combining multiple techniques</li>
-                <li><strong>Remember:</strong> The goal is to bypass the password check entirely</li>
-                <li><strong>Tip:</strong> Copy-paste tab characters from text editor if needed</li>
-            </ul>
-        </div>
+        <?= render_hint_section(get_level_hints(15), 'Hints for Level 15'); ?>
         
         <div class="navigation">
-            <a href="level14.php">← Previous Level</a>
-            <a href="level16.php">Next Level →</a>
+            <a href="level14.php">&larr; Previous Level</a>
+            <a href="level16.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
+
+
