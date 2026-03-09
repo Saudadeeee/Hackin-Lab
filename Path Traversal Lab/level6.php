@@ -1,0 +1,121 @@
+<?php
+require_once __DIR__ . '/helpers.php';
+
+$levelNum  = 6;
+$_flag_result = handle_inline_flag_submit($levelNum);
+$output    = null;
+$flagFound = false;
+$flagValue = '';
+
+if (isset($_GET['file'])) {
+    $file = $_GET['file'];
+    // --- VULNERABLE CODE (same as shown in source panel) ---
+    $content = @file_get_contents('/var/www/html/' . $file);
+    // -------------------------------------------------------
+    if ($content === false) {
+        $output = '[Error: File not found]';
+    } else {
+        $output = $content;
+        if (strpos($output, 'FLAG{') !== false) {
+            $flagFound = true;
+            $flagValue = get_flag_for_level($levelNum);
+            mark_level_completed($levelNum);
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 6 - Log File Traversal | Path Traversal Lab</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="header">
+    <div>
+        <h1>Level 6 &mdash; Reading Server Log Files via Traversal</h1>
+        <p>Medium &bull; Traverse out of the document root to read a log file containing the flag</p>
+    </div>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <a href="index.php" class="back-btn">All Levels</a>
+        <a href="submit.php" class="submit-btn">Submit Flag</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="challenge-layout">
+
+        <!-- LEFT: Source Code Panel -->
+        <div class="code-panel">
+            <h3>Vulnerable Source Code</h3>
+            <div class="source-code">
+                <code><span class="php-keyword">&lt;?php</span>
+<span class="php-variable">$file</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'file'</span>] ?? <span class="php-string">'docs/readme.txt'</span>;
+<span class="vuln-line"><span class="php-variable">$content</span> = <span class="php-function">file_get_contents</span>(<span class="php-string">'/var/www/html/'</span> . <span class="php-variable">$file</span>);</span>
+<span class="php-function">echo</span> <span class="php-string">"&lt;pre&gt;"</span> . <span class="php-function">htmlspecialchars</span>(<span class="php-variable">$content</span> ?: <span class="php-string">'File not found'</span>) . <span class="php-string">"&lt;/pre&gt;"</span>;
+<span class="php-keyword">?&gt;</span></code>
+            </div>
+            <div style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted); line-height:1.7;">
+                <strong style="color:var(--text);">What to look for:</strong><br>
+                The base path is <code>/var/www/html/</code> — only 3 levels deep from the
+                filesystem root. User input is appended with no filtering at all.<br><br>
+                Log files are often written <em>outside</em> the document root at paths like
+                <code>/var/log/</code>. This server has a pre-poisoned access log at
+                <code>/var/log/ptlab/access.log</code> that contains the flag.<br><br>
+                <strong style="color:var(--text);">Goal:</strong>
+                Traverse to <code>/var/log/ptlab/access.log</code>
+            </div>
+        </div>
+
+        <!-- RIGHT: Challenge Panel -->
+        <div class="challenge-panel">
+            <h3>Challenge</h3>
+            <div class="scenario">
+                <strong>Scenario:</strong> A documentation viewer builds a path from
+                <code>/var/www/html/</code> plus user input. The application log at
+                <code>/var/log/ptlab/access.log</code> has been pre-poisoned with the flag —
+                traverse to read it.
+            </div>
+
+            <form method="GET" action="level6.php">
+                <div class="form-group">
+                    <label for="file">File parameter (<code>?file=</code>)</label>
+                    <input type="text" id="file" name="file" class="form-control"
+                           placeholder="e.g. docs/readme.txt"
+                           value="<?= htmlspecialchars($_GET['file'] ?? '') ?>">
+                </div>
+                <button type="submit" class="btn btn-primary">Read File</button>
+            </form>
+
+            <?php if ($output !== null): ?>
+            <div style="margin-top:1rem;">
+                <label style="font-size:0.82rem; color:var(--text-muted);">Output:</label>
+                <div class="output-box <?= empty(trim($output)) ? 'empty' : '' ?>"><?= htmlspecialchars($output) ?></div>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($flagFound): ?>
+            <div class="message success">Flag captured! You successfully read the server log file.</div>
+            <div class="flag-display"><?= htmlspecialchars($flagValue) ?></div>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.5rem;">
+                Submit this flag at <a href="submit.php" style="color:var(--primary);">submit.php</a> to record your progress.
+            </p>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?= render_hint_section(get_level_hints($levelNum)) ?>
+    <?= render_inline_flag_form($levelNum, $_flag_result) ?>
+
+    <div class="navigation">
+        <span style="color:var(--text-muted); font-size:0.85rem;">Level 6 / 10</span>
+        <a href="level5.php" class="prev-link">&larr; Previous</a>
+        <a href="index.php" class="nav-link">Home</a>
+        <a href="level7.php" class="next-link">Next Level &rarr;</a>
+        <a href="submit.php" class="nav-link">Submit Flag</a>
+    </div>
+</div>
+</body>
+</html>

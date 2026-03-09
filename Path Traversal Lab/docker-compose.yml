@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    container_name: path_traversal_lab
+    ports:
+      - "8082:80"
+    volumes:
+      - ./:/var/www/html/
+    restart: unless-stopped

@@ -5,9 +5,11 @@
 session_start();
 
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/helpers.php';
+$_flag_result = handle_inline_flag_submit(10);
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$user = $_ENV['DB_USER'] ?? 'webapp';
 $pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
@@ -25,22 +27,22 @@ if ($_POST) {
     $email = $_POST['email'] ?? '';
     $fullname = $_POST['fullname'] ?? '';
     $phone = $_POST['phone'] ?? '';
-    
+
     // VULNERABLE INSERT query - directly concatenating user input
     $sql = "INSERT INTO users (username, password, email, role) VALUES ('$username', 'defaultpass', '$email', 'user')";
-    
+
     try {
         // Execute the INSERT query
         if ($conn->query($sql)) {
             $user_id = $conn->insert_id;
-            
+
             // Check if the newly created user is admin
             $check_sql = "SELECT * FROM users WHERE id = $user_id";
             $result = $conn->query($check_sql);
-            
+
             if ($result && $result->num_rows > 0) {
                 $user_data = $result->fetch_assoc();
-                
+
                 if ($user_data['role'] === 'admin') {
                     $success = true;
                     $flag = get_flag_for_level(10);
@@ -62,7 +64,7 @@ if ($_POST) {
             $message = "Registration failed: " . $conn->error;
             $message .= "<br> INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
         }
-        
+
     } catch (Exception $e) {
         $message = "INSERT Error: " . $e->getMessage();
         $message .= "<br> INSERT Query: <code>" . htmlspecialchars($sql) . "</code>";
@@ -78,69 +80,7 @@ if ($_POST) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Level 10 - INSERT Injection | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .insert-container {
-            max-width: 650px;
-            margin: 2rem auto;
-            background: #2a1810;
-            color: #e2e8f0;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(42, 24, 16, 0.4);
-            border: 1px solid #ea580c;
-        }
-        
-        .form-group input {
-            background: #1a0f0a;
-            color: #e2e8f0;
-            border: 2px solid #ea580c;
-        }
-        
-        .form-group input:focus {
-            border-color: #f97316;
-            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            color: white;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .submit-btn:hover {
-            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
-        }
-        
-        .insert-info {
-            background: #1a0f0a;
-            border: 2px solid #ea580c;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #fb923c;
-        }
-        
-        .sql-structure {
-            background: #1a0f0a;
-            border: 2px solid #f97316;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #fdba74;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a0f0a 0%, #2a1810 100%);
-        }
-    </style>
+
 </head>
 <body>
     <div class="container">
@@ -149,54 +89,80 @@ if ($_POST) {
             <p>Exploit INSERT statement vulnerabilities during user registration</p>
             <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
-        
-        <div class="insert-container">
-            <div class="insert-info">
-                <h4> INSERT Injection Challenge</h4>
-                <p>Manipulate the INSERT query to register as an admin user!</p>
-                <p><strong>Goal:</strong> Become admin during registration process</p>
+
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-variable">$username</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'username'</span>] ?? <span class="php-string">''</span>;
+<span class="php-variable">$email</span>    = <span class="php-variable">$_POST</span>[<span class="php-string">'email'</span>]    ?? <span class="php-string">''</span>;
+
+<span class="php-comment">// VULNERABLE: user input in VALUES clause</span>
+<span class="vuln-line"><span class="php-variable">$sql</span> = <span class="php-string">"INSERT INTO users"</span>
+     . <span class="php-string">" (username, password, email, role)"</span>
+     . <span class="php-string">" VALUES ('$username', 'defaultpass',"</span>
+     . <span class="php-string">"         '$email', 'user')"</span>;</span>
+
+<span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
+<span class="php-variable">$user_id</span> = <span class="php-variable">$conn</span>-&gt;insert_id;
+
+<span class="php-variable">$check</span> = <span class="php-string">"SELECT * FROM users WHERE id = $user_id"</span>;
+<span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$check</span>);
+<span class="php-keyword">if</span> (<span class="php-variable">$result</span>[<span class="php-string">'role'</span>] === <span class="php-string">'admin'</span>) {
+    <span class="php-comment">// flag awarded</span>
+}</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; <code>$username</code> and <code>$email</code> are interpolated directly into the VALUES clause. An attacker can close the string early and inject additional column values — for example, overriding the hardcoded <code>'user'</code> role with <code>'admin'</code>.
+                </div>
             </div>
-            
-            <div class="sql-structure">
-                <strong>INSERT Query Structure:</strong><br>
-                INSERT INTO users (username, password, email, role) <br>
-                VALUES ('$username', 'defaultpass', '$email', 'user')
+
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <p>This registration form inserts your supplied values directly into the database. The <code>role</code> column is hardcoded to <code>'user'</code> — but can you manipulate the query to override it?</p>
+                    <p><strong>Goal:</strong> Register a user whose <code>role</code> is <code>admin</code> to capture the flag!</p>
+
+                    <?php if ($message): ?>
+                        <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
+                            <?= $message ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <h3>User Registration</h3>
+                    <form method="POST" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" placeholder="Enter username (vulnerable field!)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" placeholder="Enter email address" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fullname">Full Name:</label>
+                            <input type="text" id="fullname" name="fullname" placeholder="Enter full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone:</label>
+                            <input type="text" id="phone" name="phone" placeholder="Enter phone number">
+                        </div>
+
+                        <button type="submit" class="submit-btn">Register Account</button>
+                    </form>
+                </div>
             </div>
-            
-            <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
-                    <?= $message ?>
-                </div>
-            <?php endif; ?>
-            
-            <h3> User Registration</h3>
-            <form method="POST" class="login-form">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" placeholder="Enter username (vulnerable field!)" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" placeholder="Enter email address" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="fullname">Full Name:</label>
-                    <input type="text" id="fullname" name="fullname" placeholder="Enter full name">
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone">Phone:</label>
-                    <input type="text" id="phone" name="phone" placeholder="Enter phone number">
-                </div>
-                
-                <button type="submit" class="submit-btn">Register Account</button>
-            </form>
         </div>
-        
+
         <?= render_hint_section(get_level_hints(10), 'Hints for Level 10'); ?>
-        
+
+    <?= render_inline_flag_form(10, $_flag_result) ?>
+
         <div class="navigation">
             <a href="level9.php">&larr; Previous Level</a>
             <a href="level11.php">Next Level &rarr;</a>
@@ -206,6 +172,3 @@ if ($_POST) {
 </html>
 
 <?php $conn->close(); ?>
-
-
-

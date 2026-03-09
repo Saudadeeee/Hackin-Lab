@@ -1,3 +1,33 @@
+<?php
+require_once __DIR__ . '/helpers.php';
+
+$result_output = null;
+$result_error  = null;
+
+if (isset($_GET['service'])) {
+    require_once 'flag_system.php';
+    get_level_flag(2);
+
+    $service = $_GET['service'];
+
+    // Basic security filter — block semicolon only
+    if (strpos($service, ';') !== false) {
+        $result_error = 'Security Alert: Semicolon (;) is not allowed!';
+    } else {
+        $command = "systemctl status " . $service . " 2>/dev/null || echo 'Service not found'";
+        $output  = shell_exec($command);
+
+        if ($output) {
+            $result_output = $output;
+        } else {
+            $result_error = 'No output or command failed';
+        }
+    }
+}
+
+$hints = get_level_hints(2);
+$_flag_result = handle_inline_flag_submit(2);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,162 +39,79 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛡️ Level 2 - Basic Filter Bypass</h1>
-            <p><strong>Objective:</strong> Bypass basic character filtering để thực hiện command injection</p>
+            <h1>Level 2 - Basic Filter Bypass</h1>
+            <p><strong>Objective:</strong> Bypass basic character filtering to perform command injection.</p>
+            <a href="index.php" class="back-btn">&larr; Back to Levels</a>
         </div>
 
-        <div class="form-container">
-            <h3>🔍 System Status Checker:</h3>
-            <p>Công cụ này kiểm tra status của system services. <strong>Security:</strong> Some dangerous characters are blocked!</p>
-            
-            <div class="code-block">Command: systemctl status <?php echo htmlspecialchars($_GET['service'] ?? '[SERVICE]'); ?></div>
-            
-            <?php
-            if (isset($_GET['service'])) {
-                echo '<h3>📊 Result:</h3>';
-                echo '<div class="result">';
-                
-                $service = $_GET['service'];
-                
-                // Basic security filter - block semicolon
-                if (strpos($service, ';') !== false) {
-                    echo '<div class="error">❌ Security Alert: Semicolon (;) is not allowed!</div>';
-                } else {
-                    $command = "systemctl status " . $service . " 2>/dev/null || echo 'Service not found'";
-                    $output = shell_exec($command);
-                    
-                    if ($output) {
-                        echo '<pre>' . htmlspecialchars($output) . '</pre>';
-                    } else {
-                        echo 'No output or command failed';
-                    }
-                }
-                
-                echo '</div>';
-            }
-            ?>
-            
-            <h3>🔧 Try Your Input:</h3>
-            <form method="get" style="margin: 20px 0;">
-                <div class="form-group">
-                    <label for="service">Service Name:</label>
-                    <input type="text" id="service" name="service" value="<?php echo htmlspecialchars($_GET['service'] ?? ''); ?>" placeholder="Enter service name (e.g., apache2)" oninput="updateCommand()">
-                </div>
-                <button type="submit" class="btn">🚀 Check Service</button>
-            </form>
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-variable">$service</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'service'</span>];
 
-            <div class="info-card" style="margin: 20px 0;">
-                <h3>� Active Security Filter</h3>
-                <p><strong>Blocked Characters:</strong> Semicolon (;) is filtered</p>
-                <p><strong>Challenge:</strong> Execute commands without using semicolon</p>
-                <p><strong>Filter Code:</strong> <code>if (strpos($service, ';') !== false)</code></p>
+<span class="php-comment">// Only blocks semicolon — &&, ||, | pass freely</span>
+<span class="php-keyword">if</span> (<span class="php-function">strpos</span>(<span class="php-variable">$service</span>, <span class="php-string">';'</span>) !== <span class="php-keyword">false</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">'Security Alert: Semicolon blocked!'</span>;
+} <span class="php-keyword">else</span> {
+<span class="vuln-line">    <span class="php-variable">$command</span> = <span class="php-string">"systemctl status "</span> . <span class="php-variable">$service</span> . <span class="php-string">" 2&gt;/dev/null || echo 'not found'"</span>;</span>
+    <span class="php-variable">$output</span> = <span class="php-function">shell_exec</span>(<span class="php-variable">$command</span>);
+    <span class="php-keyword">echo</span> <span class="php-function">htmlspecialchars</span>(<span class="php-variable">$output</span>);
+}</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; The filter only blocks <code>;</code>. Operators <code>&amp;&amp;</code>, <code>||</code>, and <code>|</code> are not filtered, so <code>$service</code> can still chain arbitrary commands into the shell.
+                </div>
             </div>
 
-            <div class="info-card" style="margin: 20px 0;">
-                <h3>🔄 Alternative Command Operators</h3>
-                <ul>
-                    <li><strong>&&</strong> - Conditional execution (AND logic)</li>
-                    <li><strong>||</strong> - Conditional execution (OR logic)</li>
-                    <li><strong>|</strong> - Pipe output to next command</li>
-                    <li><strong>&</strong> - Background execution</li>
-                    <li><strong>`command`</strong> - Command substitution</li>
-                    <li><strong>$(command)</strong> - Command substitution (modern)</li>
-                </ul>
-            </div>
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <div class="scenario">
+                        <p><strong>Scenario:</strong> A service status checker passes your input to <code>systemctl status</code>. Semicolons are blocked, but other shell operators are not. Use <code>&amp;&amp;</code>, <code>||</code>, or <code>|</code> to chain a second command and read the flag.</p>
+                    </div>
 
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding the Filter</h4>
-                    <p><strong>Current Command:</strong> <code>systemctl status [YOUR_INPUT]</code></p>
-                    <p>📝 <strong>Test normal:</strong> <code>apache2</code> (should work)</p>
-                    <p>🚫 <strong>Test blocked:</strong> <code>apache2; whoami</code> (semicolon blocked)</p>
-                    <p>🎯 <strong>Challenge:</strong> Execute commands without semicolon</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: AND Operator (&&)</h4>
-                    <p><strong>Concept:</strong> && executes second command only if first succeeds</p>
-                    <p>📝 <strong>Test:</strong> <code>apache2 && whoami</code></p>
-                    <p>🎯 <strong>How it works:</strong> If systemctl succeeds, whoami runs</p>
-                    <p><strong>More examples:</strong></p>
-                    <p>• <code>apache2 && id</code></p>
-                    <p>• <code>apache2 && pwd</code></p>
-                    <p>• <code>apache2 && ls -la</code></p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: OR Operator (||)</h4>
-                    <p><strong>Concept:</strong> || executes second command only if first fails</p>
-                    <p>📝 <strong>Test:</strong> <code>nonexistent || whoami</code></p>
-                    <p>🎯 <strong>Result:</strong> Since service doesn't exist, whoami executes</p>
-                    <p><strong>Useful patterns:</strong></p>
-                    <p>• <code>fake_service || cat /etc/passwd</code></p>
-                    <p>• <code>invalid || ls /var/www</code></p>
-                    <p>• <code>notfound || id</code></p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Pipe Operator (|)</h4>
-                    <p><strong>Concept:</strong> | sends output of first command to second</p>
-                    <p>📝 <strong>Test:</strong> <code>apache2 | cat /etc/passwd</code></p>
-                    <p>🎯 <strong>Creative use:</strong> Ignore first command output</p>
-                    <p><strong>Examples:</strong></p>
-                    <p>• <code>anything | whoami</code></p>
-                    <p>• <code>test | ls -la /var/www</code></p>
-                    <p>• <code>dummy | cat /var/www/secret_flag.txt</code></p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 5: Command Substitution</h4>
-                    <p><strong>Concept:</strong> Execute commands within other commands</p>
-                    <p>📝 <strong>Backticks:</strong> <code>apache2 `whoami`</code></p>
-                    <p>📝 <strong>Modern syntax:</strong> <code>apache2 $(whoami)</code></p>
-                    <p><strong>Creative examples:</strong></p>
-                    <p>• <code>$(cat /var/www/secret_flag.txt)</code></p>
-                    <p>• <code>`ls /var/www`</code></p>
-                    <p>• <code>test $(echo && cat /var/www/secret_flag.txt)</code></p>
-                </div>
-                <div id="hint-6" class="hint-box" style="display: none;">
-                    <h4>🎯 Hint 6: Find the Flag!</h4>
-                    <p><strong>🚀 Target flag location:</strong> <code>/var/flags/level2_hint.txt</code></p>
-                    <p><strong>Method 1 (AND):</strong> <code>apache2 && cat /var/flags/level2_hint.txt</code></p>
-                    <p><strong>Method 2 (OR):</strong> <code>fake_service || cat /var/flags/level2_hint.txt</code></p>
-                    <p><strong>Method 3 (Pipe):</strong> <code>anything | cat /var/flags/level2_hint.txt</code></p>
-                    <p><strong>Method 4 (Substitution):</strong> <code>$(cat /var/flags/level2_hint.txt)</code></p>
-                    <p><strong>💡 Pro tip:</strong> Try different operators to understand their behavior!</p>
-                    <p><strong>🔍 Exploration:</strong> <code>test || find /var/flags -name "*level2*"</code></p>
+                    <div class="code-block">Command: systemctl status <?php echo htmlspecialchars($_GET['service'] ?? '[SERVICE]'); ?></div>
+
+                    <?php if ($result_error !== null): ?>
+                        <div class="error"><?php echo htmlspecialchars($result_error); ?></div>
+                    <?php endif; ?>
+                    <?php if ($result_output !== null): ?>
+                        <div class="result"><pre><?php echo htmlspecialchars($result_output); ?></pre></div>
+                    <?php endif; ?>
+
+                    <form method="get">
+                        <div class="form-group">
+                            <label for="service">Service Name:</label>
+                            <input type="text" id="service" name="service"
+                                   value="<?php echo htmlspecialchars($_GET['service'] ?? ''); ?>"
+                                   placeholder="Enter service name (e.g., apache2)"
+                                   oninput="updateCommand(this.value)">
+                        </div>
+                        <button type="submit" class="btn">Check Service</button>
+                    </form>
                 </div>
             </div>
         </div>
-        
+
+        <?= render_hint_section($hints) ?>
+
+        <?= render_inline_flag_form(2, $_flag_result) ?>
+
         <div class="navigation">
-            <a href="level1.php">⬅️ Previous Level</a>
-            <a href="index.php">🏠 Home</a>
-            <a href="level3.php">➡️ Next Level</a>
-            <a href="submit.php?level=2">🏆 Submit Flag</a>
+            <a href="level1.php">Previous Level</a>
+            <a href="index.php">Home</a>
+            <a href="level3.php">Next Level</a>
+            <a href="submit.php?level=2">Submit Flag</a>
         </div>
     </div>
 
     <script>
-    let currentHint = 0;
-    const maxHints = 6;
-
-    function updateCommand() {
-        const input = document.getElementById('service').value;
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.innerHTML = 'Command: systemctl status ' + (input || '[SERVICE]');
-    }
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').textContent = '✅ All hints viewed';
-                document.querySelector('.hint-btn').disabled = true;
-                document.querySelector('.hint-btn').style.opacity = '0.6';
-            } else {
-                document.querySelector('.hint-btn').textContent = `💡 Next Hint (${currentHint}/${maxHints})`;
-            }
-        }
+    function updateCommand(val) {
+        document.querySelector('.code-block').textContent =
+            'Command: systemctl status ' + (val || '[SERVICE]');
     }
     </script>
 </body>

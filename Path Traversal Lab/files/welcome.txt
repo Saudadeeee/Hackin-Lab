@@ -1,0 +1,3 @@
+Welcome to Path Traversal Lab! This is a public file.
+This file is served from /var/www/html/files/welcome.txt
+It is intentionally accessible and safe to read.

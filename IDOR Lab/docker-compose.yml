@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    container_name: idor_lab
+    ports:
+      - "8083:80"
+    volumes:
+      - ./:/var/www/html/
+    restart: unless-stopped

@@ -1,10 +1,12 @@
 <?php
-// Level 9: XPATH Injection - XML-based Authentication  
+// Level 9: XPATH Injection - XML-based Authentication
 // Goal: Bypass XML-based authentication system using XPATH injection
 
 session_start();
 
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/helpers.php';
+$_flag_result = handle_inline_flag_submit(9);
 $message = "";
 $success = false;
 
@@ -34,26 +36,26 @@ $xml_data = '<?xml version="1.0"?>
 if ($_POST) {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
-    
+
     try {
         // Create XML document
         $xml = new DOMDocument();
         $xml->loadXML($xml_data);
-        
+
         // Create XPath object
         $xpath = new DOMXPath($xml);
-        
+
         // VULNERABLE XPATH query - directly concatenating user input
         $query = "//user[username/text()='{$username}' and password/text()='{$password}']";
-        
+
         // Execute XPATH query
         $users = $xpath->query($query);
-        
+
         if ($users && $users->length > 0) {
             $user = $users->item(0);
             $role = $xpath->query('role/text()', $user)->item(0)->nodeValue;
             $email = $xpath->query('email/text()', $user)->item(0)->nodeValue;
-            
+
             if ($role === 'administrator') {
                 $success = true;
                 $flag = get_flag_for_level(9);
@@ -70,7 +72,7 @@ if ($_POST) {
             $message = " Authentication failed: No matching user found";
             $message .= "<br> XPATH Query: <code>" . htmlspecialchars($query) . "</code>";
         }
-        
+
     } catch (Exception $e) {
         $message = " XPATH Error: " . $e->getMessage();
         $message .= "<br> XPATH Query: <code>" . htmlspecialchars($query ?? 'N/A') . "</code>";
@@ -86,78 +88,7 @@ if ($_POST) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Level 9 - XPath Authentication | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .xpath-container {
-            max-width: 650px;
-            margin: 2rem auto;
-            background: #1a2332;
-            color: #e2e8f0;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(26, 35, 50, 0.4);
-            border: 1px solid #2563eb;
-        }
-        
-        .xml-viewer {
-            background: #0f172a;
-            border: 2px solid #1e40af;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #94a3b8;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            overflow-x: auto;
-        }
-        
-        .xml-viewer .xml-tag {
-            color: #60a5fa;
-        }
-        
-        .xml-viewer .xml-content {
-            color: #34d399;
-        }
-        
-        .form-group input {
-            background: #0f172a;
-            color: #e2e8f0;
-            border: 2px solid #1e40af;
-        }
-        
-        .form-group input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-            color: white;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .submit-btn:hover {
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-        }
-        
-        .xpath-info {
-            background: #0f172a;
-            border: 2px solid #2563eb;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #60a5fa;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1a2332 100%);
-        }
-    </style>
+
 </head>
 <body>
     <div class="container">
@@ -166,53 +97,83 @@ if ($_POST) {
             <p>Bypass XML-based authentication using XPATH injection techniques</p>
             <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
-        
-        <div class="xpath-container">
-            <div class="xpath-info">
-                <h4> XPATH Injection Challenge</h4>
-                <p>This system uses XML database with XPATH queries for authentication.</p>
-                <p><strong>Goal:</strong> Login as administrator to capture the flag!</p>
+
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-variable">$username</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'username'</span>] ?? <span class="php-string">''</span>;
+<span class="php-variable">$password</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'password'</span>] ?? <span class="php-string">''</span>;
+
+<span class="php-variable">$xml</span> = <span class="php-keyword">new</span> <span class="php-function">DOMDocument</span>();
+<span class="php-variable">$xml</span>-&gt;<span class="php-function">loadXML</span>(<span class="php-variable">$xml_data</span>);
+<span class="php-variable">$xpath</span> = <span class="php-keyword">new</span> <span class="php-function">DOMXPath</span>(<span class="php-variable">$xml</span>);
+
+<span class="php-comment">// VULNERABLE: user input directly in XPath</span>
+<span class="vuln-line"><span class="php-variable">$query</span> = <span class="php-string">"//user[username/text()='<span class="php-variable">{$username}</span>'"</span>
+       . <span class="php-string">" and password/text()='<span class="php-variable">{$password}</span>']"</span>;</span>
+
+<span class="php-variable">$users</span> = <span class="php-variable">$xpath</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$query</span>);
+<span class="php-keyword">if</span> (<span class="php-variable">$users</span> &amp;&amp; <span class="php-variable">$users</span>-&gt;length &gt; 0) {
+    <span class="php-variable">$role</span> = <span class="php-variable">$xpath</span>-&gt;<span class="php-function">query</span>(<span class="php-string">'role/text()'</span>, ...);
+}</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; <code>$username</code> and <code>$password</code> are interpolated directly into the XPath expression string. An attacker can inject XPath syntax (e.g. <code>' or '1'='1</code>) to alter the predicate logic and match any node, bypassing authentication entirely.
+                </div>
             </div>
-            
-            <div class="xml-viewer">
-                <div class="xml-tag">&lt;users&gt;</div>
-                <div style="margin-left: 1rem;">
-                    <div class="xml-tag">&lt;user&gt;</div>
-                    <div style="margin-left: 1rem;">
-                        <div class="xml-tag">&lt;username&gt;</div><span class="xml-content">admin</span><div class="xml-tag">&lt;/username&gt;</div>
-                        <div class="xml-tag">&lt;password&gt;</div><span class="xml-content">secret123</span><div class="xml-tag">&lt;/password&gt;</div>
-                        <div class="xml-tag">&lt;role&gt;</div><span class="xml-content">administrator</span><div class="xml-tag">&lt;/role&gt;</div>
+
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <p>This system uses an XML database with XPath queries for authentication. The query is built by directly embedding your credentials into the XPath expression.</p>
+                    <p><strong>Goal:</strong> Login as <code>administrator</code> to capture the flag!</p>
+
+                    <div class="xml-viewer">
+                        <div class="xml-tag">&lt;users&gt;</div>
+                        <div style="margin-left: 1rem;">
+                            <div class="xml-tag">&lt;user&gt;</div>
+                            <div style="margin-left: 1rem;">
+                                <div class="xml-tag">&lt;username&gt;</div><span class="xml-content">admin</span><div class="xml-tag">&lt;/username&gt;</div>
+                                <div class="xml-tag">&lt;password&gt;</div><span class="xml-content">secret123</span><div class="xml-tag">&lt;/password&gt;</div>
+                                <div class="xml-tag">&lt;role&gt;</div><span class="xml-content">administrator</span><div class="xml-tag">&lt;/role&gt;</div>
+                            </div>
+                            <div class="xml-tag">&lt;/user&gt;</div>
+                            <div class="text-muted" style="margin-top: 0.5rem;">... more users ...</div>
+                        </div>
+                        <div class="xml-tag">&lt;/users&gt;</div>
                     </div>
-                    <div class="xml-tag">&lt;/user&gt;</div>
-                    <div style="margin-top: 0.5rem; color: #64748b;">... more users ...</div>
+
+                    <?php if ($message): ?>
+                        <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
+                            <?= $message ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <h3>XML Authentication</h3>
+                    <form method="POST" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" placeholder="Enter username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" placeholder="Enter password" required>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Authenticate</button>
+                    </form>
                 </div>
-                <div class="xml-tag">&lt;/users&gt;</div>
             </div>
-            
-            <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
-                    <?= $message ?>
-                </div>
-            <?php endif; ?>
-            
-            <h3> XML Authentication</h3>
-            <form method="POST" class="login-form">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" placeholder="Enter username" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" placeholder="Enter password" required>
-                </div>
-                
-                <button type="submit" class="submit-btn">Authenticate</button>
-            </form>
         </div>
-        
+
         <?= render_hint_section(get_level_hints(9), 'Hints for Level 9'); ?>
-        
+
+    <?= render_inline_flag_form(9, $_flag_result) ?>
+
         <div class="navigation">
             <a href="level8.php">&larr; Previous Level</a>
             <a href="level10.php">Next Level &rarr;</a>
@@ -220,5 +181,3 @@ if ($_POST) {
     </div>
 </body>
 </html>
-
-

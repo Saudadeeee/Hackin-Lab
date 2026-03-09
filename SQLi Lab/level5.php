@@ -3,10 +3,12 @@
 // Goal: Extract admin credentials using blind injection techniques
 
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/helpers.php';
+$_flag_result = handle_inline_flag_submit(5);
 
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$user = $_ENV['DB_USER'] ?? 'webapp';
 $pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
@@ -22,10 +24,10 @@ $success = false;
 if ($_POST) {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
-    
+
     // True blind injection - only boolean response, no data leakage
     $sql = "SELECT COUNT(*) as count FROM users WHERE username = '$username' AND password = '$password' AND role = 'admin'";
-    
+
     try {
         $result = $conn->query($sql);
         if ($result) {
@@ -54,203 +56,93 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 4 - Blind Login | SQL Injection Lab</title>
+    <title>Level 5 - Blind Login | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .login-container {
-            max-width: 600px;
-            margin: 2rem auto;
-            background: #1a1a1a;
-            color: #e2e8f0;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            border: 1px solid #333;
-        }
-        
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .form-group label {
-            font-weight: 600;
-            color: #e2e8f0;
-        }
-        
-        .form-group input {
-            padding: 0.8rem;
-            border: 2px solid #444;
-            border-radius: 8px;
-            font-size: 1rem;
-            background: #2d2d2d;
-            color: #e2e8f0;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
-        }
-        
-        .login-btn {
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-            color: white;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4);
-        }
-        
-        .message {
-            margin: 1rem 0;
-            padding: 1rem;
-            border-radius: 8px;
-            border-left: 4px solid;
-        }
-        
-        .message.success {
-            background: #1a2e1a;
-            border-color: #38a169;
-            color: #68d391;
-        }
-        
-        .message.error {
-            background: #2d1b1b;
-            border-color: #e53e3e;
-            color: #fc8181;
-        }
-        
-        .blind-notice {
-            background: #2d1b1b;
-            border: 2px solid #e53e3e;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #fc8181;
-        }
-        
-        .blind-notice h4 {
-            color: #e53e3e;
-            margin: 0 0 0.5rem 0;
-        }
-        
-        .hints {
-            background: #2a2a2a;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-top: 2rem;
-            border: 2px solid #444;
-        }
-        
-        .hints h3 {
-            color: #e2e8f0;
-            margin-bottom: 1rem;
-        }
-        
-        .hints ul {
-            margin: 0;
-            padding-left: 1.5rem;
-        }
-        
-        .hints li {
-            margin-bottom: 0.5rem;
-            color: #a0aec0;
-        }
-        
-        .code-example {
-            background: #1a1a1a;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            margin: 0.5rem 0;
-            overflow-x: auto;
-            border: 1px solid #444;
-        }
-        
-        body {
-            background: #0f0f0f;
-        }
-        
-        .container {
-            background: #1a1a1a;
-        }
-        
-        .header h1 {
-            color: #e2e8f0;
-        }
-        
-        .header p {
-            color: #a0aec0;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1> Level 4 - Blind Login</h1>
+            <h1> Level 5 - Blind Login</h1>
             <p>No error messages, no data leakage - pure blind injection challenge</p>
             <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
-        
-        <div class="login-container">
-            <h2>Secure Government Portal</h2>
-            <p><strong>Objective:</strong> Extract admin credentials using boolean-based blind injection</p>
-            
-            <div class="blind-notice">
-                <h4>Maximum Security Mode</h4>
-                <p>This system provides NO feedback about SQL errors or data. You'll only get "Access denied" or successful login.</p>
+
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-keyword">if</span> (<span class="php-variable">$_POST</span>) {
+    <span class="php-variable">$username</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'username'</span>] ?? <span class="php-string">''</span>;
+    <span class="php-variable">$password</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'password'</span>] ?? <span class="php-string">''</span>;
+
+    <span class="php-comment">// True blind injection - only boolean response, no data leakage</span>
+<span class="vuln-line">    <span class="php-variable">$sql</span> = <span class="php-string">"SELECT COUNT(*) as count FROM users WHERE username = '<span class="php-variable">$username</span>' AND password = '<span class="php-variable">$password</span>' AND role = 'admin'"</span>;</span>
+    <span class="php-keyword">try</span> {
+        <span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
+        <span class="php-keyword">if</span> (<span class="php-variable">$result</span>) {
+            <span class="php-variable">$count</span> = <span class="php-variable">$result</span>-&gt;<span class="php-function">fetch_assoc</span>()[<span class="php-string">'count'</span>];
+            <span class="php-keyword">if</span> (<span class="php-variable">$count</span> &gt; 0) {
+                <span class="php-comment">// success — return flag</span>
+            } <span class="php-keyword">else</span> {
+                <span class="php-variable">$message</span> = <span class="php-string">"Access denied."</span>;
+            }
+        }
+    } <span class="php-keyword">catch</span> (Exception <span class="php-variable">$e</span>) {
+        <span class="php-comment">// No error details — suppressed for blind mode</span>
+        <span class="php-variable">$message</span> = <span class="php-string">"Security system triggered."</span>;
+    }
+}</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; <code>$username</code> and <code>$password</code> are concatenated unsanitised into the query. No error or data is reflected back — the only observable signal is <em>access denied</em> vs <em>success</em>. Boolean conditions like <code>' OR '1'='1</code> manipulate the COUNT result to force a non-zero return.
+                </div>
             </div>
-            
-            <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
-                    <?= $message ?>
+
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <div class="scenario">
+                        <strong>Scenario:</strong> Secure Government Portal — Maximum Security Mode<br>
+                        <strong>Objective:</strong> Extract admin credentials using boolean-based blind injection.
+                        This system provides <em>no</em> feedback about SQL errors or data — only
+                        "Access denied" or a successful login.
+                    </div>
+
+                    <?php if ($message): ?>
+                        <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
+                            <?= $message ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" placeholder="Enter username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" placeholder="Enter password" required>
+                        </div>
+
+                        <button type="submit" class="login-btn">Login</button>
+                    </form>
                 </div>
-            <?php endif; ?>
-            
-            <form method="POST" class="login-form">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" placeholder="Enter username" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" placeholder="Enter password" required>
-                </div>
-                
-                <button type="submit" class="login-btn">Login</button>
-            </form>
+            </div>
         </div>
-        
+
         <?= render_hint_section(get_level_hints(5), 'Hints for Level 5'); ?>
-        
+
+    <?= render_inline_flag_form(5, $_flag_result) ?>
+
         <div class="navigation">
             <a href="level4.php">&larr; Previous Level</a>
-            <a href="level6.php">Next Level &rarr;</a>
+            <a href="level6.php" class="next-link">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
-
-
-

@@ -3,6 +3,8 @@
 // Goal: Login as admin using SQL injection
 
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/helpers.php';
+$_flag_result = handle_inline_flag_submit(1);
 
 mysqli_report(MYSQLI_REPORT_OFF);
 
@@ -61,89 +63,6 @@ if ($_POST) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Level 1 - Basic Login | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .login-container {
-            max-width: 480px;
-            margin: 2rem auto;
-            background: #faf7f0;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        }
-
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            color: #2c2c2c;
-        }
-
-        .form-group input {
-            padding: 0.8rem;
-            border: 2px solid #e8dcc6;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #3182ce;
-            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
-        }
-
-        .login-btn {
-            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-            color: #ffffff;
-            padding: 0.9rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 18px rgba(66, 153, 225, 0.32);
-        }
-
-        .message {
-            margin: 1rem 0;
-            padding: 1rem;
-            border-radius: 8px;
-            border-left: 4px solid;
-        }
-
-        .message.success {
-            background: #f0fff4;
-            border-color: #38a169;
-            color: #2f855a;
-        }
-
-        .message.error {
-            background: #fff5f5;
-            border-color: #e53e3e;
-            color: #c53030;
-        }
-
-        .message.info {
-            background: #ebf8ff;
-            border-color: #3182ce;
-            color: #2c5282;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -153,32 +72,73 @@ if ($_POST) {
             <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
 
-        <div class="login-container">
-            <h2>Admin Login Portal</h2>
-            <p><strong>Objective:</strong> log in as the <code>admin</code> user by abusing SQL injection.</p>
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-keyword">if</span> (<span class="php-variable">$_POST</span>) {
+    <span class="php-variable">$username</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'username'</span>] ?? <span class="php-string">''</span>;
+    <span class="php-variable">$password</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'password'</span>] ?? <span class="php-string">''</span>;
 
-            <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
-                    <?= $message ?>
+    <span class="php-comment">// Vulnerable SQL query - directly concatenates user input</span>
+<span class="vuln-line">    <span class="php-variable">$sql</span> = <span class="php-string">"SELECT * FROM users WHERE username = '<span class="php-variable">$username</span>' AND password = '<span class="php-variable">$password</span>'"</span>;</span>
+    <span class="php-keyword">try</span> {
+        <span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
+
+        <span class="php-keyword">if</span> (<span class="php-variable">$result</span> &amp;&amp; <span class="php-variable">$result</span>-&gt;num_rows &gt; 0) {
+            <span class="php-variable">$userData</span> = <span class="php-variable">$result</span>-&gt;<span class="php-function">fetch_assoc</span>();
+            <span class="php-keyword">if</span> ((<span class="php-variable">$userData</span>[<span class="php-string">'role'</span>] ?? <span class="php-string">''</span>) === <span class="php-string">'admin'</span>) {
+                <span class="php-comment">// success — return flag</span>
+            }
+        }
+    } <span class="php-keyword">catch</span> (Exception <span class="php-variable">$e</span>) {
+        <span class="php-variable">$message</span> = <span class="php-string">"Database error: "</span> . <span class="php-variable">$e</span>-&gt;<span class="php-function">getMessage</span>();
+        <span class="php-variable">$message</span> .= <span class="php-string">"&lt;br&gt;SQL Query: "</span> . <span class="php-function">htmlspecialchars</span>(<span class="php-variable">$sql</span>);
+    }
+}</code></pre>
                 </div>
-            <?php endif; ?>
-
-            <form method="POST" class="login-form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" placeholder="Enter username" required>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; <code>$username</code> and <code>$password</code> are concatenated directly into the SQL string with no sanitisation. Injecting <code>' OR '1'='1</code> in the username field rewrites the WHERE clause and bypasses authentication.
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter password" required>
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <div class="scenario">
+                        <strong>Scenario:</strong> Admin Login Portal<br>
+                        <strong>Objective:</strong> Log in as the <code>admin</code> user by abusing SQL injection.
+                        Error messages are reflected back — use them to map the query structure.
+                    </div>
+
+                    <?php if ($message): ?>
+                        <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
+                            <?= $message ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" placeholder="Enter username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" placeholder="Enter password" required>
+                        </div>
+
+                        <button type="submit" class="login-btn">Login</button>
+                    </form>
                 </div>
-
-                <button type="submit" class="login-btn">Login</button>
-            </form>
+            </div>
         </div>
 
         <?= render_hint_section(get_level_hints(1), 'Hints for Level 1'); ?>
+
+    <?= render_inline_flag_form(1, $_flag_result) ?>
 
         <div class="navigation">
             <a href="level2.php" class="next-link">Next Level &rarr;</a>
@@ -187,5 +147,3 @@ if ($_POST) {
 </body>
 </html>
 <?php $conn->close(); ?>
-
-

@@ -36,7 +36,7 @@
                 $row = $res->fetch_assoc();
                 
                 if ($row && $row['flag'] === $flag) {
-                    echo '<div class="result" style="background: #d4edda; border-left-color: #28a745;">';
+                    echo '<div class="message success">';
                     echo '<h2>Congratulations!</h2>';
                     echo '<p>Level ' . $level . ' completed successfully.</p>';
                     echo '<p><strong>Flag:</strong> <code>' . htmlspecialchars($flag) . '</code></p>';
@@ -51,12 +51,12 @@
                     }
                     $isCompleted = true;
                 } else {
-                    echo '<div class="error">Incorrect flag. Keep trying!</div>';
+                    echo '<div class="message error">Incorrect flag. Keep trying!</div>';
                 }
             }
             
             if ($isCompleted && $_SERVER['REQUEST_METHOD'] !== 'POST') {
-                echo '<div class="result" style="background: #d1ecf1; border-left-color: #0c5460;">';
+                echo '<div class="message info">';
                 echo '<h3>Level ' . $level . ' Already Completed</h3>';
                 echo '<p>You have already submitted the correct flag for this level.</p>';
                 echo '</div>';
@@ -82,7 +82,7 @@
                         $buttonClass = $isLevelCompleted ? 'btn level-button completed' : 'btn level-button';
                         $completedIcon = $isLevelCompleted ? ' &check;' : '';
                     ?>
-                        <a href="?level=<?php echo $i; ?>" class="<?php echo $buttonClass; ?>" style="font-size: 14px; padding: 8px 16px;">
+                        <a href="?level=<?php echo $i; ?>" class="<?php echo $buttonClass; ?>">
                             Level <?php echo $i; ?><?php echo $completedIcon; ?>
                         </a>
                     <?php endfor; ?>

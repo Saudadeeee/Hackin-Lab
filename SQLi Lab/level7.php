@@ -1,10 +1,12 @@
 <?php
 // Level 7: File-Based Login - Out-of-Band data extraction
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/helpers.php';
+$_flag_result = handle_inline_flag_submit(7);
 
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$user = $_ENV['DB_USER'] ?? 'webapp';
 $pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
@@ -21,13 +23,13 @@ $file_content = "";
 if ($_POST) {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
-    
+
     // File-based injection using INTO OUTFILE
     $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password' AND role = 'admin'";
-    
+
     try {
         $result = $conn->query($sql);
-        
+
         if ($result && $result->num_rows > 0) {
             $admin_data = $result->fetch_assoc();
             $success = true;
@@ -38,15 +40,15 @@ if ($_POST) {
         } else {
            $message = "Login failed: Invalid credentials";
         }
-        
+
         // Check for file operations
         if (strpos($username, 'OUTFILE') !== false || strpos($username, 'DUMPFILE') !== false) {
             $message .= "<br>File operation detected in injection attempt.";
         }
-        
+
     } catch (Exception $e) {
         $message = "Database error: " . $e->getMessage();
-        
+
         // Check if it's a file permission error (indicates successful injection syntax)
         if (strpos($e->getMessage(), 'Access denied') !== false || strpos($e->getMessage(), 'OUTFILE') !== false) {
             $message .= "<br>File operation attempted but blocked by permissions.";
@@ -72,72 +74,6 @@ foreach ($extraction_files as $file) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Level 7 - File-Based Login | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .login-container {
-            max-width: 600px;
-            margin: 2rem auto;
-            background: #1a4d3a;
-            color: #e2e8f0;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(26, 77, 58, 0.3);
-            border: 1px solid #2d6a4f;
-        }
-        
-        .form-group input {
-            background: #0d2818;
-            color: #e2e8f0;
-            border: 2px solid #2d6a4f;
-        }
-        
-        .form-group input:focus {
-            border-color: #40916c;
-            box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.2);
-        }
-        
-        .login-btn {
-            background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%);
-        }
-        
-        .login-btn:hover {
-            box-shadow: 0 6px 20px rgba(64, 145, 108, 0.4);
-        }
-        
-        .message.success {
-            background: #1a2e1a;
-            border-color: #40916c;
-            color: #68d391;
-        }
-        
-        .message.error {
-            background: #2d1b1b;
-            border-color: #e53e3e;
-            color: #fc8181;
-        }
-        
-        .file-info {
-            background: #0d2818;
-            border: 2px solid #2d6a4f;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #a7f3d0;
-        }
-        
-        .hints {
-            background: #0d2818;
-            border: 2px solid #2d6a4f;
-        }
-        
-        .code-example {
-            background: #0a1f0a;
-            border: 1px solid #2d6a4f;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0a1f0a 0%, #1a4d3a 100%);
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -146,56 +82,97 @@ foreach ($extraction_files as $file) {
             <p>Use file operations for out-of-band data extraction</p>
             <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
-        
-        <div class="login-container">
-            <h2>Document Management Login</h2>
-            <p><strong>Objective:</strong> Use file-based injection to extract admin credentials</p>
-            
-            <div class="file-info">
-                <h4>File System Access</h4>
-                <p>This system has MySQL file privileges enabled. You can use INTO OUTFILE for data extraction.</p>
+
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-keyword">if</span> (<span class="php-variable">$_POST</span>) {
+    <span class="php-variable">$username</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'username'</span>] ?? <span class="php-string">''</span>;
+    <span class="php-variable">$password</span> = <span class="php-variable">$_POST</span>[<span class="php-string">'password'</span>] ?? <span class="php-string">''</span>;
+
+    <span class="php-comment">// File-based injection using INTO OUTFILE</span>
+<span class="vuln-line">    <span class="php-variable">$sql</span> = <span class="php-string">"SELECT * FROM users WHERE username = '<span class="php-variable">$username</span>' AND password = '<span class="php-variable">$password</span>' AND role = 'admin'"</span>;</span>
+    <span class="php-keyword">try</span> {
+        <span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
+        <span class="php-keyword">if</span> (<span class="php-variable">$result</span> &amp;&amp; <span class="php-variable">$result</span>-&gt;num_rows &gt; 0) {
+            <span class="php-comment">// success — return flag</span>
+        }
+        <span class="php-comment">// Check for file operations in attempt</span>
+        <span class="php-keyword">if</span> (<span class="php-function">strpos</span>(<span class="php-variable">$username</span>, <span class="php-string">'OUTFILE'</span>) !== <span class="php-string">false</span>) {
+            <span class="php-variable">$message</span> .= <span class="php-string">"File operation detected."</span>;
+        }
+    } <span class="php-keyword">catch</span> (Exception <span class="php-variable">$e</span>) {
+        <span class="php-variable">$message</span> = <span class="php-string">"Database error: "</span> . <span class="php-variable">$e</span>-&gt;<span class="php-function">getMessage</span>();
+        <span class="php-comment">// Permission errors confirm correct OUTFILE syntax</span>
+    }
+}
+
+<span class="php-comment">// Server reads back any extracted files</span>
+<span class="php-variable">$extraction_files</span> = [<span class="php-string">'/tmp/admin_data.txt'</span>, <span class="php-string">'/var/lib/mysql-files/users.txt'</span>];
+<span class="php-keyword">foreach</span> (<span class="php-variable">$extraction_files</span> <span class="php-keyword">as</span> <span class="php-variable">$file</span>) {
+    <span class="php-keyword">if</span> (<span class="php-function">file_exists</span>(<span class="php-variable">$file</span>)) {
+        <span class="php-comment">// display file contents in response</span>
+    }
+}</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; <code>$username</code> is concatenated unsanitised. MySQL file privileges are enabled, so appending <code>' UNION SELECT ... INTO OUTFILE '/tmp/admin_data.txt'-- -</code> writes query results to disk. The server then reads and displays those files back in the response.
+                </div>
             </div>
-            
-            <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
-                    <?= $message ?>
+
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <div class="scenario">
+                        <strong>Scenario:</strong> Document Management Login<br>
+                        <strong>Objective:</strong> Use file-based injection to extract admin credentials.
+                        MySQL file privileges are enabled — use <code>INTO OUTFILE</code> to write data to disk,
+                        then the server will display any extracted files found at known paths.
+                    </div>
+
+                    <?php if ($message): ?>
+                        <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
+                            <?= $message ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($file_content): ?>
+                        <div class="result">
+                            <strong>Extracted Files:</strong><br>
+                            <?= $file_content ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" placeholder="Enter username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" placeholder="Enter password" required>
+                        </div>
+
+                        <button type="submit" class="login-btn">Login</button>
+                    </form>
                 </div>
-            <?php endif; ?>
-            
-            <?php if ($file_content): ?>
-                <div class="file-info">
-                    <h4> Extracted Files:</h4>
-                    <?= $file_content ?>
-                </div>
-            <?php endif; ?>
-            
-            <form method="POST" class="login-form">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" placeholder="Enter username" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" placeholder="Enter password" required>
-                </div>
-                
-                <button type="submit" class="login-btn">Login</button>
-            </form>
+            </div>
         </div>
-        
+
         <?= render_hint_section(get_level_hints(7), 'Hints for Level 7'); ?>
-        
+
+    <?= render_inline_flag_form(7, $_flag_result) ?>
+
         <div class="navigation">
             <a href="level6.php">&larr; Previous Level</a>
-            <a href="level8.php">Next Level &rarr;</a>
+            <a href="level8.php" class="next-link">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
-
-
-
-

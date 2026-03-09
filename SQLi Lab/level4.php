@@ -3,10 +3,12 @@
 // Goal: Bypass multiple security measures to login as admin
 
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/helpers.php';
+$_flag_result = handle_inline_flag_submit(4);
 
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$user = $_ENV['DB_USER'] ?? 'webapp';
 $pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
@@ -28,15 +30,15 @@ if (!isset($_SESSION['attempts'])) {
 
 if ($_POST) {
     $_SESSION['attempts']++;
-    
+
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
-    
+
     // Advanced WAF simulation - multiple filters
     $blocked_words = ['union', 'select', 'or', 'and', 'admin', '--', '#', '/*', '*/', 'drop', 'insert', 'update', 'delete'];
     $username_lower = strtolower($username);
     $password_lower = strtolower($password);
-    
+
     // Check for blocked words
     foreach ($blocked_words as $word) {
         if (strpos($username_lower, $word) !== false || strpos($password_lower, $word) !== false) {
@@ -44,15 +46,15 @@ if ($_POST) {
             break;
         }
     }
-    
+
     if (!$message) {
         // Remove quotes and some special chars (but can be bypassed)
         $username = str_replace(["'", '"', ';'], "", $username);
         $password = str_replace(["'", '"', ';'], "", $password);
-        
+
         // Query with role check
         $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password' AND role = 'admin'";
-        
+
         try {
             $result = $conn->query($sql);
             if ($result && $result->num_rows > 0) {
@@ -70,7 +72,7 @@ if ($_POST) {
             $message = "Authentication failed. Security violation detected.";
         }
     }
-    
+
     // Show progressive hints based on attempts
     if ($_SESSION['attempts'] > 3 && !$success) {
         $show_hint = true;
@@ -84,250 +86,103 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Level 4 - Basic WAF Bypass | SQL Injection Lab</title>
+    <title>Level 4 - Basic WAF Bypass | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        
-        .admin-portal {
-            max-width: 500px;
-            margin: 3rem auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        
-        .portal-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .portal-header h1 {
-            color: #2d3748;
-            margin-bottom: 0.5rem;
-            font-size: 2rem;
-        }
-        
-        .portal-header .subtitle {
-            color: #4a5568;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .security-badge {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-block;
-            margin: 1rem 0;
-        }
-        
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        
-        .form-group {
-            position: relative;
-        }
-        
-        .form-group label {
-            position: absolute;
-            top: -0.5rem;
-            left: 1rem;
-            background: white;
-            padding: 0 0.5rem;
-            color: #4a5568;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 1rem 1.5rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s;
-            background: rgba(255,255,255,0.8);
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            background: white;
-        }
-        
-        .login-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-        
-        .message {
-            margin: 1.5rem 0;
-            padding: 1rem;
-            border-radius: 12px;
-            border-left: 4px solid;
-        }
-        
-        .message.success {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            border-color: #28a745;
-            color: #155724;
-        }
-        
-        .message.error {
-            background: linear-gradient(135deg, #f8d7da, #f1b0b7);
-            border-color: #dc3545;
-            color: #721c24;
-        }
-        
-        .message.warning {
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-            border-color: #ffc107;
-            color: #856404;
-        }
-        
-        .security-info {
-            background: rgba(102, 126, 234, 0.1);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 1rem;
-            border-left: 4px solid #667eea;
-        }
-        
-        .attempts-counter {
-            text-align: center;
-            color: #4a5568;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-        }
-        
-        .hints {
-            background: rgba(255,255,255,0.9);
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-top: 2rem;
-            border: 1px solid rgba(102, 126, 234, 0.3);
-        }
-        
-        .hints h3 {
-            color: #2d3748;
-            margin-bottom: 1rem;
-        }
-        
-        .hints ul {
-            margin: 0;
-            padding-left: 1.5rem;
-        }
-        
-        .hints li {
-            margin-bottom: 0.5rem;
-            color: #4a5568;
-        }
-        
-        .code-example {
-            background: #2d3748;
-            color: #e2e8f0;
-            padding: 0.8rem;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            margin: 0.5rem 0;
-            overflow-x: auto;
-            font-size: 0.9rem;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
-        <div class="header" style="text-align: center; padding: 2rem; color: white;">
+        <div class="header">
             <h1>Level 4 - Basic WAF Bypass</h1>
             <p>The ultimate SQL injection challenge with multiple security layers</p>
-            <a href="index.php" class="back-btn" style="color: white;">&larr; Back to Labs</a>
+            <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
-        
-        <div class="admin-portal">
-            <div class="portal-header">
-                <h1>CyberCorp</h1>
-                <div class="subtitle">Administrator Access Portal</div>
-                <span class="security-badge">Enhanced Security</span>
+
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-comment">// Blocked keywords list</span>
+<span class="php-variable">$blocked_words</span> = [<span class="php-string">'union'</span>, <span class="php-string">'select'</span>, <span class="php-string">'or'</span>, <span class="php-string">'and'</span>,
+                   <span class="php-string">'admin'</span>, <span class="php-string">'--'</span>, <span class="php-string">'#'</span>, <span class="php-string">'/*'</span>, <span class="php-string">'*/'</span>, ...];
+<span class="php-keyword">foreach</span> (<span class="php-variable">$blocked_words</span> <span class="php-keyword">as</span> <span class="php-variable">$word</span>) {
+    <span class="php-keyword">if</span> (<span class="php-function">strpos</span>(<span class="php-variable">$username_lower</span>, <span class="php-variable">$word</span>) !== <span class="php-string">false</span>) {
+        <span class="php-variable">$message</span> = <span class="php-string">"WAF blocked: pattern detected"</span>;
+    }
+}
+
+<span class="php-keyword">if</span> (!<span class="php-variable">$message</span>) {
+    <span class="php-comment">// Remove quotes and some special chars (but can be bypassed)</span>
+    <span class="php-variable">$username</span> = <span class="php-function">str_replace</span>([<span class="php-string">"'"</span>, <span class="php-string">'"'</span>, <span class="php-string">';'</span>], <span class="php-string">""</span>, <span class="php-variable">$username</span>);
+    <span class="php-variable">$password</span> = <span class="php-function">str_replace</span>([<span class="php-string">"'"</span>, <span class="php-string">'"'</span>, <span class="php-string">';'</span>], <span class="php-string">""</span>, <span class="php-variable">$password</span>);
+
+    <span class="php-comment">// Query with role check</span>
+<span class="vuln-line">    <span class="php-variable">$sql</span> = <span class="php-string">"SELECT * FROM users WHERE username = '<span class="php-variable">$username</span>' AND password = '<span class="php-variable">$password</span>' AND role = 'admin'"</span>;</span>
+    <span class="php-keyword">try</span> {
+        <span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
+        <span class="php-keyword">if</span> (<span class="php-variable">$result</span> &amp;&amp; <span class="php-variable">$result</span>-&gt;num_rows &gt; 0) {
+            <span class="php-comment">// success — return flag</span>
+        }
+    } <span class="php-keyword">catch</span> (Exception <span class="php-variable">$e</span>) {
+        <span class="php-variable">$message</span> = <span class="php-string">"Authentication failed."</span>;
+    }
+}</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; The WAF blocks exact keyword matches (case-sensitive normalised), strips <code>'</code>, <code>"</code>, and <code>;</code> — but the final query still concatenates unsanitised input. Mixed-case variants like <code>aNd</code> or encoding tricks slip past the blocklist.
+                </div>
             </div>
-            
-            <div class="security-info">
-                <strong>WAF Rules Active:</strong><br>
-                Blocked keywords: union, select, or, and, admin, --, #<br>
-                Quote removal: ' and " characters stripped<br>
-                Semicolon blocking: ; character removed<br>
-                Pattern detection: Suspicious SQL patterns flagged
-            </div>
-            
-            <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : ($show_hint ? 'warning' : 'error') ?>">
-                    <?= $message ?>
+
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <div class="scenario">
+                        <strong>Scenario:</strong> CyberCorp — Administrator Access Portal<br>
+                        <strong>Objective:</strong> Bypass all WAF rules and log in as admin.<br>
+                        <strong>WAF Rules Active:</strong> keyword blocklist (union, select, or, and, admin, --, #),
+                        quote stripping, semicolon removal.
+                    </div>
+
+                    <?php if ($message): ?>
+                        <div class="message <?= $success ? 'success' : ($show_hint ? 'info' : 'error') ?>">
+                            <?= $message ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Administrator ID</label>
+                            <input type="text" id="username" name="username" placeholder="Enter administrator username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Security Key</label>
+                            <input type="password" id="password" name="password" placeholder="Enter security passphrase" required>
+                        </div>
+
+                        <button type="submit" class="login-btn">Authenticate</button>
+                    </form>
+
+                    <p style="font-size:0.75rem; color:var(--text-faint); margin-top:0.5rem;">
+                        <?= $_SESSION['attempts'] ?> authentication attempt(s) this session
+                    </p>
                 </div>
-            <?php endif; ?>
-            
-            <form method="POST" class="login-form">
-                <div class="form-group">
-                    <label for="username">Administrator ID</label>
-                    <input type="text" id="username" name="username" placeholder="Enter administrator username" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Security Key</label>
-                    <input type="password" id="password" name="password" placeholder="Enter security passphrase" required>
-                </div>
-                
-                <button type="submit" class="login-btn">Authenticate</button>
-            </form>
-            
-            <div class="attempts-counter">
-                Security Check: <?= $_SESSION['attempts'] ?> authentication attempts
             </div>
         </div>
-        
+
         <?php if ($show_hint): ?>
             <?= render_hint_section(get_level_hints(4), 'WAF Bypass Techniques'); ?>
         <?php endif; ?>
-        
-        <div class="navigation" style="text-align: center; margin-top: 2rem;">
-            <a href="level3.php" style="color: white;">&larr; Previous Level</a>
-            <a href="level5.php" style="color: white;">Next Level &rarr;</a>
+
+    <?= render_inline_flag_form(4, $_flag_result) ?>
+
+        <div class="navigation">
+            <a href="level3.php">&larr; Previous Level</a>
+            <a href="level5.php" class="next-link">Next Level &rarr;</a>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
-
-
-
-
-
-

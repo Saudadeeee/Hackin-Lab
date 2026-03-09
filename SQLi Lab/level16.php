@@ -5,9 +5,11 @@
 session_start();
 
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/helpers.php';
+$_flag_result = handle_inline_flag_submit(16);
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$user = $_ENV['DB_USER'] ?? 'webapp';
 $pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
@@ -25,10 +27,10 @@ $waf_bypass_achieved = false;
 if ($_POST) {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
-    
+
     // Advanced WAF simulation with multiple filter layers
     $original_input = "Username: $username | Password: $password";
-    
+
     // Layer 1: Comment filtering
     $comment_patterns = ['--', '#', '/*', '*/'];
     $has_comments = false;
@@ -38,7 +40,7 @@ if ($_POST) {
             $has_comments = true;
         }
     }
-    
+
     // Layer 2: Common SQL keywords
     $sql_keywords = ['UNION', 'SELECT', 'FROM', 'WHERE', 'INSERT', 'UPDATE', 'DELETE', 'DROP'];
     $has_keywords = false;
@@ -48,7 +50,7 @@ if ($_POST) {
             $has_keywords = true;
         }
     }
-    
+
     // Layer 3: Special characters
     $special_chars = ["'", '"', '=', '<', '>', '(', ')'];
     $has_special = false;
@@ -58,7 +60,7 @@ if ($_POST) {
             $has_special = true;
         }
     }
-    
+
     // Layer 4: Logical operators
     $logical_ops = ['OR', 'AND', 'NOT'];
     $has_logical = false;
@@ -68,19 +70,19 @@ if ($_POST) {
             $has_logical = true;
         }
     }
-    
+
     // Layer 5: Space and whitespace
     $has_spaces = false;
     if (preg_match('/\s/', $username . $password)) {
         $blocked_patterns[] = "Whitespace detected";
         $has_spaces = true;
     }
-    
+
     // Calculate WAF bypass score
     $total_filters = 5;
-    $triggered_filters = ($has_comments ? 1 : 0) + ($has_keywords ? 1 : 0) + 
+    $triggered_filters = ($has_comments ? 1 : 0) + ($has_keywords ? 1 : 0) +
                         ($has_special ? 1 : 0) + ($has_logical ? 1 : 0) + ($has_spaces ? 1 : 0);
-    
+
     if ($triggered_filters > 0) {
         $message = "Advanced WAF protection triggered!<br>";
         $message .= "Blocked patterns: " . implode(', ', $blocked_patterns) . "<br>";
@@ -89,16 +91,16 @@ if ($_POST) {
         $message .= "Try more sophisticated encoding, alternatives, or creative bypasses.";
     } else {
         $waf_bypass_achieved = true;
-        
+
         // If all filters are bypassed, check for actual injection
         $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
-        
+
         try {
             $result = $conn->query($sql);
-            
+
             if ($result && $result->num_rows > 0) {
                 $user_data = $result->fetch_assoc();
-                
+
                 if ($user_data['role'] === 'admin') {
                     $success = true;
                     $flag = get_flag_for_level(16);
@@ -118,7 +120,7 @@ if ($_POST) {
                 $message .= "SQL query: <code>" . htmlspecialchars($sql) . "</code><br>";
                 $message .= "Adjust your payload until it maps to the admin credentials.";
             }
-            
+
         } catch (Exception $e) {
             $message = "WAF bypass succeeded but the query errored.<br>";
             $message .= "All filters were bypassed successfully.<br>";
@@ -136,112 +138,7 @@ if ($_POST) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Level 16 - Advanced WAF Bypass | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .waf-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            background: #0f0f0f;
-            color: #e2e8f0;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(15, 15, 15, 0.6);
-            border: 2px solid #dc2626;
-        }
-        
-        .waf-status {
-            background: #1a0000;
-            border: 2px solid #dc2626;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #fca5a5;
-            text-align: center;
-            font-weight: bold;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .filter-layers {
-            background: #1a0000;
-            border: 2px solid #dc2626;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #fca5a5;
-        }
-        
-        .filter-layer {
-            margin: 0.5rem 0;
-            padding: 0.5rem;
-            background: #0f0f0f;
-            border-radius: 4px;
-            border-left: 3px solid #dc2626;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-        }
-        
-        .form-group input {
-            background: #1a0000;
-            color: #e2e8f0;
-            border: 2px solid #dc2626;
-        }
-        
-        .form-group input:focus {
-            border-color: #ef4444;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            color: white;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .submit-btn:hover {
-            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
-        }
-        
-        .waf-info {
-            background: #1a0000;
-            border: 2px solid #dc2626;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #fca5a5;
-        }
-        
-        .final-boss {
-            text-align: center;
-            background: linear-gradient(135deg, #dc2626, #991b1b);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a0000 50%, #0f0f0f 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 6s ease infinite;
-        }
-        
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-    </style>
+
 </head>
 <body>
     <div class="container">
@@ -250,80 +147,114 @@ if ($_POST) {
             <p>The ultimate challenge - bypass sophisticated Web Application Firewall</p>
             <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
-        
+
         <div class="final-boss">
-             FINAL BOSS CHALLENGE <br>
+            FINAL BOSS CHALLENGE<br>
             Advanced WAF Protection System
         </div>
-        
-        <div class="waf-container">
-            <div class="waf-info">
-                <h4> Advanced WAF Challenge</h4>
-                <p>This is the final challenge! You must bypass ALL layers of protection.</p>
-                <p><strong>Goal:</strong> Achieve admin access while bypassing every security filter!</p>
-            </div>
-            
-            <div class="waf-status">
-                 ADVANCED WAF PROTECTION ACTIVE <br>
-                Multiple Security Layers Engaged
-            </div>
-            
-            <div class="filter-layers">
-                <h4> Active Security Filters:</h4>
-                
-                <div class="filter-layer">
-                    <strong>Layer 1:</strong> Comment Detection (blocks: --, #, /*, */)
+
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-comment">// Layer 1: --, #, /*, */</span>
+<span class="php-comment">// Layer 2: UNION, SELECT, FROM, WHERE …</span>
+<span class="php-comment">// Layer 3: ', ", =, &lt;, &gt;, (, )</span>
+<span class="php-comment">// Layer 4: OR, AND, NOT</span>
+<span class="php-comment">// Layer 5: \s (any whitespace)</span>
+<span class="php-variable">$triggered</span> = <span class="php-variable">$layer1</span> + <span class="php-variable">$layer2</span>
+            + <span class="php-variable">$layer3</span> + <span class="php-variable">$layer4</span>
+            + <span class="php-variable">$layer5</span>;
+
+<span class="php-keyword">if</span> (<span class="php-variable">$triggered</span> &gt; 0) {
+    <span class="php-comment">// block all flagged input</span>
+} <span class="php-keyword">else</span> {
+    <span class="php-comment">// VULNERABLE: all-filter-passing input</span>
+<span class="vuln-line">    <span class="php-variable">$sql</span> = <span class="php-string">"SELECT * FROM users"</span>
+         . <span class="php-string">" WHERE username='$username'"</span>
+         . <span class="php-string">" AND password='$password'"</span>;</span>
+    <span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
+    <span class="php-keyword">if</span> (<span class="php-variable">$result</span>[<span class="php-string">'role'</span>] === <span class="php-string">'admin'</span>) {
+        <span class="php-comment">// flag awarded</span>
+    }
+}</code></pre>
                 </div>
-                
-                <div class="filter-layer">
-                    <strong>Layer 2:</strong> SQL Keyword Filtering (blocks: UNION, SELECT, FROM, WHERE, etc.)
-                </div>
-                
-                <div class="filter-layer">
-                    <strong>Layer 3:</strong> Special Character Detection (blocks: ', ", =, <, >, (, ))
-                </div>
-                
-                <div class="filter-layer">
-                    <strong>Layer 4:</strong> Logical Operator Filtering (blocks: OR, AND, NOT)
-                </div>
-                
-                <div class="filter-layer">
-                    <strong>Layer 5:</strong> Whitespace Detection (blocks: spaces, tabs, newlines)
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; Five independent filter layers each block a different pattern class. The SQL construction is still raw string concatenation — combine encoding, keyword alternatives (<code>||</code> instead of <code>OR</code>), operator substitutes, and whitespace tricks to craft a payload that satisfies every layer simultaneously and still alters the query logic.
                 </div>
             </div>
-            
-            <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : ($waf_bypass_achieved ? 'warning' : 'error') ?>">
-                    <?= $message ?>
+
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <p>This is the final boss! The WAF enforces five independent filter layers. Every single layer must be bypassed before your input reaches the underlying SQL query.</p>
+                    <p><strong>Goal:</strong> Bypass all 5 WAF layers and authenticate as <code>admin</code> to capture the final flag!</p>
+
+                    <div class="waf-status">
+                        ADVANCED WAF PROTECTION ACTIVE<br>
+                        Multiple Security Layers Engaged
+                    </div>
+
+                    <div class="filter-layers">
+                        <h4>Active Security Filters:</h4>
+
+                        <div class="filter-layer">
+                            <strong>Layer 1:</strong> Comment Detection (blocks: <code>--</code>, <code>#</code>, <code>/*</code>, <code>*/</code>)
+                        </div>
+
+                        <div class="filter-layer">
+                            <strong>Layer 2:</strong> SQL Keyword Filtering (blocks: <code>UNION</code>, <code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>, etc.)
+                        </div>
+
+                        <div class="filter-layer">
+                            <strong>Layer 3:</strong> Special Character Detection (blocks: <code>'</code> <code>"</code> <code>=</code> <code>&lt;</code> <code>&gt;</code> <code>(</code> <code>)</code>)
+                        </div>
+
+                        <div class="filter-layer">
+                            <strong>Layer 4:</strong> Logical Operator Filtering (blocks: <code>OR</code>, <code>AND</code>, <code>NOT</code>)
+                        </div>
+
+                        <div class="filter-layer">
+                            <strong>Layer 5:</strong> Whitespace Detection (blocks: spaces, tabs, newlines)
+                        </div>
+                    </div>
+
+                    <?php if ($message): ?>
+                        <div class="message <?= $success ? 'success' : ($waf_bypass_achieved ? 'warning' : 'error') ?>">
+                            <?= $message ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <h3>Ultimate Login Challenge</h3>
+                    <form method="POST" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" placeholder="Bypass ALL filters..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="text" id="password" name="password" placeholder="Ultimate challenge awaits..." required>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Face the Final Boss</button>
+                    </form>
                 </div>
-            <?php endif; ?>
-            
-            <h3> Ultimate Login Challenge</h3>
-            <form method="POST" class="login-form">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" placeholder="Bypass ALL filters..." required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="text" id="password" name="password" placeholder="Ultimate challenge awaits..." required>
-                </div>
-                
-                <button type="submit" class="submit-btn">Face the Final Boss</button>
-            </form>
+            </div>
         </div>
-        
+
         <?= render_hint_section(get_level_hints(16), 'Hints for Level 16'); ?>
+
+    <?= render_inline_flag_form(16, $_flag_result) ?>
 
         <div class="navigation">
             <a href="level15.php">&larr; Previous Level</a>
-            <span style="color: #fca5a5;">Final Challenge!</span>
+            <span>Final Challenge!</span>
         </div>
     </div>
 </body>
 </html>
 
 <?php $conn->close(); ?>
-
-

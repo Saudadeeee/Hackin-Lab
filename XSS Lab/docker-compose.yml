@@ -1,0 +1,8 @@
+services:
+  web:
+    image: php:8.2-apache
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www/html/
+    command: bash -c "docker-php-ext-install mysqli pdo pdo_mysql && apache2-foreground"

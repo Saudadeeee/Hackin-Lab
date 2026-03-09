@@ -1,0 +1,2 @@
+Info page content here.
+This file contains general information about the application.

