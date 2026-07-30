@@ -1,0 +1,4 @@
+# Route the AWS-style metadata path onto the mock metadata service.
+# e.g. /latest/meta-data/iam/security-credentials/ssrf-lab-role -> metadata.php?path=...
+RewriteEngine On
+RewriteRule ^latest/meta-data/?(.*)$ metadata.php?path=$1 [L,QSA]

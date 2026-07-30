@@ -1,0 +1,135 @@
+<?php
+require_once __DIR__ . '/helpers.php';
+
+$levelId    = 9;
+$levelTitle = 'CRLF Header Injection';
+$prevLevel  = 8;
+$nextLevel  = 10;
+
+// ── Challenge logic ──────────────────────────────────────────
+$input = $_GET['next'] ?? '';
+
+$vr          = verify_redirect($levelId, $input);
+$flag        = $vr['captured'] ? get_flag_for_level($levelId) : '';
+$flagMessage = $vr['message'];
+
+$hints = get_level_hints($levelId);
+$_flag_result = handle_inline_flag_submit($levelId);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 9 — CRLF Header Injection | Open Redirect Lab</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="header">
+    <a href="index.php" class="back-btn">&larr; Back to Levels</a>
+    <div class="header-title"><span style="color:var(--primary)">&#x21AA;</span> Open Redirect Lab</div>
+    <a href="submit.php" class="submit-link">Submit Flag</a>
+</header>
+
+<div class="container">
+
+    <div class="level-header">
+        <span class="level-badge">Level 9</span>
+        <h1><?= htmlspecialchars($levelTitle) ?></h1>
+        <span class="difficulty-badge difficulty-hard">Hard</span>
+    </div>
+
+    <div class="challenge-layout">
+
+        <!-- ── Left: Source Code Panel ── -->
+        <div class="code-panel">
+            <h3>Vulnerable Source Code</h3>
+            <div class="source-code">
+                <pre><code><span class="php-keyword">&lt;?php</span>
+<span class="php-variable">$next</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'next'</span>] ?? <span class="php-string">'/dashboard'</span>;
+<span class="php-comment">// Only allow relative paths (no host component)</span>
+<span class="php-keyword">if</span> (parse_url(<span class="php-variable">$next</span>, PHP_URL_HOST) !== <span class="php-keyword">null</span>) {
+    http_response_code(<span class="php-string">400</span>); <span class="php-keyword">echo</span> <span class="php-string">"blocked"</span>; <span class="php-keyword">exit</span>;
+}
+<span class="php-variable">$dest</span> = urldecode(<span class="php-variable">$next</span>);
+<span class="vuln-line">header(<span class="php-string">"Location: "</span> . <span class="php-variable">$dest</span>);   <span class="php-comment">// CRLF in $dest injects headers</span></span><span class="php-keyword">?&gt;</span></code></pre>
+            </div>
+            <div class="vuln-annotation">
+                <strong>Vulnerability:</strong>&nbsp; The value is host-checked, then <code>urldecode()</code>d and
+                concatenated straight into the <code>Location</code> header. A <code>%0d%0a</code>
+                (<strong>CRLF</strong>) sequence ends the header line and lets you inject arbitrary response headers —
+                including a second <code>Location</code>.
+                <em>(Real PHP blocks CRLF in <code>header()</code>; this lab models the classic vulnerable behavior
+                without sending the header.)</em>
+            </div>
+        </div>
+
+        <!-- ── Right: Challenge Panel ── -->
+        <div class="challenge-panel">
+
+            <div class="scenario">
+                <h3>Scenario</h3>
+                <p>This endpoint allows only relative paths, then decodes them into the <code>Location</code> header.</p>
+                <p>Inject a CRLF sequence followed by your own <code>Location:</code> header pointing at
+                <code>evil.attacker.example</code>. The lab detects the injected header and shows where the victim
+                would be sent.</p>
+            </div>
+
+            <!-- Payload input form -->
+            <form method="get" action="level9.php">
+                <div class="form-group">
+                    <label class="form-label" for="next_input">Redirect target (next parameter)</label>
+                    <input
+                        type="text"
+                        id="next_input"
+                        name="next"
+                        class="form-control"
+                        placeholder="e.g. /dashboard%0d%0aLocation:%20https://evil.attacker.example"
+                        value="<?= htmlspecialchars($input) ?>"
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                </div>
+                <div style="display:flex; gap:0.6rem; margin-top:0.75rem; flex-wrap:wrap;">
+                    <button type="submit" class="btn btn-primary">Test Redirect</button>
+                    <?php if ($input !== ''): ?>
+                    <a href="level9.php" class="btn btn-secondary">Clear</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+
+            <!-- Flag / result display -->
+            <?php if ($flag): ?>
+            <div class="flag-display">
+                <h3>&#x1F3C6; Flag Captured!</h3>
+                <p><?= htmlspecialchars($flagMessage) ?></p>
+                <code><?= htmlspecialchars($flag) ?></code>
+                <p style="margin-top:0.75rem; font-size:0.8rem;">
+                    <a href="submit.php">Submit this flag &rarr;</a>
+                </p>
+            </div>
+            <?php elseif ($vr['submitted']): ?>
+            <div class="message error">
+                No header injected yet. A value with a real host is blocked — keep it relative, then break out of the
+                header line with an encoded CRLF.
+            </div>
+            <?php endif; ?>
+
+            <?= render_redirect_result($vr) ?>
+
+        </div><!-- /.challenge-panel -->
+    </div><!-- /.challenge-layout -->
+
+    <?= render_hint_section($hints) ?>
+    <?= render_inline_flag_form($levelId, $_flag_result) ?>
+
+    <div class="navigation">
+        <a href="level<?= $prevLevel ?>.php" class="btn btn-secondary">&larr; Level <?= $prevLevel ?></a>
+        <a href="submit.php" class="btn btn-secondary nav-center">Submit Flag</a>
+        <a href="level<?= $nextLevel ?>.php" class="btn btn-secondary">Level <?= $nextLevel ?> &rarr;</a>
+    </div>
+
+</div><!-- /.container -->
+</body>
+</html>

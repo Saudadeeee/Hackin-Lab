@@ -48,38 +48,38 @@ if ($conn->connect_error) {
             </div>
             
             <div class="level-card">
-                <h3>Level 4 - Blind Login</h3>
-                <p>Login with no error messages. Use boolean-based blind techniques to extract data.</p>
+                <h3>Level 4 - WAF Protected Login</h3>
+                <p>Login guarded by a keyword blocklist plus quote/semicolon stripping. Evade the filter with case and keyword tricks.</p>
                 <a href="level4.php">Start Level 4</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 5 - Time-Based Login</h3>
-                <p>Login vulnerable to time-based blind injection. Use delays to infer information.</p>
+                <h3>Level 5 - Boolean Blind Login</h3>
+                <p>No errors, no data output — only success vs. "Access denied". Infer the password one bit at a time.</p>
                 <a href="level5.php">Start Level 5</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 6 - File Upload Login</h3>
-                <p>Login with file operations. Extract data through file system manipulation.</p>
+                <h3>Level 6 - Time-Based Blind Login</h3>
+                <p>The result is hidden but the query time is reported. Use SLEEP() as a timing oracle to extract data.</p>
                 <a href="level6.php">Start Level 6</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 7 - Second Order Login</h3>
-                <p>Registration + Login system vulnerable to second-order injection attacks.</p>
+                <h3>Level 7 - File Write (OUTFILE) Login</h3>
+                <p>Out-of-band exfiltration. Use INTO OUTFILE to dump query results to the filesystem and read them back.</p>
                 <a href="level7.php">Start Level 7</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 8 - XML Login</h3>
-                <p>Login system using XML data processing. Exploit XPATH injection vulnerabilities.</p>
+                <h3>Level 8 - Second Order Login</h3>
+                <p>Registration stores your input; a later login reuses it in a second query. Persist the payload, then trigger it.</p>
                 <a href="level8.php">Start Level 8</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 9 - Admin Portal</h3>
-                <p>Professional admin login interface. Multiple security layers to bypass.</p>
+                <h3>Level 9 - XPath / XML Login</h3>
+                <p>Login backed by an XML user store queried via XPath. Break out of the predicate to bypass the role check.</p>
                 <a href="level9.php">Start Level 9</a>
             </div>
             
@@ -96,32 +96,32 @@ if ($conn->connect_error) {
             </div>
             
             <div class="level-card">
-                <h3>Level 12 - WAF Protected Login</h3>
-                <p>Login protected by Web Application Firewall. Learn advanced bypass techniques.</p>
+                <h3>Level 12 - JSON API Login</h3>
+                <p>Modern API-based login using a JSON body. Fields are parsed straight into SQL — inject through JSON.</p>
                 <a href="level12.php">Start Level 12</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 13 - JSON API Login</h3>
-                <p>Modern API-based login using JSON. Exploit JSON injection vulnerabilities.</p>
+                <h3>Level 13 - Comment Filtered Login</h3>
+                <p>Login that strips SQL comment characters. Craft comment-less payloads to bypass keyword detection.</p>
                 <a href="level13.php">Start Level 13</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 14 - Comment Filtered Login</h3>
-                <p>Login with comment-based filters. Use SQL comments to bypass keyword detection.</p>
+                <h3>Level 14 - Encoded Login</h3>
+                <p>Input is URL/HTML-decoded before filtering. Master encoding combinations to slip keywords past the filter.</p>
                 <a href="level14.php">Start Level 14</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 15 - Encoded Login</h3>
-                <p>Login with character encoding filters. Master various encoding bypass techniques.</p>
+                <h3>Level 15 - Space Filtered Login</h3>
+                <p>Literal spaces are blocked. Use comments, tabs, or newlines as whitespace to keep your query valid.</p>
                 <a href="level15.php">Start Level 15</a>
             </div>
             
             <div class="level-card">
-                <h3>Level 16 - Space Filtered Login</h3>
-                <p>Elite challenge: Login with space character filters. Ultimate bypass techniques.</p>
+                <h3>Level 16 - Advanced WAF (Final Boss)</h3>
+                <p>Five independent filter layers at once — comments, keywords, special chars, logical operators, and whitespace.</p>
                 <a href="level16.php">Start Level 16</a>
             </div>
         </div>

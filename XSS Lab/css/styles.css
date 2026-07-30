@@ -17,6 +17,14 @@
     --text-faint:  #404040;
     --white:       #ffffff;
     --code-bg:     #060606;
+    --primary:       #6366f1;
+    --primary-hover: #818cf8;
+    --success:       #10b981;
+    --danger:        #ef4444;
+    --warning:       #f59e0b;
+    --surface-alt:   #121212;
+    --radius:        6px;
+    --radius-lg:     10px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

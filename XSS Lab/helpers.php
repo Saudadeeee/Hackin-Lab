@@ -222,11 +222,10 @@ function verify_xss_payload(int $level, string $input): bool {
         case 10:
             // Multi-layer WAF: apply all filters, then check if XSS survives
             $x = $input;
-            // Layer 1: strip script tags (case-insensitive, multiline)
-            $x = preg_replace('/<script.*?>/is', '', $x);
-            $x = preg_replace('/<\/script>/is', '', $x);
-            // Layer 2: strip common event handlers and javascript:
-            foreach (['javascript:', 'onerror=', 'onload=', 'onclick=', 'onfocus=', 'onmouseover='] as $b) {
+            // Layer 1: strip <script>...</script> blocks (matches level10.php runtime filter)
+            $x = preg_replace('/<script[\s\S]*?<\/script>/i', '', $x);
+            // Layer 2: strip common event handlers and javascript: (same set/order as level10.php)
+            foreach (['onerror=', 'onload=', 'onclick=', 'onfocus=', 'onmouseover=', 'javascript:'] as $b) {
                 $x = str_ireplace($b, '', $x);
             }
             // Layer 3: strip HTML comments

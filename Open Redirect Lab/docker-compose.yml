@@ -1,0 +1,9 @@
+services:
+  web:
+    image: php:8.2-apache
+    container_name: redirect_lab
+    ports:
+      - "8092:80"
+    volumes:
+      - ./:/var/www/html/
+    restart: unless-stopped

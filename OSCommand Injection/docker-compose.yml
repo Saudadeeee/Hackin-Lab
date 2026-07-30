@@ -5,7 +5,7 @@ services:
     build: .
     container_name: oscommand_injection_lab
     ports:
-      - "8080:80"
+      - "8084:80"
     volumes:
       - ./:/var/www/html
     environment:

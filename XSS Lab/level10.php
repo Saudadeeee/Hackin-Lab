@@ -69,7 +69,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
 <span class="php-variable">$input</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'payload'</span>] ?? <span class="php-string">''</span>;
 
 <span class="php-comment">// Layer 1: Remove &lt;script&gt; tags (case-insensitive)</span>
-<span class="vuln-line"><span class="php-variable">$x</span> = preg_replace(<span class="php-string">'&lt;script[\s\S]*?&lt;\/script&gt;/i'</span>, <span class="php-string">''</span>, <span class="php-variable">$input</span>);</span>
+<span class="vuln-line"><span class="php-variable">$x</span> = preg_replace(<span class="php-string">'/&lt;script[\s\S]*?&lt;\/script&gt;/i'</span>, <span class="php-string">''</span>, <span class="php-variable">$input</span>);</span>
 <span class="php-comment">// Layer 2: Remove common XSS event handlers</span>
 <span class="php-keyword">foreach</span> ([<span class="php-string">'onerror='</span>,<span class="php-string">'onload='</span>,<span class="php-string">'onclick='</span>,<span class="php-string">'onfocus='</span>,
           <span class="php-string">'onmouseover='</span>,<span class="php-string">'javascript:'</span>] <span class="php-keyword">as</span> <span class="php-variable">$b</span>) {

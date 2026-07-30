@@ -33,7 +33,7 @@ OS Command Injection là một lỗ hổng bảo mật cho phép kẻ tấn côn
    docker-compose up -d
    ```
 
-2. Truy cập http://localhost:8080
+2. Truy cập http://localhost:8084
 
 3. Bắt đầu từ Level 1 và tiến dần lên các level khó hơn
 

@@ -14,7 +14,6 @@ SQLi Lab/
 ├── challenge_index.php         # Intro page for the standalone admin challenge
 ├── includes/helpers.php        # Shared helpers (flags + hint renderer)
 ├── level1.php ... level16.php  # Sixteen login challenges
-├── level7_set.php              # Setup step for the second-order challenge
 ├── sandbox.php                 # Free-form query runner
 ├── submit.php                  # Flag submission portal
 └── README_LOGIN_CHALLENGES.md  # This file
@@ -67,10 +66,10 @@ Environment variables in `docker-compose.yml` expose these credentials to the PH
 | 1     | Basic login                          | Error-based SQLi fundamentals                  |
 | 2     | Integer + UNION injection            | Column discovery & UNION exploitation          |
 | 3     | Stacked queries                      | Multi-statement execution & privilege escalation |
-| 4     | Boolean blind                        | True/false inference without errors            |
-| 5     | Time-based blind                     | Leveraging `SLEEP()` to extract data           |
-| 6     | File-based (OUTFILE)                 | Out-of-band exfiltration via filesystem        |
-| 7     | Second-order (setup + trigger)       | Persisted payloads executed on later request   |
+| 4     | WAF-protected login                  | Keyword blocklist / quote-strip evasion        |
+| 5     | Boolean blind                        | True/false inference without errors            |
+| 6     | Time-based blind                     | Leveraging `SLEEP()` to extract data           |
+| 7     | File-based (OUTFILE)                 | Out-of-band exfiltration via filesystem        |
 | 8     | Registration + stored payload        | Two-step injection through user data reuse     |
 | 9     | XPath authentication                 | XML/XPath predicate manipulation               |
 | 10    | INSERT injection                     | Tampering with `INSERT` to craft admin account |

@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    container_name: poi_lab
+    ports:
+      - "8089:80"
+    volumes:
+      - ./:/var/www/html/
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

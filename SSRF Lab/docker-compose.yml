@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    container_name: ssrf_lab
+    ports:
+      - "8085:80"
+    volumes:
+      - ./:/var/www/html/
+    cap_add:
+      # needed so the container can add 169.254.169.254 to loopback (metadata mock)
+      - NET_ADMIN
+    extra_hosts:
+      # attacker-controlled / trusted hostnames that resolve to loopback,
+      # all baked into /etc/hosts at container start (fully offline)
+      - "feed.local:127.0.0.1"
+      - "corp-internal.attacker.local:127.0.0.1"
+      - "intranet.attacker.local:127.0.0.1"
+    restart: unless-stopped

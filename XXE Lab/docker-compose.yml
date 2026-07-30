@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    container_name: xxe_lab
+    ports:
+      - "8087:80"
+    volumes:
+      - ./:/var/www/html/
+    restart: unless-stopped

@@ -100,7 +100,7 @@
                 <li>Observe query output and error messages to refine payloads.</li>
                 <li>Take hints gradually so you retain the learning.</li>
             </ul>
-            <a href="admin_login_challenge.php" class="start-button">Start the Challenge</a>
+            <a href="index.php" class="start-button">Start the Challenge</a>
             <div style="font-size: 0.95rem; color: #5a6170;">Expected duration: 10-20 minutes.</div>
         </div>
         <div class="lab-links">
@@ -108,19 +108,19 @@
             <a href="level1.php" class="lab-link">Level 1 - Error Based</a>
             <a href="level2.php" class="lab-link">Level 2 - Union Based</a>
             <a href="level3.php" class="lab-link">Level 3 - Stacked Queries</a>
-            <a href="level4.php" class="lab-link">Level 4 - Boolean Blind</a>
-            <a href="level5.php" class="lab-link">Level 5 - Time Based</a>
-            <a href="level6.php" class="lab-link">Level 6 - Out-of-Band</a>
-            <a href="level7_set.php" class="lab-link">Level 7 - Second Order</a>
-            <a href="level8.php" class="lab-link">Level 8 - XPath Injection</a>
-            <a href="level9.php" class="lab-link">Level 9 - Auth Bypass</a>
+            <a href="level4.php" class="lab-link">Level 4 - WAF Bypass</a>
+            <a href="level5.php" class="lab-link">Level 5 - Boolean Blind</a>
+            <a href="level6.php" class="lab-link">Level 6 - Time Based</a>
+            <a href="level7.php" class="lab-link">Level 7 - OOB File Write</a>
+            <a href="level8.php" class="lab-link">Level 8 - Second Order</a>
+            <a href="level9.php" class="lab-link">Level 9 - XPath Injection</a>
             <a href="level10.php" class="lab-link">Level 10 - Insert Injection</a>
             <a href="level11.php" class="lab-link">Level 11 - Update Injection</a>
-            <a href="level12.php" class="lab-link">Level 12 - WAF Bypass</a>
-            <a href="level13.php" class="lab-link">Level 13 - JSON Injection</a>
-            <a href="level14.php" class="lab-link">Level 14 - Comment Bypass</a>
-            <a href="level15.php" class="lab-link">Level 15 - Encoding Bypass</a>
-            <a href="level16.php" class="lab-link">Level 16 - Space Bypass</a>
+            <a href="level12.php" class="lab-link">Level 12 - JSON Injection</a>
+            <a href="level13.php" class="lab-link">Level 13 - Comment Bypass</a>
+            <a href="level14.php" class="lab-link">Level 14 - Encoding Bypass</a>
+            <a href="level15.php" class="lab-link">Level 15 - Space Bypass</a>
+            <a href="level16.php" class="lab-link">Level 16 - Advanced WAF Bypass</a>
         </div>
         <div style="margin-top: 40px; opacity: 0.85; font-size: 0.95rem;">
             <p>These labs are designed for hands-on practice in a controlled environment.</p>
