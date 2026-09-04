@@ -163,7 +163,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <h3>&#x1F3C6; Metadata Deserialized!</h3>
                 <p>The <code>phar://</code> file op fired <code>__wakeup()</code>, which read the secret.</p>
                 <code><?= htmlspecialchars($flag) ?></code>
-                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
             </div>
             <?php elseif ($err !== ''): ?>
             <div class="message error">Phar build error: <?= htmlspecialchars($err) ?> (needs <code>phar.readonly=Off</code>).</div>

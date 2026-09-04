@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $levelId    = 6;
 $levelTitle = 'Bypass Script Tag Filter';
@@ -134,11 +135,11 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
                             padding:0.65rem 0.9rem; font-size:0.82rem; margin-bottom:0.5rem;">
                     <span style="color:var(--text-muted);">Raw input:</span><br>
-                    <code style="color:#f87171; word-break:break-all; font-size:0.78rem;">
+                    <code style="color:#b5766e; word-break:break-all; font-size:0.78rem;">
                         <?= htmlspecialchars($input) ?>
                     </code><br><br>
                     <span style="color:var(--text-muted);">After filter:</span><br>
-                    <code style="color:#34d399; word-break:break-all; font-size:0.78rem;">
+                    <code style="color:#7fa06d; word-break:break-all; font-size:0.78rem;">
                         <?= htmlspecialchars($filtered) ?>
                     </code>
                 </div>
@@ -160,6 +161,8 @@ $_flag_result = handle_inline_flag_submit($levelId);
 
         </div><!-- /.challenge-panel -->
     </div><!-- /.challenge-layout -->
+
+    <?= xss_teach($levelId, ['input' => $input, 'solved' => $flag !== '']) ?>
 
     <?= render_hint_section($hints) ?>
     <?= render_inline_flag_form($levelId, $_flag_result) ?>

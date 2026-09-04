@@ -87,7 +87,7 @@ render_page_header('Level 9 — JWT Without Signature Verification', 'Forging JW
         </div>
         <?php endif; ?>
 
-        <div style="margin-top:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <p style="font-size:0.85rem;color:var(--text);margin-bottom:0.5rem;"><strong>Sample legitimate JWT (alice, role=user):</strong></p>
             <code style="display:block;font-size:0.75rem;color:#f1fa8c;word-break:break-all;margin-bottom:0.75rem;"><?= htmlspecialchars($sampleJwt) ?></code>
 
@@ -102,7 +102,7 @@ render_page_header('Level 9 — JWT Without Signature Verification', 'Forging JW
             </table>
         </div>
 
-        <div style="margin-top:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <p style="font-size:0.85rem;color:var(--text);margin-bottom:0.5rem;"><strong>JWT Encoder/Decoder Tool:</strong></p>
 
             <div class="form-group">
@@ -166,7 +166,7 @@ function encodeAndSetJWT() {
         document.getElementById('jwtOutput').value = token;
         document.cookie = 'token=' + encodeURIComponent(token) + '; path=/';
         document.getElementById('jwtStatus').innerHTML =
-            '<span style="color:#d0d0d0;">Cookie set! <a href="level9.php" style="color:#ffffff;text-decoration:underline;">Reload page</a> to check role.</span>';
+            '<span style="color:#c3c0b6;">Cookie set! <a href="level9.php" style="color:#c3c0b6;text-decoration:underline;">Reload page</a> to check role.</span>';
     } catch(e) {
         document.getElementById('jwtStatus').textContent = 'Invalid JSON in payload: ' + e.message;
     }
@@ -191,7 +191,7 @@ function decodeCurrentToken() {
         document.getElementById('jwtOutput').value  = token;
         document.getElementById('jwtStatus').innerHTML =
             'Decoded payload. Role: <strong style="color:' +
-            (payload.role === 'admin' ? '#ffffff' : '#888888') + ';">' + payload.role + '</strong>';
+            (payload.role === 'admin' ? '#c3c0b6' : '#888888') + ';">' + payload.role + '</strong>';
     } catch(e) {
         document.getElementById('jwtStatus').textContent = 'Could not decode: ' + e.message;
     }
@@ -207,7 +207,7 @@ function clearToken() {
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     document.getElementById('jwtOutput').value = '';
     document.getElementById('jwtStatus').innerHTML =
-        '<span style="color:#888888;">Cookie cleared. <a href="level9.php" style="color:#ffffff;text-decoration:underline;">Reload page.</a></span>';
+        '<span style="color:#888888;">Cookie cleared. <a href="level9.php" style="color:#c3c0b6;text-decoration:underline;">Reload page.</a></span>';
 }
 
 // Auto-decode on page load if token exists

@@ -68,7 +68,7 @@ html_open('Submit Flag — IDOR Lab');
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
 
     <div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius: 0;padding:1.25rem;margin-bottom:1.5rem;">
             <h3 style="margin-bottom:0.75rem;font-size:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);">Submit a Flag</h3>
             <?php if ($message): ?>
             <div class="message <?= $messageType ?>">
@@ -87,7 +87,7 @@ html_open('Submit Flag — IDOR Lab');
             </form>
         </div>
 
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius: 0;padding:1.25rem;">
             <h3 style="margin-bottom:0.75rem;font-size:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);">Flag Format</h3>
             <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:0.5rem;">All flags follow the format:</p>
             <div class="flag-display">FLAG{descriptive_name_here}</div>
@@ -96,11 +96,11 @@ html_open('Submit Flag — IDOR Lab');
     </div>
 
     <div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius: 0;padding:1.25rem;">
             <h3 style="margin-bottom:0.75rem;font-size:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);">
                 Progress — <?= count($progress) ?>/10 Completed
             </h3>
-            <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:1rem;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius: 0;overflow:hidden;margin-bottom:1rem;">
                 <div style="height:6px;background:var(--primary);width:<?= (count($progress) / 10 * 100) ?>%;transition:width 0.5s;"></div>
             </div>
             <table class="data-table">
@@ -118,7 +118,7 @@ html_open('Submit Flag — IDOR Lab');
                         <td><a href="level<?= $i ?>.php" style="color:var(--primary);text-decoration:none;"><?= htmlspecialchars($levelNames[$i]) ?></a></td>
                         <td>
                             <?php if (in_array($i, $progress)): ?>
-                            <span style="color:#6ee7b7;font-weight:600;">&#10003; Solved</span>
+                            <span style="color:#7fa06d;font-weight:600;">&#10003; Solved</span>
                             <?php else: ?>
                             <span style="color:var(--text-muted);">Pending</span>
                             <?php endif; ?>
@@ -134,7 +134,7 @@ html_open('Submit Flag — IDOR Lab');
             <?php endif; ?>
             <form method="POST" action="submit.php" style="margin-top:1rem;">
                 <input type="hidden" name="reset_progress" value="1">
-                <button type="submit" class="btn" style="background:var(--danger);color:#fff;font-size:0.8rem;padding:0.3rem 0.75rem;"
+                <button type="submit" class="btn" style="background:var(--danger);color:#c3c0b6;font-size:0.8rem;padding:0.3rem 0.75rem;"
                     onclick="return confirm('Reset all progress?')">Reset Progress</button>
             </form>
         </div>

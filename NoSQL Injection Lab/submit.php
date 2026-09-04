@@ -94,7 +94,7 @@ $totalCompleted = count($completed);
             color: var(--white);
             background: var(--surface2);
             padding: 0.15rem 0.4rem;
-            border-radius: 4px;
+            border-radius: 0;
         }
         .completion-banner {
             background: var(--surface2);

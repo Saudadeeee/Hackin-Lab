@@ -32,7 +32,7 @@ if (!empty($_COOKIE['upload_lab_progress'])) {
     <style>
         .header-title { font-weight: 600; color: var(--white); font-size: 1rem; letter-spacing: 0.01em; }
         .submit-link {
-            padding: 0.35rem 0.85rem; border-radius: 5px; text-decoration: none; font-size: 0.8rem;
+            padding: 0.35rem 0.85rem; border-radius: 0; text-decoration: none; font-size: 0.8rem;
             font-weight: 600; color: var(--bg); background: var(--white); border: 1px solid var(--white);
         }
         .submit-link:hover { background: transparent; color: var(--white); }
@@ -66,10 +66,10 @@ if (!empty($_COOKIE['upload_lab_progress'])) {
         .level-number { font-size: 0.72rem; font-weight: 700; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
         .level-card h2 { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
         .level-card.completed h2::after { content: ' \2705'; }
-        .difficulty-badge { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 3px; border: 1px solid var(--border-mid); }
-        .difficulty-easy   { color: #d0d0d0; border-color: #3a3a3a; background: #141414; }
-        .difficulty-medium { color: #b0b0b0; border-color: #3a3a3a; background: #121212; }
-        .difficulty-hard   { color: #909090; border-color: #2a2a2a; background: #0e0e0e; }
+        .difficulty-badge { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 0; border: 1px solid var(--border-mid); }
+        .difficulty-easy   { color: #c3c0b6; border-color: #2f3546; background: #151821; }
+        .difficulty-medium { color: #9a978f; border-color: #2f3546; background: #151821; }
+        .difficulty-hard   { color: #9a978f; border-color: #2f3546; background: #1a1e28; }
         .difficulty-expert { color: var(--white); border-color: var(--border-hi); background: var(--surface3); }
         .start-link { display: inline-block; font-size: 0.76rem; font-weight: 600; color: var(--white); text-decoration: none; margin-top: 0.5rem; }
         .start-link:hover { color: var(--text-muted); }

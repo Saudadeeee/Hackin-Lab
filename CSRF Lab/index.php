@@ -57,7 +57,7 @@ if (!empty($_COOKIE['csrf_lab_progress'])) {
         }
         .progress-bar-inner {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), #818cf8);
+            background: linear-gradient(90deg, var(--primary), #6f9fb0);
             border-radius: 999px;
             transition: width 0.5s ease;
         }
@@ -65,9 +65,9 @@ if (!empty($_COOKIE['csrf_lab_progress'])) {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            background: rgba(79,70,229,0.12);
+            background: rgba(111, 159, 176,0.12);
             border: 1px solid var(--primary);
-            color: #a5b4fc;
+            color: #6f9fb0;
             padding: 0.35rem 0.85rem;
             border-radius: 999px;
             font-size: 0.82rem;
@@ -80,7 +80,7 @@ if (!empty($_COOKIE['csrf_lab_progress'])) {
         .lab-header > p { font-size: 0.92rem; color: var(--text-muted); max-width: 640px; line-height: 1.7; }
         .level-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
         .level-number { font-size: 0.72rem; font-weight: 700; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; }
-        .difficulty-badge { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 3px; border: 1px solid var(--border-mid); color: var(--text-muted); }
+        .difficulty-badge { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 0; border: 1px solid var(--border-mid); color: var(--text-muted); }
         .difficulty-expert { color: var(--white); border-color: var(--border-hi); background: var(--surface3); }
         .level-card { text-decoration: none; display: block; }
         .level-card h2 { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
@@ -122,7 +122,7 @@ if (!empty($_COOKIE['csrf_lab_progress'])) {
         <h1>CSRF <span>Challenge</span> Lab</h1>
         <p>Ten levels of Cross-Site Request Forgery. Each level protects an admin action (change the account email, promote a user) with a different (broken) defense. Read the handler, craft a PoC, and deliver it to the simulated logged-in admin — the bot performs your request with the admin session attached, exactly like a real victim.</p>
         <p style="margin-top:0.4rem; font-size:0.85rem;">
-            <a href="submit.php" style="color:#818cf8;">Submit captured flags &rarr;</a>
+            <a href="submit.php" style="color:#6f9fb0;">Submit captured flags &rarr;</a>
         </p>
     </div>
 
@@ -132,11 +132,11 @@ if (!empty($_COOKIE['csrf_lab_progress'])) {
             <span class="stat-label">Completed</span>
         </div>
         <div class="stat">
-            <span class="stat-value" style="color:#34d399;">10</span>
+            <span class="stat-value" style="color:#7fa06d;">10</span>
             <span class="stat-label">Total Levels</span>
         </div>
         <div class="stat">
-            <span class="stat-value" style="color:#fbbf24;"><?= 10 - count($completed) ?></span>
+            <span class="stat-value" style="color:#cfa65c;"><?= 10 - count($completed) ?></span>
             <span class="stat-label">Remaining</span>
         </div>
     </div>

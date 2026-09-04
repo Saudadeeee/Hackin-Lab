@@ -157,7 +157,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <h3>&#x1F3C6; __wakeup() Skipped!</h3>
                 <p>The count mismatch bypassed sanitisation and <code>load()</code> read the secret.</p>
                 <code><?= htmlspecialchars($flag) ?></code>
-                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
             </div>
             <?php elseif ($ran): ?>
             <div class="message error"><?= $skipped ? 'Wakeup was skipped, but the file did not reach the secret. Set <code>file</code> to <code>/var/secret/flag.txt</code>.' : '__wakeup() ran and sanitised the path. Declare MORE properties than you list so it is skipped.' ?></div>

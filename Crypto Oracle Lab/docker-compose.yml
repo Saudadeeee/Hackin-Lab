@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    container_name: crypto_lab
+    ports:
+      - "8096:80"
+    volumes:
+      - ./:/var/www/html
+    restart: unless-stopped

@@ -1,0 +1,47 @@
+/* CORS CSP Lab · styling for the sandboxed frames (render.php, legacy.php).
+   Kept in its own file because the frames run under default-src 'self' and a
+   style attribute or a <style> block would need style-src 'unsafe-inline'. */
+
+body.frame {
+    margin: 0;
+    padding: 14px 16px;
+    background: #ffffff;
+    color: #1a1a1a;
+    font: 400 13px/1.6 ui-sans-serif, system-ui, "Segoe UI", Arial, sans-serif;
+}
+
+body.frame h1 { font-size: 15px; margin: 0 0 4px; }
+body.frame h2 { font-size: 12px; margin: 0 0 6px; text-transform: uppercase;
+                letter-spacing: 0.06em; color: #555; }
+body.frame p  { margin: 0 0 10px; }
+
+body.frame .muted { color: #6b6b6b; font-size: 12px; }
+body.frame code   { font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+                    font-size: 11px; background: #f2f2f2; padding: 1px 4px; border-radius: 3px;
+                    word-break: break-all; }
+
+body.frame .card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    background: #fafafa;
+}
+
+body.frame ul { margin: 0; padding-left: 18px; }
+
+body.frame .status {
+    border: 1px dashed #c9c9c9;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+    font-size: 11px;
+    color: #7a7a7a;
+}
+
+body.frame .status.ok {
+    border: 1px solid #0f8a4d;
+    background: #e9f8ef;
+    color: #0b5c34;
+    font-weight: 600;
+}

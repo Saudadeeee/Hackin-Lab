@@ -134,7 +134,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <h3>&#x1F3C6; Flag Captured!</h3>
                     <p>The uploaded SVG's entity resolved the secret while the image was "indexed".</p>
                     <code><?= htmlspecialchars($flag) ?></code>
-                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
                 </div>
                 <?php elseif ($submitted): ?>
                 <div class="message error">Include <code>&lt;!DOCTYPE svg [ &lt;!ENTITY xxe SYSTEM "file:///var/secret/flag6.txt"&gt; ]&gt;</code> and reference <code>&amp;xxe;</code> inside a <code>&lt;text&gt;</code> element.</div>

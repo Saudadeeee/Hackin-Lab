@@ -119,7 +119,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <h3>&#x1F3C6; Gadget Triggered!</h3>
                 <p>The string cast fired <code>__toString()</code> and it read the secret.</p>
                 <code><?= htmlspecialchars($flag) ?></code>
-                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
             </div>
             <?php elseif ($ran): ?>
             <div class="message error">No secret in the preview. Send a <code>Template</code> with <code>view</code> = <code>/var/secret/flag.txt</code>.</div>

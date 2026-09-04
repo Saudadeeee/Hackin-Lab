@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $levelId    = 10;
 $levelTitle = 'Multi-Layer XSS Filter Bypass';
@@ -109,10 +110,10 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <div style="font-weight:700; color:var(--text-muted); text-transform:uppercase;
                             letter-spacing:0.06em; font-size:0.76rem; margin-bottom:0.5rem;">Filter Coverage</div>
                 <div style="display:flex; flex-direction:column; gap:0.3rem;">
-                    <div><span style="color:#f87171;">Layer 1:</span> <code>&lt;script ...&gt;...&lt;/script&gt;</code> (any case)</div>
-                    <div><span style="color:#f87171;">Layer 2:</span> <code>onerror=</code> <code>onload=</code> <code>onclick=</code> <code>onfocus=</code> <code>onmouseover=</code> <code>javascript:</code></div>
-                    <div><span style="color:#f87171;">Layer 3:</span> <code>&lt;!-- ... --&gt;</code> HTML comments</div>
-                    <div style="margin-top:0.35rem; color:#34d399;"><strong>Not covered:</strong> hundreds of other event handlers, SVG events, HTML5 element-specific events...</div>
+                    <div><span style="color:#b5766e;">Layer 1:</span> <code>&lt;script ...&gt;...&lt;/script&gt;</code> (any case)</div>
+                    <div><span style="color:#b5766e;">Layer 2:</span> <code>onerror=</code> <code>onload=</code> <code>onclick=</code> <code>onfocus=</code> <code>onmouseover=</code> <code>javascript:</code></div>
+                    <div><span style="color:#b5766e;">Layer 3:</span> <code>&lt;!-- ... --&gt;</code> HTML comments</div>
+                    <div style="margin-top:0.35rem; color:#7fa06d;"><strong>Not covered:</strong> hundreds of other event handlers, SVG events, HTML5 element-specific events...</div>
                 </div>
             </div>
 
@@ -163,11 +164,11 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
                             padding:0.65rem 0.9rem; font-size:0.78rem; margin-bottom:0.5rem;">
                     <div style="color:var(--text-muted);">Raw input:</div>
-                    <code style="color:#f87171; word-break:break-all;"><?= htmlspecialchars($input) ?></code>
+                    <code style="color:#b5766e; word-break:break-all;"><?= htmlspecialchars($input) ?></code>
                     <div style="color:var(--text-muted); margin-top:0.5rem;">After all 3 layers:</div>
-                    <code style="color:#34d399; word-break:break-all;"><?= htmlspecialchars($filtered) ?></code>
+                    <code style="color:#7fa06d; word-break:break-all;"><?= htmlspecialchars($filtered) ?></code>
                     <?php if ($input === $filtered): ?>
-                    <div style="color:#fbbf24; margin-top:0.3rem; font-weight:600;">
+                    <div style="color:#cfa65c; margin-top:0.3rem; font-weight:600;">
                         No changes — payload survived all filters.
                     </div>
                     <?php else: ?>
@@ -195,6 +196,8 @@ $_flag_result = handle_inline_flag_submit($levelId);
 
         </div><!-- /.challenge-panel -->
     </div><!-- /.challenge-layout -->
+
+    <?= xss_teach($levelId, ['input' => $input, 'solved' => $flag !== '']) ?>
 
     <?= render_hint_section($hints) ?>
     <?= render_inline_flag_form($levelId, $_flag_result) ?>

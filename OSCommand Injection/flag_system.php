@@ -68,11 +68,11 @@ function get_level_flag($level) {
     // Create accessible flag file for current level only
     file_put_contents($allowed_flag_file, $flag_content);
     chmod($allowed_flag_file, 0644);
-    
-    // Create web-accessible copy for convenience
-    $web_flag_file = "/var/www/html/level{$level}_flag.txt";
-    file_put_contents($web_flag_file, $flag_content);
-    chmod($web_flag_file, 0644);
+
+    // No web-accessible copy. A mirror under the document root made every
+    // level solvable by fetching /level<N>_flag.txt directly, with no
+    // injection at all. The flag lives in /tmp, which is where the command
+    // injection has to reach it.
     
     return $flag_content;
 }

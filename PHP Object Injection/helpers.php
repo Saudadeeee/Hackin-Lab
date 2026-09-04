@@ -101,7 +101,7 @@ function get_level_hints(int $levelId): array {
             'After <code>unserialize()</code>, the login check is <code>if ($token->password == $ADMIN_HASH)</code> — a <strong>loose</strong> <code>==</code> comparison. The stored hash is a "magic hash" that starts with <code>0e</code> followed by only digits.',
             'PHP\'s <code>==</code> treats two strings that both look like <code>0e[digits]</code> as scientific notation: <code>0e...</code> equals <code>0 * 10^... = 0</code>. So any two such strings are "equal".',
             'You control <code>$token->password</code> through the injected object. Set it to a different <code>0e</code>-magic-hash string and the loose comparison becomes <code>0 == 0</code> &rarr; true.',
-            'Class is <code>AuthToken</code> (9 bytes); properties <code>user</code> and <code>password</code>. A known magic hash: <code>0e830400451993494058024219903391</code> (32 bytes, the md5 of <code>240610708</code>).',
+            'Class is <code>AuthToken</code> (9 bytes); properties <code>user</code> and <code>password</code>. A known magic hash: <code>0e830400451993494058024219903391</code> (32 bytes, the md5 of <code>QNKCDZO</code>). Careful — the md5 of <code>240610708</code> is the stored hash itself, and the <code>!==</code> guard rejects a literal replay.',
             'Working payload (into the <code>auth_token</code> field): <code>O:9:"AuthToken":2:{s:4:"user";s:5:"admin";s:8:"password";s:32:"0e830400451993494058024219903391";}</code>',
         ],
         7 => [
@@ -280,14 +280,14 @@ function render_level_styles(): string {
     return <<<CSS
     <style>
         .header-title { font-size: 1.02rem; font-weight: 700; color: var(--white); }
-        .submit-link { padding: 0.35rem 0.85rem; border-radius: 5px; text-decoration: none; font-size: 0.8rem; font-weight: 600; color: var(--bg); background: var(--white); border: 1px solid var(--white); }
+        .submit-link { padding: 0.35rem 0.85rem; border-radius: 0; text-decoration: none; font-size: 0.8rem; font-weight: 600; color: var(--bg); background: var(--white); border: 1px solid var(--white); }
         .level-header { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
         .level-header h1 { font-size: 1.4rem; font-weight: 800; color: var(--white); letter-spacing: -0.01em; }
-        .level-badge { font-size: 0.72rem; font-weight: 700; color: var(--text-faint); background: var(--surface3); border: 1px solid var(--border); padding: 3px 9px; border-radius: 3px; letter-spacing: 0.08em; text-transform: uppercase; }
-        .difficulty-badge { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 3px; border: 1px solid; }
-        .difficulty-easy    { color: #d0d0d0; border-color: #3a3a3a; background: #141414; }
-        .difficulty-medium  { color: #b0b0b0; border-color: #3a3a3a; background: #121212; }
-        .difficulty-hard    { color: #909090; border-color: #2a2a2a; background: #0e0e0e; }
+        .level-badge { font-size: 0.72rem; font-weight: 700; color: var(--text-faint); background: var(--surface3); border: 1px solid var(--border); padding: 3px 9px; border-radius: 0; letter-spacing: 0.08em; text-transform: uppercase; }
+        .difficulty-badge { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 0; border: 1px solid; }
+        .difficulty-easy    { color: #c3c0b6; border-color: #2f3546; background: #151821; }
+        .difficulty-medium  { color: #9a978f; border-color: #2f3546; background: #151821; }
+        .difficulty-hard    { color: #9a978f; border-color: #2f3546; background: #1a1e28; }
         .difficulty-expert  { color: var(--white); border-color: var(--border-hi); background: var(--surface3); }
         .vuln-annotation { margin: 0; padding: 0.85rem 1rem; font-size: 0.82rem; color: var(--text-muted); line-height: 1.65; border-top: 1px solid var(--border); background: var(--surface2); }
         .vuln-annotation strong { color: var(--text); }

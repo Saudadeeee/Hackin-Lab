@@ -135,7 +135,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <h3>&#x1F3C6; Flag Captured!</h3>
                     <p>The collector received an out-of-band callback carrying the secret file.</p>
                     <code><?= htmlspecialchars($flag) ?></code>
-                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
                 </div>
                 <?php elseif ($submitted): ?>
                 <div class="message error">No callback yet. Reference <code>http://127.0.0.1/oob.dtd</code> as an external parameter entity (<code>%remote;</code>) so the parser fetches and executes it.</div>

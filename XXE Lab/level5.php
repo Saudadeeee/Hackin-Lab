@@ -77,6 +77,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
 <span class="php-comment">// block classic entities by removing the DOCTYPE</span>
 <span class="php-variable">$xml</span> = <span class="php-function">preg_replace</span>(<span class="php-string">'/&lt;!DOCTYPE[^&gt;]*&gt;/i'</span>, <span class="php-string">''</span>, <span class="php-variable">$xml</span>);
 
+<span class="php-function">xxe_register_loader</span>();   <span class="php-comment">// still active — xi:include resolves file://</span>
 <span class="php-variable">$dom</span> = <span class="php-keyword">new</span> <span class="php-function">DOMDocument</span>();
 <span class="php-variable">$dom</span>-&gt;<span class="php-function">loadXML</span>(<span class="php-variable">$xml</span>, <span class="php-keyword">LIBXML_NOENT</span>);
 <span class="vuln-line"><span class="php-variable">$dom</span>-&gt;<span class="php-function">xinclude</span>(<span class="php-keyword">LIBXML_NOENT</span>);   <span class="php-comment">// ← pulls in external resources</span></span>
@@ -131,7 +132,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <h3>&#x1F3C6; Flag Captured!</h3>
                     <p>XInclude pulled the file straight into the document — no DTD required.</p>
                     <code><?= htmlspecialchars($flag) ?></code>
-                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
                 </div>
                 <?php elseif ($output !== null): ?>
                 <div class="message error">Add <code>xmlns:xi="http://www.w3.org/2001/XInclude"</code> and an <code>&lt;xi:include parse="text" href="file:///var/secret/flag5.txt"/&gt;</code> element.</div>

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $levelId    = 8;
 $levelTitle = 'XSS via JSON API Response';
@@ -162,6 +163,8 @@ fetch(<span class="js-string">'level8.php?_api=1&amp;message='</span> + userInpu
 
         </div><!-- /.challenge-panel -->
     </div><!-- /.challenge-layout -->
+
+    <?= xss_teach($levelId, ['input' => $message, 'solved' => $flag !== '']) ?>
 
     <?= render_hint_section($hints) ?>
     <?= render_inline_flag_form($levelId, $_flag_result) ?>

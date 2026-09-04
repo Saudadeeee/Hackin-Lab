@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    container_name: hackinlab_portal
+    ports:
+      - "8079:80"
+    volumes:
+      - ./:/var/www/html
+    # Join the pre-existing default bridge rather than creating another
+    # network: with every lab running, Docker's address pools are exhausted.
+    network_mode: bridge
+    # The labs are published on the Docker host, not inside this container, so
+    # liveness checks go through the host gateway.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - LAB_HOST=host.docker.internal
+    restart: unless-stopped

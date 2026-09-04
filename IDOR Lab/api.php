@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/helpers.php';
 header('Content-Type: application/json');
 
 $action = $_GET['action'] ?? '';
@@ -25,7 +26,16 @@ if ($action === 'getUser') {
     $stmt->execute([$requested_id]);
     $user = $stmt->fetch();
 
-    echo json_encode($user ?: ['error' => 'User not found']);
+    $payload = $user ?: ['error' => 'User not found'];
+
+    // Proof of the IDOR: a valid key retrieved a record that is not its own,
+    // and that record is the admin's. Same gate as level7.php, so the direct
+    // curl / fetch call the level documents earns the flag too.
+    if ($user && $user['role'] === 'admin' && (int)$caller['id'] !== (int)$user['id']) {
+        $payload['flag'] = get_flag_for_level(7);
+    }
+
+    echo json_encode($payload);
     exit;
 }
 

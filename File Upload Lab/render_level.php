@@ -32,7 +32,9 @@ if ($u !== null) {
         $storedRel  = store_upload($levelId, $u['name'], $u['content']);
         $storedName = $u['name'];
     }
-    if (verify_upload($levelId, $u['name'], $u['content'], $u['mime'])) {
+    // $storedRel is passed so the gate can request the file back and confirm
+    // Apache really executed it, rather than trusting a static look at the bytes.
+    if (verify_upload($levelId, $u['name'], $u['content'], $u['mime'], $storedRel)) {
         $flag    = get_flag_for_level($levelId);
         $flagMsg = 'Executable PHP survived the filter — arbitrary code execution achieved!';
     }
@@ -58,7 +60,7 @@ $fmime    = $_POST['fmime']    ?? 'application/octet-stream';
            layered on top of the shared B&W theme tokens. */
         .header-title { font-weight: 600; color: var(--white); font-size: 1rem; letter-spacing: 0.01em; }
         .submit-link {
-            padding: 0.35rem 0.85rem; border-radius: 5px; text-decoration: none;
+            padding: 0.35rem 0.85rem; border-radius: 0; text-decoration: none;
             font-size: 0.8rem; font-weight: 600; color: var(--bg); background: var(--white);
             border: 1px solid var(--white); transition: background 0.15s, color 0.15s;
         }
@@ -70,16 +72,16 @@ $fmime    = $_POST['fmime']    ?? 'application/octet-stream';
         .level-header h1 { font-size: 1.35rem; font-weight: 700; color: var(--white); letter-spacing: -0.01em; flex: 1 1 auto; }
         .level-badge {
             font-size: 0.72rem; font-weight: 700; color: var(--text-faint); background: var(--surface3);
-            border: 1px solid var(--border); padding: 3px 9px; border-radius: 3px;
+            border: 1px solid var(--border); padding: 3px 9px; border-radius: 0;
             letter-spacing: 0.08em; text-transform: uppercase;
         }
         .difficulty-badge {
             font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-            padding: 3px 9px; border-radius: 3px; border: 1px solid var(--border-mid);
+            padding: 3px 9px; border-radius: 0; border: 1px solid var(--border-mid);
         }
-        .difficulty-easy   { color: #d0d0d0; border-color: #3a3a3a; background: #141414; }
-        .difficulty-medium { color: #b0b0b0; border-color: #3a3a3a; background: #121212; }
-        .difficulty-hard   { color: #909090; border-color: #2a2a2a; background: #0e0e0e; }
+        .difficulty-easy   { color: #c3c0b6; border-color: #2f3546; background: #151821; }
+        .difficulty-medium { color: #9a978f; border-color: #2f3546; background: #151821; }
+        .difficulty-hard   { color: #9a978f; border-color: #2f3546; background: #1a1e28; }
         .difficulty-expert { color: var(--white); border-color: var(--border-hi); background: var(--surface3); }
         .vuln-annotation {
             padding: 0.85rem 1rem; font-size: 0.82rem; color: var(--text-muted); line-height: 1.65;
@@ -92,7 +94,7 @@ $fmime    = $_POST['fmime']    ?? 'application/octet-stream';
         .challenge-panel > h3, .code-panel > h3 { margin: 0; }
         .file-link {
             display: inline-block; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.8rem;
-            color: var(--white); border: 1px solid var(--border-hi); border-radius: 4px;
+            color: var(--white); border: 1px solid var(--border-hi); border-radius: 0;
             padding: 0.35rem 0.7rem; text-decoration: none; margin-top: 0.35rem; word-break: break-all;
         }
         .file-link:hover { background: var(--surface3); }

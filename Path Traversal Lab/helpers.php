@@ -61,7 +61,7 @@ function get_level_hints(int $levelId): array {
             'Log files record request information and persist on the server.',
             'Try to read the server log at <code>/var/log/ptlab/access.log</code>.',
             'The access log contains the flag (pre-poisoned in this lab).',
-            'Payload: <code>../../var/log/ptlab/access.log</code>',
+            'Payload: <code>../../../var/log/ptlab/access.log</code> &mdash; the base is <code>/var/www/html/</code>, so it takes three <code>../</code> to reach <code>/</code>.',
         ],
         7 => [
             'The code uses <code>htmlspecialchars()</code> on output but that does not affect file reading.',
@@ -78,11 +78,11 @@ function get_level_hints(int $levelId): array {
             'Payload: <code>../../../../var/secret/level8_flag.txt</code>',
         ],
         9 => [
-            'Linux exposes process information in the <code>/proc/</code> virtual filesystem.',
-            '<code>/proc/self/environ</code> contains environment variables of the current process.',
-            'PHP can read <code>/proc/</code> files using <code>file_get_contents()</code>.',
-            'The environment may contain secret values — or try <code>/proc/self/cmdline</code>.',
-            'Payload: traverse to <code>/var/secret/level9_flag.txt</code> using <code>../../var/secret/level9_flag.txt</code>. The level flag may also appear in <code>/proc/self/environ</code> if it is set as an env var.',
+            'Read the blacklist literally: it rejects only the two strings <code>/etc/passwd</code> and <code>/etc/shadow</code>. Every other path on the filesystem is still reachable.',
+            'The base path is <code>/var/www/html/</code>, so three <code>../</code> segments land you on <code>/</code>.',
+            'Linux exposes process information in the <code>/proc/</code> virtual filesystem, and the blacklist does not mention it. <code>../../../proc/self/cmdline</code> and <code>../../../proc/self/status</code> both come back.',
+            'Note what <em>does not</em> come back: <code>/proc/self/environ</code> is owned by root for an Apache child that dropped privileges, so <code>www-data</code> cannot read it. Use it as a reminder that a readable <code>/proc</code> entry is not the same as a readable process.',
+            'The flag is not in <code>/proc/</code> &mdash; it is in <code>/var/secret/</code>, which the blacklist also fails to mention. Payload: <code>../../../var/secret/level9_flag.txt</code>',
         ],
         10 => [
             'This level has multiple filters — analyze each one independently first.',
@@ -239,7 +239,7 @@ function get_level_info(): array {
         6  => ['title' => 'Reading Server Log Files via Traversal','difficulty' => 'medium', 'badge' => 'Medium', 'desc' => 'Traverse out of the document root to read a pre-poisoned server log file containing the flag.'],
         7  => ['title' => 'Bypass htmlspecialchars with PHP Wrapper','difficulty' => 'hard', 'badge' => 'Hard',  'desc' => 'Output is encoded with htmlspecialchars. Use a PHP wrapper that returns base64 — encoding sidesteps the escaping.'],
         8  => ['title' => 'Spot the Useless Security Check',       'difficulty' => 'hard',   'badge' => 'Hard',   'desc' => 'There is a "security check" in the code. Read it carefully — is it logically sound? Find the flaw and bypass it.'],
-        9  => ['title' => 'Linux /proc Filesystem via Traversal',  'difficulty' => 'hard',   'badge' => 'Hard',   'desc' => 'A blacklist blocks only specific paths. Traverse to /var/secret/ or explore /proc/self/environ for secrets.'],
+        9  => ['title' => 'Linux /proc Filesystem via Traversal',  'difficulty' => 'hard',   'badge' => 'Hard',   'desc' => 'A blacklist blocks only two exact paths. Traverse to /var/secret/ for the flag, and browse /proc/self/ to see how much else the blacklist leaves open.'],
         10 => ['title' => 'Multi-Filter Path Traversal',           'difficulty' => 'expert', 'badge' => 'Expert', 'desc' => 'Multiple filters are stacked. Analyze each independently and chain bypass techniques to reach the flag.'],
     ];
 }

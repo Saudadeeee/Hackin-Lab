@@ -69,6 +69,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
 <span class="php-comment">// level3.php — session restorer</span>
 <span class="php-keyword">class</span> <span class="php-function">SessionStore</span> {
     <span class="php-keyword">public</span> <span class="php-variable">$file</span> = <span class="php-string">''</span>;
+    <span class="php-keyword">public</span> <span class="php-variable">$data</span> = <span class="php-string">''</span>;
     <span class="php-keyword">public function</span> <span class="php-function">__wakeup</span>() {    <span class="php-comment">// runs during unserialize()</span>
         <span class="php-keyword">if</span> (<span class="php-variable">$this</span>-&gt;file !== <span class="php-string">''</span>)
             <span class="php-variable">$this</span>-&gt;data = <span class="php-function">file_get_contents</span>(<span class="php-variable">$this</span>-&gt;file);
@@ -123,7 +124,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <h3>&#x1F3C6; Gadget Triggered!</h3>
                 <p><code>__wakeup()</code> read the secret during unserialize().</p>
                 <code><?= htmlspecialchars($flag) ?></code>
-                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
             </div>
             <?php elseif ($ran): ?>
             <div class="message error"><code>__wakeup()</code> ran but did not reach the secret. Set <code>file</code> to <code>/var/secret/flag.txt</code>.</div>

@@ -58,7 +58,7 @@ function get_level_hints(int $levelId): array
             'MongoDB\'s <code>$regex</code> operator lets you test a field against a pattern. <code>{"password":{"$regex":"^F"}}</code> is true only if the admin password <em>starts with</em> <code>F</code>.',
             'Binary-search / brute-force each position: try <code>^F</code>, then <code>^FL</code>, <code>^FLA</code>, … keeping every character that returns "a user matched".',
             'The secret is itself a <code>FLAG{...}</code> value. Write the braces <em>literally</em> in the regex — <code>{</code> and <code>}</code> are ordinary characters here, and a backslash escape like <code>\\{</code> would be rejected as invalid JSON.',
-            'When you have every character, confirm with a fully-anchored <code>^...$</code> pattern to capture the flag: <code>{"username":"admin","password":{"$regex":"^FLAG{nosql_regex_extraction}$"}}</code>',
+            'When you have every character, confirm with a fully-anchored <code>^...$</code> pattern to capture the flag: <code>{"username":"admin","password":{"$regex":"^&lt;every character you recovered&gt;$"}}</code>. The endpoint only awards the flag when the anchored pattern pins the <em>whole</em> secret, so the characters have to come from your own probing.',
         ],
         5 => [
             'This is a document <strong>search</strong> endpoint: your entire JSON body becomes the filter passed to <code>db.users.find()</code>. That means you can inject <em>top-level</em> operators, not just field values.',
@@ -79,7 +79,7 @@ function get_level_hints(int $levelId): array
             'That single bit is enough. <code>{"password":{"$regex":"^F"}}</code> flips the bit when the admin secret starts with <code>F</code>. Iterate to reconstruct it character by character.',
             'For each position, try every candidate character and keep the one that returns "Login successful". The secret is a <code>FLAG{...}</code> value.',
             'Write the braces literally (a <code>\\{</code> escape would be invalid JSON) and always keep <code>username</code> as <code>admin</code> so only the admin document is tested.',
-            'Capture it with the fully-anchored <code>^...$</code> pattern: <code>{"username":"admin","password":{"$regex":"^FLAG{nosql_blind_boolean}$"}}</code>',
+            'Capture it with the fully-anchored <code>^...$</code> pattern: <code>{"username":"admin","password":{"$regex":"^&lt;every character you recovered&gt;$"}}</code>. Only a pattern that pins the <em>whole</em> secret is accepted, so the characters have to come from your own probing.',
         ],
         8 => [
             'A WAF now inspects your <strong>raw request body</strong> and rejects it if it contains a literal <code>$</code> character. So <code>{"$ne":null}</code> is blocked before it is ever decoded.',

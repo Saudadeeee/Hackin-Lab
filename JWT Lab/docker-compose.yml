@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    container_name: jwt_lab
+    ports:
+      - "8093:80"
+    volumes:
+      - ./:/var/www/html
+    # The lab plays the role of its own "trusted key host" so the jku level has
+    # a legitimate baseline to compare against.
+    extra_hosts:
+      - "keys.hackinlab.internal:127.0.0.1"
+    restart: unless-stopped

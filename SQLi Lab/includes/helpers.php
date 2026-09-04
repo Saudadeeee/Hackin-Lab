@@ -115,10 +115,11 @@ function get_level_hints(int $levelId): array
             '<strong>Vary casing:</strong> combine case changes with comments to evade basic string matching.',
         ],
         14 => [
-            '<strong>Encoding hurdles:</strong> the filter expects specific byte patterns.',
-            '<strong>Use URL or hex encoding:</strong> convert payload characters before submission.',
-            '<strong>Double encode:</strong> encode the encoded string to slip past decoding once.',
-            '<strong>Focus on keywords:</strong> encode operators such as <code>OR</code> to avoid direct matches.',
+            '<strong>Read the order of operations.</strong> The filter runs first, on the bytes as received. The decoding runs afterwards, on its way into the query.',
+            '<strong>Two different strings.</strong> Whatever the filter approved is not what the database parses, so you need a form that looks harmless to <code>stripos</code> and becomes dangerous after decoding.',
+            '<strong>PHP already decoded the body once.</strong> A POST value arrives URL-decoded, so <code>%2527</code> reaches the filter as <code>%27</code> - no apostrophe present - and <code>urldecode()</code> then turns it into one.',
+            '<strong>Or use the other decoder.</strong> <code>&amp;#39;</code> passes the filter untouched and <code>html_entity_decode()</code> expands it to an apostrophe.',
+            '<strong>Working payload:</strong> username <code>admin%27||%271</code>, any password. The filter sees no quote; the query receives <code>username = &#39;admin&#39;||&#39;1&#39;</code>.',
         ],
         15 => [
             '<strong>Space restrictions:</strong> literal spaces are blocked or stripped.',
@@ -127,10 +128,11 @@ function get_level_hints(int $levelId): array
             '<strong>Squeeze payloads:</strong> remove unnecessary spaces and rely on SQL tolerance for token separation.',
         ],
         16 => [
-            '<strong>Ultimate restrictions:</strong> filters target both spaces and common bypass tricks.',
-            '<strong>Leverage inline comments:</strong> <code>/*!SELECT*/</code> style payloads survive aggressive filters.',
-            '<strong>Use binary or hex:</strong> encode identifiers and strings to minimize blocked characters.',
-            '<strong>Combine techniques:</strong> stack encoding, comments, and alternative whitespace to land a valid query.',
+            '<strong>Enumerate what is left.</strong> Five layers block comments, eight keywords, seven characters, three logical operators and all whitespace. Write down what they do <em>not</em> block before writing a payload.',
+            '<strong>You do not need the blocked pieces.</strong> The <code>=</code> and the quotes around the value are already in the query the developer wrote. You only have to make the WHERE clause true.',
+            '<strong>OR has a spelling the filter does not know.</strong> MySQL accepts <code>||</code> as a synonym for <code>OR</code>, and the pipe character is on none of the five lists.',
+            '<strong>Precedence does the rest.</strong> <code>AND</code> binds tighter than <code>||</code>, so <code>username=&#39;x&#39; || (&#39;1&#39; AND password=&#39;y&#39;)</code> is true whenever the username matches, with no comment needed to discard the tail.',
+            '<strong>Working payload:</strong> username <code>admin&#39;||&#39;1</code>, any password. No whitespace, no <code>=</code> of your own, no keyword, no comment.',
         ],
     ];
 

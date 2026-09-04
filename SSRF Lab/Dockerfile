@@ -19,8 +19,11 @@ RUN printf '\n<Directory /var/www/html>\n    AllowOverride All\n    Options Foll
 
 # Startup: add the cloud-metadata link-local address to loopback so the mock
 # metadata service (169.254.169.254) is reachable only from inside the box,
-# then hand off to Apache.
-RUN printf '#!/bin/bash\nip addr add 169.254.169.254/32 dev lo 2>/dev/null || true\nexec apache2-foreground\n' > /usr/local/bin/ssrf-start.sh \
+# and add the IPv6 wildcard listener (this image's default `Listen 80` binds
+# IPv4 only, which left the [::1] spelling of loopback unreachable even though
+# internal.php explicitly trusts it and level 4 advertises it). Then hand off
+# to Apache. Both steps are skipped harmlessly where unsupported.
+RUN printf '#!/bin/bash\nip addr add 169.254.169.254/32 dev lo 2>/dev/null || true\nif ip -6 addr show lo 2>/dev/null | grep -q "::1"; then grep -q "Listen .::.:80" /etc/apache2/ports.conf || echo "Listen [::]:80" >> /etc/apache2/ports.conf; fi\nexec apache2-foreground\n' > /usr/local/bin/ssrf-start.sh \
     && chmod +x /usr/local/bin/ssrf-start.sh
 
 COPY . /var/www/html/

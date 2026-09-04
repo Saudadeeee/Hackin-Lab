@@ -128,10 +128,10 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <div style="font-weight:700; color:var(--text-muted); text-transform:uppercase;
                             letter-spacing:0.06em; font-size:0.76rem; margin-bottom:0.5rem;">Filter Coverage</div>
                 <div style="display:flex; flex-direction:column; gap:0.3rem;">
-                    <div><span style="color:#f87171;">Layer 1:</span> scheme must be <code>http</code> / <code>https</code></div>
-                    <div><span style="color:#f87171;">Layer 2:</span> <code>127.0.0.1</code> <code>localhost</code> <code>::1</code> <code>169.254</code></div>
-                    <div><span style="color:#f87171;">Layer 3:</span> <code>metadata</code> <code>@</code></div>
-                    <div style="margin-top:0.35rem; color:#34d399;"><strong>Not covered:</strong> decimal / octal IP encodings of loopback</div>
+                    <div><span style="color:#b5766e;">Layer 1:</span> scheme must be <code>http</code> / <code>https</code></div>
+                    <div><span style="color:#b5766e;">Layer 2:</span> <code>127.0.0.1</code> <code>localhost</code> <code>::1</code> <code>169.254</code></div>
+                    <div><span style="color:#b5766e;">Layer 3:</span> <code>metadata</code> <code>@</code></div>
+                    <div style="margin-top:0.35rem; color:#7fa06d;"><strong>Not covered:</strong> decimal / octal IP encodings of loopback</div>
                 </div>
             </div>
 

@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    container_name: authreset_lab
+    ports:
+      - "8099:80"
+    volumes:
+      - ./:/var/www/html
+    # Level 3 needs somewhere for a poisoned reset link to point. These names
+    # resolve back to the container, where a dedicated virtual host answers
+    # every path with collector.php.
+    extra_hosts:
+      - "attacker.hackinlab.internal:127.0.0.1"
+      - "collector.hackinlab.internal:127.0.0.1"
+    restart: unless-stopped

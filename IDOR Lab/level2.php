@@ -45,6 +45,9 @@ render_page_header('Level 2 — IDOR File Download', 'Accessing Another User\'s 
 <span class="php-keyword">require_once</span> <span class="php-string">'db.php'</span>;
 
 <span class="php-variable">$filename</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'filename'</span>] ?? <span class="php-string">'alice_doc.txt'</span>;
+<span class="php-comment">// Path-safety: only bare filenames are accepted, so this is</span>
+<span class="php-comment">// an ownership bug, not a path-traversal one.</span>
+<span class="php-variable">$filename</span> = <span class="php-function">basename</span>(<span class="php-function">str_replace</span>([<span class="php-string">'/'</span>, <span class="php-string">'\'</span>, <span class="php-string">'..'</span>], <span class="php-string">''</span>, <span class="php-variable">$filename</span>));
 
 <span class="php-variable">$db</span> = <span class="php-function">get_db</span>();
 <span class="php-comment">// VULNERABLE: queries by filename only, no owner check</span>
@@ -85,7 +88,7 @@ render_page_header('Level 2 — IDOR File Download', 'Accessing Another User\'s 
         </form>
 
         <?php if ($upload): ?>
-        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;">
                 File: <strong><?= htmlspecialchars($upload['filename']) ?></strong> &mdash;
                 Original: <?= htmlspecialchars($upload['original_name']) ?> &mdash;

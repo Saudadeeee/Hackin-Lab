@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  XPath & LDAP Injection Lab - the XML user directory.
+
+  Levels 1-5 evaluate real XPath 1.0 expressions against this document with
+  DOMDocument + DOMXPath. Nothing here is simulated: if an injected expression
+  selects a node, the level shows that node.
+
+  Note the shape. A <user> holds five fields that the application knows about
+  and, for two accounts, an extra field the application never renders. Those
+  extra fields are what the injection levels are reaching for:
+
+    mfrost/pin              - level 4
+    svc_backup/recovery_token - level 2
+    svc_backup/apikey         - level 3
+    vault/secret[@name=master] - level 5
+-->
+<directory>
+  <staff>
+    <user id="1">
+      <username>alice</username>
+      <password>Sunset-Harbour-19</password>
+      <role>engineer</role>
+      <email>alice@hackinlab.internal</email>
+      <department>Platform</department>
+    </user>
+    <user id="2">
+      <username>bkumar</username>
+      <password>Orbital!Ferry7</password>
+      <role>engineer</role>
+      <email>bkumar@hackinlab.internal</email>
+      <department>Platform</department>
+    </user>
+    <user id="3">
+      <username>cwong</username>
+      <password>Rainfall.Copper3</password>
+      <role>analyst</role>
+      <email>cwong@hackinlab.internal</email>
+      <department>Risk</department>
+    </user>
+    <user id="4">
+      <username>dpatel</username>
+      <password>Meridian_Slate88</password>
+      <role>analyst</role>
+      <email>dpatel@hackinlab.internal</email>
+      <department>Risk</department>
+    </user>
+    <user id="5">
+      <username>mfrost</username>
+      <password>qL4-Vanta-Ridge-71x</password>
+      <role>administrator</role>
+      <email>mfrost@hackinlab.internal</email>
+      <department>Directory Operations</department>
+      <!-- The console PIN. No page in the application ever selects this node. -->
+      <pin>PN-77413-KQ</pin>
+    </user>
+    <user id="6">
+      <username>svc_backup</username>
+      <password>7Kd-Nightly-Rsync</password>
+      <role>service</role>
+      <email>backups@hackinlab.internal</email>
+      <department>Directory Operations</department>
+      <!-- Break-glass token for the backup account. -->
+      <recovery_token>RT-9F3K2X</recovery_token>
+      <!-- Rotated monthly. Six characters, lowercase letters and digits. -->
+      <apikey>k9r4tz</apikey>
+    </user>
+    <user id="7">
+      <username>tnguyen</username>
+      <password>Cobalt+Lantern22</password>
+      <role>engineer</role>
+      <email>tnguyen@hackinlab.internal</email>
+      <department>Platform</department>
+    </user>
+    <user id="8">
+      <username>jrivera</username>
+      <password>Driftwood-Pike55</password>
+      <role>support</role>
+      <email>jrivera@hackinlab.internal</email>
+      <department>Service Desk</department>
+    </user>
+  </staff>
+
+  <!--
+    A completely separate subtree. No expression the application builds can
+    reach it, because every expression starts at //user. Level 5 gets here with
+    a union.
+  -->
+  <vault>
+    <secret name="master">VLT-7Q2M-XZ84</secret>
+    <secret name="rotation">every 90 days</secret>
+  </vault>
+</directory>

@@ -80,11 +80,11 @@ render_page_header('Level 1 — Basic IDOR', 'Insecure Direct Object Reference',
         </form>
 
         <?php if ($doc): ?>
-        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;">
                 Document #<?= htmlspecialchars((string)$doc['id']) ?> &mdash;
                 Owner ID: <?= htmlspecialchars((string)$doc['owner_id']) ?> &mdash;
-                <?= $doc['is_private'] ? '<span style="color:#fca5a5;">Private</span>' : '<span style="color:#6ee7b7;">Public</span>' ?>
+                <?= $doc['is_private'] ? '<span style="color:#b5766e;">Private</span>' : '<span style="color:#7fa06d;">Public</span>' ?>
             </div>
             <div style="font-weight:600;margin-bottom:0.3rem;"><?= htmlspecialchars($doc['title']) ?></div>
             <div style="color:var(--text-muted);font-size:0.9rem;"><?= htmlspecialchars($doc['content']) ?></div>

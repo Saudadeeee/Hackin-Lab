@@ -6,6 +6,7 @@ session_start();
 
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 $_flag_result = handle_inline_flag_submit(15);
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
@@ -173,6 +174,8 @@ if ($_POST) {
                 </div>
             </div>
         </div>
+
+    <?= sqli_teach(15, ['input' => $_POST['username'] ?? '', 'input2' => $_POST['password'] ?? '', 'filter' => $space_locations ?? [], 'filter_label' => "strpos(\$username, ' ')", 'sql' => $sql ?? '', 'error' => (isset($conn) && $conn instanceof mysqli && $conn->error !== '') ? $conn->error : '', 'rows' => (isset($result) && $result instanceof mysqli_result) ? $result->num_rows : null, 'solved' => !empty($success) || !empty($_flag_result['already_completed'])]) ?>
 
         <?= render_hint_section(get_level_hints(15), 'Hints for Level 15'); ?>
 

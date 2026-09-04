@@ -63,6 +63,15 @@ preg_match(<span class="php-string">'#^https?://([^/]+)#i'</span>, <span class="
                 <strong>userinfo</strong> before an <code>@</code>, which the browser treats as credentials, not the
                 host. The real host lives <em>after</em> the <code>@</code>.
             </div>
+            <div class="lk-box"><h4><span class="lk-tag">PROOF</span>See the real header</h4>
+                <div class="lk-body">
+                    <p>The level page models the redirect instead of performing it, because a genuine 302 would
+                    navigate you away before you could read the trace. <code>go.php</code> runs this same filter and,
+                    when it accepts, really does call <code>header('Location: ...')</code>:</p>
+                    <pre class="lk-sinkline">curl -i "http://localhost:8092/go.php?level=6&amp;next=&lt;your value&gt;"</pre>
+                    <p class="text-muted">A rejected value returns 400 with no <code>Location</code> at all.</p>
+                </div>
+            </div>
         </div>
 
         <!-- ── Right: Challenge Panel ── -->

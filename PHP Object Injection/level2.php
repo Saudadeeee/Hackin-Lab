@@ -123,7 +123,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <h3>&#x1F3C6; Gadget Triggered!</h3>
                 <p>The destructor read the secret file.</p>
                 <code><?= htmlspecialchars($flag) ?></code>
-                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
             </div>
             <?php elseif ($ran): ?>
             <div class="message error">The destructor ran, but it did not reach the secret. Set <code>path</code> to <code>/var/secret/flag.txt</code>.</div>

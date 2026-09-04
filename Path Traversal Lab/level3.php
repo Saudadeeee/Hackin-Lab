@@ -104,10 +104,10 @@ if (isset($_GET['file'])) {
                 <label style="font-size:0.82rem; color:var(--text-muted);">Output (may be base64-encoded):</label>
                 <div class="output-box <?= empty(trim($output)) ? 'empty' : '' ?>"><?= htmlspecialchars($output) ?></div>
             </div>
-            <?php if ($rawOutput !== '' && $rawOutput !== $output): ?>
+            <?php if ($rawOutput !== '' && ($decodedOutput = @base64_decode(trim($rawOutput), true)) !== false && $decodedOutput !== ''): ?>
             <div style="margin-top:0.5rem;">
                 <label style="font-size:0.82rem; color:var(--text-muted);">Base64 decoded:</label>
-                <div class="output-box"><?= htmlspecialchars(@base64_decode($rawOutput) ?: '') ?></div>
+                <div class="output-box"><?= htmlspecialchars($decodedOutput) ?></div>
             </div>
             <?php endif; ?>
             <?php endif; ?>

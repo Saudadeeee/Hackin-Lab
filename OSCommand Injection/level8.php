@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $output_html = '';
 
@@ -10,7 +11,10 @@ if (isset($_GET['ports'])) {
     $ports = $_GET['ports'];
 
     $waf_patterns = [
-        '/[\;\&\|`\$\(\)]/i',
+        // ';' is deliberately absent from this class. With ';' blocked as well,
+        // every command separator dash understands was gone and this level had
+        // no solution at all - see the teaching trace for the full argument.
+        '/[\&\|`\$\(\)]/i',
         '/\b(cat|ls|whoami|id|passwd|shadow|flag)\b/i',
         '/\b(wget|curl|nc|netcat|bash|sh)\b/i',
         '/\s+/i',
@@ -72,7 +76,7 @@ $_flag_result = handle_inline_flag_submit(8);
                     <pre><code><span class="php-variable">$ports</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'ports'</span>];
 
 <span class="php-variable">$waf_patterns</span> = [
-    <span class="php-string">'/[\;\&amp;\|`\$\(\)]/i'</span>,          <span class="php-comment">// shell metacharacters</span>
+    <span class="php-string">'/[\&amp;\|`\$\(\)]/i'</span>,            <span class="php-comment">// shell metacharacters - note ; is NOT here</span>
     <span class="php-string">'/\b(cat|ls|whoami|id|passwd|shadow|flag)\b/i'</span>,
     <span class="php-string">'/\b(wget|curl|nc|netcat|bash|sh)\b/i'</span>,
     <span class="php-string">'/\s+/i'</span>,                          <span class="php-comment">// all whitespace</span>
@@ -99,8 +103,8 @@ $_flag_result = handle_inline_flag_submit(8);
                 <h3>Challenge</h3>
                 <div class="panel-body">
                     <div class="scenario">
-                        <p><strong>Tool:</strong> Security Scanner — wraps <code>nmap -sS -p &lt;input&gt; localhost</code> behind a multi-rule WAF. Blocked patterns: shell metacharacters, dangerous commands, network tools, whitespace, and <code>../</code>.</p>
-                        <p>Craft a single input that passes every WAF rule yet injects a second command. Newline injection (<code>%0a</code>) and tab-as-whitespace (<code>%09</code>) are common starting points.</p>
+                        <p><strong>Tool:</strong> Security Scanner — wraps <code>nmap -sS -p &lt;input&gt; localhost</code> behind a multi-rule WAF. Blocked patterns: shell metacharacters (<code>&amp; | ` $ ( )</code>), dangerous commands, network tools, <strong>all whitespace</strong>, and <code>../</code>.</p>
+                        <p>Every whitespace byte is blocked, so <code>%0a</code> and <code>%09</code> are both rejected — and with <code>$</code> gone, <code>${IFS}</code> is too. The semicolon is the one separator the character class forgets. Build a payload that starts a second command, hands it a filename without ever typing a space, and never spells the word the second pattern is looking for.</p>
                     </div>
 
                     <?php if ($output_html !== ''): ?>
@@ -119,6 +123,8 @@ $_flag_result = handle_inline_flag_submit(8);
                 </div>
             </div>
         </div>
+
+        <?= osci_teach(8, ['input' => $_GET['ports'] ?? '', 'solved' => strpos((string)$output_html, 'FLAG{') !== false || !empty($_flag_result['already_completed'])]) ?>
 
         <?= render_hint_section($hints) ?>
 

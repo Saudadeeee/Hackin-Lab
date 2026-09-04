@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $levelId    = 2;
 $levelTitle = 'XSS in HTML Attribute';
@@ -134,7 +135,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                            placeholder="Search..."
                            style="width:100%; background:var(--surface2); color:var(--text);
                                   border:1px solid var(--border); padding:0.4rem 0.6rem;
-                                  border-radius:4px; font-family:inherit;">
+                                  border-radius: 0; font-family:inherit;">
                 </div>
                 <?php if ($search !== ''): ?>
                 <div style="margin-top:0.6rem; padding:0.5rem 0.75rem; background:var(--bg);
@@ -151,6 +152,8 @@ $_flag_result = handle_inline_flag_submit($levelId);
 
         </div><!-- /.challenge-panel -->
     </div><!-- /.challenge-layout -->
+
+    <?= xss_teach($levelId, ['input' => $search, 'solved' => $flag !== '']) ?>
 
     <?= render_hint_section($hints) ?>
     <?= render_inline_flag_form($levelId, $_flag_result) ?>

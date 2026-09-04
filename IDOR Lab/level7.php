@@ -76,11 +76,20 @@ render_page_header('Level 7 — API IDOR (No Ownership Check)', 'IDOR via REST A
 
     <span class="php-comment">// VULNERABLE: fetches ANY user without ownership check</span>
     <span class="vuln-line"><span class="php-variable">$stmt</span> = <span class="php-variable">$db</span>-><span class="php-function">prepare</span>(
-        <span class="php-string">"SELECT * FROM users WHERE id = ?"</span>
+        <span class="php-string">"SELECT id, username, email, role, api_key
+         FROM users WHERE id = ?"</span>
         <span class="php-comment">// Missing: AND id = $caller['id']</span>
     );</span>
     <span class="vuln-line"><span class="php-variable">$stmt</span>-><span class="php-function">execute</span>([<span class="php-variable">$body</span>[<span class="php-string">'id'</span>]]); <span class="php-comment">// id from request body!</span></span>
-    <span class="php-keyword">echo</span> <span class="php-function">json_encode</span>(<span class="php-variable">$stmt</span>-><span class="php-function">fetch</span>());
+    <span class="php-variable">$user</span> = <span class="php-variable">$stmt</span>-><span class="php-function">fetch</span>();
+
+    <span class="php-comment">// A key holder pulled someone else's admin record:</span>
+    <span class="php-comment">// the endpoint itself hands back the flag as proof.</span>
+    <span class="php-keyword">if</span> (<span class="php-variable">$user</span>[<span class="php-string">'role'</span>] === <span class="php-string">'admin'</span> &amp;&amp;
+        (<span class="php-keyword">int</span>)<span class="php-variable">$caller</span>[<span class="php-string">'id'</span>] !== (<span class="php-keyword">int</span>)<span class="php-variable">$user</span>[<span class="php-string">'id'</span>]) {
+        <span class="php-variable">$user</span>[<span class="php-string">'flag'</span>] = <span class="php-function">get_flag_for_level</span>(<span class="php-string">7</span>);
+    }
+    <span class="php-keyword">echo</span> <span class="php-function">json_encode</span>(<span class="php-variable">$user</span>);
 }
 <span class="php-keyword">?&gt;</span></code></div>
         <div class="message info" style="margin-top:0.75rem;">
@@ -118,12 +127,12 @@ render_page_header('Level 7 — API IDOR (No Ownership Check)', 'IDOR via REST A
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.3rem;">
                 Equivalent curl command:
             </p>
-            <code style="display:block;font-size:0.78rem;color:#c9d1d9;background:var(--code-bg);padding:0.5rem;border-radius:4px;margin-bottom:0.75rem;white-space:pre-wrap;word-break:break-all;">curl -X POST "http://localhost:8083/api.php?action=getUser" \
+            <code style="display:block;font-size:0.78rem;color:#c3c0b6;background:var(--code-bg);padding:0.5rem;border-radius: 0;margin-bottom:0.75rem;white-space:pre-wrap;word-break:break-all;">curl -X POST "http://localhost:8083/api.php?action=getUser" \
   -H "Content-Type: application/json" \
   -d '{"api_key":"<?= htmlspecialchars($_POST['api_key'] ?? '') ?>","id":<?= (int)($_POST['user_id'] ?? 1) ?>}'</code>
 
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.3rem;">API Response:</p>
-            <pre style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem;font-size:0.85rem;color:#c9d1d9;white-space:pre-wrap;word-break:break-all;"><?= htmlspecialchars($rawJson) ?></pre>
+            <pre style="background:var(--code-bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem;font-size:0.85rem;color:#c3c0b6;white-space:pre-wrap;word-break:break-all;"><?= htmlspecialchars($rawJson) ?></pre>
         </div>
         <?php if ($flagFound): ?>
         <div class="message success">You fetched admin data using a non-admin API key!</div>

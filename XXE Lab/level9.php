@@ -92,7 +92,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <p style="margin-top:0.4rem;">Starter XML:</p>
                     <div class="sample-xml"><?= htmlspecialchars($sample) ?></div>
                     <p style="margin-top:0.5rem; font-size:0.78rem;">
-                        Try opening <a href="internal.php" target="_blank" style="color:#818cf8;">internal.php</a> directly — you'll be denied because you are not 127.0.0.1.
+                        Try opening <a href="internal.php" target="_blank" style="color:#6f9fb0;">internal.php</a> directly — you'll be denied because you are not 127.0.0.1.
                     </p>
                 </div>
 
@@ -123,7 +123,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <h3>&#x1F3C6; Flag Captured!</h3>
                     <p>The parser reached the internal-only service from 127.0.0.1 and returned its response.</p>
                     <code><?= htmlspecialchars($flag) ?></code>
-                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
                 </div>
                 <?php elseif ($output !== null): ?>
                 <div class="message error">Declare <code>&lt;!ENTITY xxe SYSTEM "http://127.0.0.1/internal.php"&gt;</code> and reference <code>&amp;xxe;</code> in the body.</div>

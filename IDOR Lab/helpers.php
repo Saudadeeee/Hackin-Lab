@@ -81,10 +81,10 @@ function get_level_hints(int $levelId): array {
             'Forge a token: keep the same header, modify payload, use any fake signature. Submit as cookie <code>token</code>.',
         ],
         10 => [
-            'The code creates a temporary resource and then immediately deletes it.',
-            'There is a tiny window between creation and deletion — a race condition.',
-            'Send many rapid requests simultaneously to hit the window before deletion.',
-            'Use multiple concurrent HTTP requests using curl, Python threads, or browser tabs.',
+            'Read the <code>claim</code> branch: it SELECTs the newest unclaimed reward, then UPDATEs it. Those are two separate statements.',
+            'Between the CHECK (the SELECT that reads <code>user_id</code>) and the USE (the UPDATE that sets <code>claimed_by</code>) the code never re-verifies ownership &mdash; a classic time-of-check / time-of-use gap, widened here by a deliberate <code>usleep(50000)</code>.',
+            'Nothing is ever deleted; the reward simply gets claimed by whoever reaches the UPDATE. So the attack is to be the caller who arrives in that window with a different <code>user_id</code>.',
+            'Concurrency makes it realistic (curl in parallel, Python threads, several browser tabs, or the "Run Race Simulation" button), but the missing re-check means even two sequential requests demonstrate it.',
             'Try: First create a reward for user 1 (alice), then claim it as user 2 (bob).',
         ],
     ];

@@ -12,7 +12,7 @@ html_open('IDOR Lab — Home');
     </div>
 </div>
 
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;">
+<div style="background:var(--surface);border:1px solid var(--border);border-radius: 0;padding:1.25rem;margin-bottom:1.5rem;">
     <h2 style="margin-bottom:0.75rem;font-size:1.1rem;">About This Lab</h2>
     <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.75rem;">
         This lab focuses on <strong style="color:var(--text);">Insecure Direct Object Reference (IDOR)</strong> and
@@ -22,7 +22,7 @@ html_open('IDOR Lab — Home');
     </p>
     <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.75rem;">
         <strong style="color:var(--text);">Context:</strong> In most levels, you are simulated as logged-in user
-        <strong style="color:#6ee7b7;">Alice (ID: 1)</strong>. Your goal is to access data belonging to other users
+        <strong style="color:#7fa06d;">Alice (ID: 1)</strong>. Your goal is to access data belonging to other users
         by manipulating object references, parameters, cookies, or tokens.
     </p>
     <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.75rem;">
@@ -107,7 +107,7 @@ html_open('IDOR Lab — Home');
 
 </div>
 
-<div style="margin-top:1.5rem;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:0.85rem;color:var(--text-muted);">
+<div style="margin-top:1.5rem;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius: 0;font-size:0.85rem;color:var(--text-muted);">
     <strong style="color:var(--text);">Disclaimer:</strong> This lab is intentionally vulnerable for educational purposes.
     All challenges run in an isolated Docker container. Do not deploy in a production environment.
 </div>

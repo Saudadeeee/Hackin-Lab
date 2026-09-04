@@ -90,7 +90,7 @@ $levelTitles = [
         .flag-title { color: var(--text); flex: 1; }
         .flag-value {
             font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.78rem; color: var(--white);
-            background: var(--surface2); padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border);
+            background: var(--surface2); padding: 0.15rem 0.45rem; border-radius: 0; border: 1px solid var(--border);
         }
         .completion-banner {
             background: var(--surface3); border: 1px solid var(--border-hi); border-radius: var(--radius-lg);

@@ -108,20 +108,20 @@ $totalCompleted = count($completed);
         .flag-value {
             font-family: 'Courier New', monospace;
             font-size: 0.8rem;
-            color: #34d399;
+            color: #7fa06d;
             background: var(--surface2);
             padding: 0.15rem 0.4rem;
-            border-radius: 4px;
+            border-radius: 0;
         }
         .completion-banner {
-            background: linear-gradient(135deg, rgba(5,150,105,0.2), rgba(16,185,129,0.1));
+            background: linear-gradient(135deg, rgba(5,150,105,0.2), rgba(127, 160, 109,0.1));
             border: 2px solid var(--success);
             border-radius: var(--radius-lg);
             padding: 1.5rem;
             text-align: center;
             margin-bottom: 1.5rem;
         }
-        .completion-banner h2 { color: #34d399; font-size: 1.4rem; margin-bottom: 0.5rem; }
+        .completion-banner h2 { color: #7fa06d; font-size: 1.4rem; margin-bottom: 0.5rem; }
         .completion-banner p { color: var(--text-muted); font-size: 0.9rem; }
         .submit-form-card {
             background: var(--surface);
@@ -153,7 +153,7 @@ $totalCompleted = count($completed);
         }
         .progress-bar-inner-sm {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), #818cf8);
+            background: linear-gradient(90deg, var(--primary), #6f9fb0);
             border-radius: 999px;
         }
     </style>
@@ -254,7 +254,7 @@ $totalCompleted = count($completed);
                 <?php if ($found): ?>
                 <span class="flag-value"><?= htmlspecialchars(get_flag_for_level($i)) ?></span>
                 <?php else: ?>
-                <a href="level<?= $i ?>.php" style="font-size:0.8rem; color:#818cf8;">Go &rarr;</a>
+                <a href="level<?= $i ?>.php" style="font-size:0.8rem; color:#6f9fb0;">Go &rarr;</a>
                 <?php endif; ?>
             </div>
             <?php endfor; ?>

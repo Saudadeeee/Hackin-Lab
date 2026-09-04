@@ -86,7 +86,7 @@ function get_level_hints(int $levelId): array {
             'The URL authority can carry <em>userinfo</em> before an <code>@</code>: in <code>http://user@host/</code>, everything before the <code>@</code> is credentials and the real host is what comes <strong>after</strong> it.',
             'So <code>http://example.com@127.0.0.1/</code> has the string <code>example.com</code> sitting in the userinfo (passing the naive check), while the actual connection is made to <code>127.0.0.1</code>.',
             'Append the internal path and level: the fetcher connects to <code>127.0.0.1</code> and pulls <code>internal.php?level=7</code>, even though the filter believed the host was <code>example.com</code>.',
-            'Working payloads: <code>?url=http://example.com@127.0.0.1/internal.php?level=7</code> &nbsp;|&nbsp; also try the fragment trick: <code>?url=http://127.0.0.1/internal.php?level=7%23.example.com</code>',
+            'Working payloads: <code>?url=http://example.com@127.0.0.1/internal.php?level=7</code> &nbsp;|&nbsp; the userinfo may carry a password too: <code>?url=http://example.com:anything@127.0.0.1/internal.php?level=7</code>',
         ],
         8 => [
             'Cloud instances expose a metadata service at the link-local address <code>169.254.169.254</code>. Applications with SSRF can be tricked into querying it to steal instance credentials.',
@@ -98,7 +98,7 @@ function get_level_hints(int $levelId): array {
         9 => [
             'The allowlist here decides trust by <strong>substring</strong>: it accepts the request if the hostname <em>contains</em> the string <code>corp-internal</code>, assuming that only its own internal servers match.',
             'A substring check on a hostname is easy to satisfy from the outside — you control your own DNS names, and any label that includes the magic substring passes.',
-            'The lab provides an attacker-controlled hostname that both contains <code>corp-internal</code> and resolves to loopback: <code>corp-internal.attacker.local</code>. (Also available: <code>intranet.attacker.local</code> for the substring <code>intranet</code>.)',
+            'The lab provides an attacker-controlled hostname that both contains <code>corp-internal</code> and resolves to loopback: <code>corp-internal.attacker.local</code>. (<code>intranet.attacker.local</code> also resolves to loopback, but it does <em>not</em> contain the magic substring, so the allowlist rejects it &mdash; the substring is the whole trick.)',
             'Because the name contains <code>corp-internal</code> it passes the allowlist, and because it maps to <code>127.0.0.1</code> the fetch still lands on the internal service.',
             'Working payload: <code>?url=http://corp-internal.attacker.local/internal.php?level=9</code>',
         ],

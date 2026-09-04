@@ -82,7 +82,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
             <div class="vuln-annotation">
                 <strong>Vulnerability:</strong>&nbsp; The filter inspects the <em>raw bytes</em> before JSON
                 decoding. JSON strings allow <code>\uXXXX</code> escapes, and <code>$</code> is U+0024. Writing
-                the key as <code>"$ne"</code> contains no literal <code>$</code>, yet
+                the key as <code>"\u0024ne"</code> contains no literal <code>$</code>, yet
                 <code>json_decode()</code> restores it to <code>$ne</code>.
             </div>
         </div>
@@ -100,7 +100,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <div class="form-group">
                     <label class="form-label" for="query_input">Login request body (JSON)</label>
                     <textarea id="query_input" name="query" class="form-control" rows="4" spellcheck="false"
-                        placeholder='{"username":"admin","password":{"$ne":null}}'><?= htmlspecialchars($raw) ?></textarea>
+                        placeholder='{"username":"admin","password":{ ... }}'><?= htmlspecialchars($raw) ?></textarea>
                 </div>
                 <div style="display:flex; gap:0.6rem; margin-top:0.75rem; flex-wrap:wrap;">
                     <button type="submit" class="btn btn-primary">Send Login</button>

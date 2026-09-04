@@ -1,0 +1,348 @@
+/* ==========================================================================
+   Hackin-Lab · Lab Kit stylesheet
+   Appended to the shared B&W base theme. Everything here supports the
+   "understand it, don't fuzz it" teaching layer.
+   ========================================================================== */
+
+:root {
+    --lk-good: #10b981;
+    --lk-bad:  #ef4444;
+    --lk-warn: #f59e0b;
+    --lk-info: #6366f1;
+}
+
+/* --- Bits the base theme is missing ------------------------------------ */
+
+.form-label {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+}
+
+.vuln-annotation {
+    margin-top: 0.9rem;
+    padding: 0.75rem 0.9rem;
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    border-left: 3px solid var(--lk-bad);
+    border-radius: var(--radius);
+    font-size: 0.83rem;
+    line-height: 1.6;
+    color: var(--text);
+}
+.vuln-annotation strong { color: #fca5a5; }
+
+.message.info {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #c7d2fe;
+}
+
+/* --- Line-numbered source ---------------------------------------------- */
+
+.source-code pre code .lk-line { display: block; }
+.lk-ln {
+    display: inline-block;
+    width: 2.2rem;
+    margin-right: 0.9rem;
+    text-align: right;
+    color: var(--text-faint);
+    user-select: none;
+    border-right: 1px solid var(--border);
+    padding-right: 0.5rem;
+}
+.lk-line.vuln-line {
+    background: rgba(239, 68, 68, 0.10);
+    border-left: 2px solid var(--lk-bad);
+    margin-left: -2px;
+}
+.lk-num { color: #d8b4fe; }
+
+/* --- Teaching boxes ----------------------------------------------------- */
+
+.lk-box {
+    margin: 1rem 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+.lk-box > h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+}
+.lk-box > .lk-body {
+    padding: 0.85rem 0.9rem;
+    font-size: 0.84rem;
+    line-height: 1.7;
+    color: var(--text);
+}
+.lk-body p + p { margin-top: 0.6rem; }
+.lk-body ul, .lk-body ol { margin: 0.5rem 0 0.5rem 1.15rem; }
+.lk-body li + li { margin-top: 0.3rem; }
+.lk-body code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.8em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.05rem 0.3rem;
+}
+
+.lk-tag {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.15rem 0.45rem;
+    border-radius: 3px;
+    background: var(--surface3);
+    border: 1px solid var(--border-mid);
+    color: var(--text-muted);
+}
+.lk-tag-red  { color: #fca5a5; border-color: rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.10); }
+.lk-tag-good { color: #6ee7b7; border-color: rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.10); }
+
+.lk-model  { border-color: rgba(99, 102, 241, 0.35); }
+.lk-model  > h4 { background: rgba(99, 102, 241, 0.10); }
+.lk-why    { border-color: rgba(16, 185, 129, 0.4); }
+.lk-why    > h4 { background: rgba(16, 185, 129, 0.10); }
+.lk-sink   { border-color: rgba(239, 68, 68, 0.35); }
+.lk-sink   > h4 { background: rgba(239, 68, 68, 0.09); }
+
+/* --- Pipeline trace ----------------------------------------------------- */
+
+.lk-stage {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border-mid);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.7rem;
+    background: var(--bg-elevated);
+}
+.lk-stage + .lk-stage { margin-top: 0.5rem; }
+.lk-stage-block { border-left-color: var(--lk-bad); }
+.lk-stage-pass  { border-left-color: var(--lk-good); }
+
+.lk-stage-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+}
+.lk-stage-head code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+}
+.lk-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background: var(--surface3);
+    border: 1px solid var(--border-mid);
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.lk-stage-val {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: #e8e8e8;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.35rem 0.5rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.lk-stage-note {
+    margin-top: 0.35rem;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.lk-chip {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-mid);
+    color: var(--text-faint);
+}
+.lk-chip-warn { color: #fcd34d; border-color: rgba(245, 158, 11, 0.45); }
+.lk-chip-bad  { color: #fca5a5; border-color: rgba(239, 68, 68, 0.5); }
+.lk-chip-good { color: #6ee7b7; border-color: rgba(16, 185, 129, 0.5); }
+
+.lk-ctl   { color: #f59e0b; font-weight: 700; }
+.lk-sp    { color: var(--text-faint); }
+.lk-empty { color: var(--text-faint); font-style: italic; }
+
+/* --- Sink line ---------------------------------------------------------- */
+
+.lk-sinkline {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.55rem 0.65rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text-muted);
+    margin: 0;
+}
+.lk-inj {
+    background: rgba(239, 68, 68, 0.20);
+    color: #fecaca;
+    border-bottom: 1px solid var(--lk-bad);
+    padding: 0 1px;
+}
+
+/* --- Probes -------------------------------------------------------------- */
+
+.lk-hintline { color: var(--text-muted); font-size: 0.79rem; margin-bottom: 0.6rem; }
+.lk-probe-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.lk-probe {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.65rem;
+    background: var(--bg-elevated);
+}
+.lk-probe-q { font-weight: 600; font-size: 0.81rem; color: var(--text); }
+.lk-probe-payload {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-top: 0.35rem;
+}
+.lk-probe-payload code {
+    flex: 1;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.25rem 0.45rem;
+    font-size: 0.76rem;
+    word-break: break-all;
+}
+.lk-probe-run {
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-mid);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+.lk-probe-run:hover { color: var(--white); border-color: var(--border-hi); }
+.lk-probe-form { display: inline; }
+.lk-probe-learn { margin-top: 0.35rem; font-size: 0.76rem; color: var(--text-muted); }
+
+/* --- Fix diff ------------------------------------------------------------ */
+
+.lk-fix-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+@media (min-width: 1100px) { .lk-fix-grid { grid-template-columns: 1fr 1fr; } }
+.lk-fix-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+}
+.lk-fix-bad  { color: #fca5a5; }
+.lk-fix-good { color: #6ee7b7; }
+.lk-fix-note { margin-top: 0.7rem; font-size: 0.79rem; color: var(--text-muted); line-height: 1.65; }
+.lk-fix .source-code pre { font-size: 0.74rem; }
+
+/* --- Index page ---------------------------------------------------------- */
+
+.lk-progress { display: flex; align-items: center; gap: 0.75rem; margin-top: 1rem; }
+.lk-progress-track {
+    flex: 1;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--surface3);
+    overflow: hidden;
+    max-width: 420px;
+}
+.lk-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #a5b4fc);
+    transition: width 0.4s ease;
+}
+.lk-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; }
+.lk-skill {
+    margin-top: 0.6rem;
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    border-top: 1px solid var(--border);
+    padding-top: 0.5rem;
+}
+.level-card.lk-solved { border-color: rgba(16, 185, 129, 0.45); }
+.lk-solved-tag {
+    margin-top: 0.5rem;
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6ee7b7;
+}
+.progress-item.lk-solved { border-color: rgba(16, 185, 129, 0.4); }
+
+/* --- Misc ---------------------------------------------------------------- */
+
+.lk-kv {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.79rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.lk-kv td {
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.5rem;
+    vertical-align: top;
+    word-break: break-all;
+}
+.lk-kv td:first-child { color: var(--text-muted); width: 34%; white-space: nowrap; }
+
+.lk-split { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+@media (min-width: 900px) { .lk-split { grid-template-columns: 1fr 1fr; } }
+
+.output-box {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.6rem 0.75rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text);
+    margin: 0.6rem 0;
+}

@@ -57,7 +57,7 @@ if (!empty($_COOKIE['xss_lab_progress'])) {
         }
         .progress-bar-inner {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), #818cf8);
+            background: linear-gradient(90deg, var(--primary), #6f9fb0);
             border-radius: 999px;
             transition: width 0.5s ease;
         }
@@ -65,9 +65,9 @@ if (!empty($_COOKIE['xss_lab_progress'])) {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            background: rgba(79,70,229,0.12);
+            background: rgba(111, 159, 176,0.12);
             border: 1px solid var(--primary);
-            color: #a5b4fc;
+            color: #6f9fb0;
             padding: 0.35rem 0.85rem;
             border-radius: 999px;
             font-size: 0.82rem;
@@ -110,7 +110,7 @@ if (!empty($_COOKIE['xss_lab_progress'])) {
         <h1>XSS <span>Challenge</span> Lab</h1>
         <p>Ten levels of Cross-Site Scripting vulnerabilities — source code provided. Read the code, find the flaw, craft your payload, capture the flag.</p>
         <p style="margin-top:0.4rem; font-size:0.85rem;">
-            <a href="submit.php" style="color:#818cf8;">Submit captured flags &rarr;</a>
+            <a href="submit.php" style="color:#6f9fb0;">Submit captured flags &rarr;</a>
         </p>
     </div>
 
@@ -120,11 +120,11 @@ if (!empty($_COOKIE['xss_lab_progress'])) {
             <span class="stat-label">Completed</span>
         </div>
         <div class="stat">
-            <span class="stat-value" style="color:#34d399;">10</span>
+            <span class="stat-value" style="color:#7fa06d;">10</span>
             <span class="stat-label">Total Levels</span>
         </div>
         <div class="stat">
-            <span class="stat-value" style="color:#fbbf24;"><?= 10 - count($completed) ?></span>
+            <span class="stat-value" style="color:#cfa65c;"><?= 10 - count($completed) ?></span>
             <span class="stat-label">Remaining</span>
         </div>
     </div>

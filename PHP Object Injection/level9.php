@@ -140,7 +140,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <h3>&#x1F3C6; Command Executed!</h3>
                 <p>The destructor ran your command through the chained gadget and it printed the secret.</p>
                 <code><?= htmlspecialchars($flag) ?></code>
-                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
             </div>
             <?php elseif ($ran): ?>
             <div class="message error">The chain ran, but the command output did not contain the secret. Try <code>cmd = cat /var/secret/flag.txt</code>.</div>

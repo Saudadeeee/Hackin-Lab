@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $result_output = null;
 $result_error  = null;
@@ -93,6 +94,8 @@ $_flag_result = handle_inline_flag_submit(1);
                 </div>
             </div>
         </div>
+
+        <?= osci_teach(1, ['input' => $_GET['ip'] ?? '', 'solved' => strpos((string)$result_output, 'FLAG{') !== false || !empty($_flag_result['already_completed'])]) ?>
 
         <?= render_hint_section($hints) ?>
 

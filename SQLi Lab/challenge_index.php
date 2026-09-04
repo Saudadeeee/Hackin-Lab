@@ -17,7 +17,7 @@
             margin: 0 auto;
             padding: 56px 24px;
             text-align: center;
-            color: #ffffff;
+            color: #c3c0b6;
         }
         .hero-title {
             font-size: 3.25rem;
@@ -32,7 +32,7 @@
         .challenge-card {
             background: rgba(255, 255, 255, 0.95);
             padding: 40px;
-            border-radius: 20px;
+            border-radius: 0;
             color: #1f2933;
             margin: 0 auto 48px;
             max-width: 640px;
@@ -45,10 +45,10 @@
         }
         .start-button {
             background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-            color: #ffffff;
+            color: #c3c0b6;
             border: none;
             padding: 15px 40px;
-            border-radius: 50px;
+            border-radius: 0;
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
@@ -64,16 +64,16 @@
         .lab-links {
             background: rgba(255, 255, 255, 0.12);
             padding: 24px;
-            border-radius: 12px;
+            border-radius: 0;
             margin: 32px 0;
         }
         .lab-link {
             display: inline-block;
             background: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
+            color: #c3c0b6;
             padding: 11px 18px;
             margin: 6px;
-            border-radius: 8px;
+            border-radius: 0;
             text-decoration: none;
             transition: background 0.3s ease;
             font-size: 0.95rem;

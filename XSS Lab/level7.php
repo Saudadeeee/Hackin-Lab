@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $levelId    = 7;
 $levelTitle = 'XSS via href Attribute (javascript:)';
@@ -31,14 +32,14 @@ $_flag_result = handle_inline_flag_submit($levelId);
         .user-link {
             display: inline-block;
             background: var(--primary);
-            color: #fff;
+            color: #c3c0b6;
             padding: 0.5rem 1.1rem;
             border-radius: var(--radius);
             font-weight: 600;
             text-decoration: none;
             transition: background 0.2s;
         }
-        .user-link:hover { background: var(--primary-hover); color: #fff; text-decoration: none; }
+        .user-link:hover { background: var(--primary-hover); color: #c3c0b6; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -148,7 +149,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <a href="<?= $url ?>" class="user-link">Visit Profile</a>
                     <?php if ($url !== '#' && $url !== ''): ?>
                     <span style="font-size:0.8rem; color:var(--text-muted);">
-                        href value: <code style="color:#f87171;"><?= htmlspecialchars($url) ?></code>
+                        href value: <code style="color:#b5766e;"><?= htmlspecialchars($url) ?></code>
                     </span>
                     <?php endif; ?>
                 </div>
@@ -162,6 +163,8 @@ $_flag_result = handle_inline_flag_submit($levelId);
 
         </div><!-- /.challenge-panel -->
     </div><!-- /.challenge-layout -->
+
+    <?= xss_teach($levelId, ['input' => ($url === '#' ? '' : $url), 'solved' => $flag !== '']) ?>
 
     <?= render_hint_section($hints) ?>
     <?= render_inline_flag_form($levelId, $_flag_result) ?>

@@ -45,7 +45,7 @@ if (!empty($_COOKIE['xxe_lab_progress'])) {
         }
         .progress-bar-inner {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), #818cf8);
+            background: linear-gradient(90deg, var(--primary), #6f9fb0);
             border-radius: 999px;
             transition: width 0.5s ease;
         }
@@ -53,9 +53,9 @@ if (!empty($_COOKIE['xxe_lab_progress'])) {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            background: rgba(79,70,229,0.12);
+            background: rgba(111, 159, 176,0.12);
             border: 1px solid var(--primary);
-            color: #a5b4fc;
+            color: #6f9fb0;
             padding: 0.35rem 0.85rem;
             border-radius: 999px;
             font-size: 0.82rem;
@@ -93,7 +93,7 @@ if (!empty($_COOKIE['xxe_lab_progress'])) {
             gap: 1px;
             background: var(--border);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 0;
             overflow: hidden;
             margin-bottom: 2rem;
         }
@@ -105,7 +105,7 @@ if (!empty($_COOKIE['xxe_lab_progress'])) {
             display: block;
         }
         .level-card:hover { background: var(--surface2); }
-        .level-card.completed { background: rgba(16,185,129,0.05); }
+        .level-card.completed { background: rgba(127, 160, 109,0.05); }
         .level-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
         .level-number { font-size: 0.72rem; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; }
         .level-card h2 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
@@ -113,11 +113,11 @@ if (!empty($_COOKIE['xxe_lab_progress'])) {
         .start-link { font-size: 0.78rem; font-weight: 600; color: var(--primary-hover); }
         .difficulty-badge {
             display: inline-block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.06em; padding: 2px 7px; border-radius: 3px; border: 1px solid;
+            letter-spacing: 0.06em; padding: 2px 7px; border-radius: 0; border: 1px solid;
         }
-        .difficulty-easy   { color: #d0d0d0; border-color: #3a3a3a; background: #141414; }
-        .difficulty-medium { color: #b0b0b0; border-color: #3a3a3a; background: #121212; }
-        .difficulty-hard   { color: #909090; border-color: #2a2a2a; background: #0e0e0e; }
+        .difficulty-easy   { color: #c3c0b6; border-color: #2f3546; background: #151821; }
+        .difficulty-medium { color: #9a978f; border-color: #2f3546; background: #151821; }
+        .difficulty-hard   { color: #9a978f; border-color: #2f3546; background: #1a1e28; }
         .difficulty-expert { color: var(--white); border-color: var(--border-hi); background: var(--surface3); }
     </style>
 </head>
@@ -134,7 +134,7 @@ if (!empty($_COOKIE['xxe_lab_progress'])) {
         <h1>XXE <span>Challenge</span> Lab</h1>
         <p>Ten levels of XML External Entity vulnerabilities — source code provided. Read the code, craft a malicious DOCTYPE, and make the parser exfiltrate the secret.</p>
         <p style="margin-top:0.4rem; font-size:0.85rem;">
-            <a href="submit.php" style="color:#818cf8;">Submit captured flags &rarr;</a>
+            <a href="submit.php" style="color:#6f9fb0;">Submit captured flags &rarr;</a>
         </p>
     </div>
 
@@ -144,11 +144,11 @@ if (!empty($_COOKIE['xxe_lab_progress'])) {
             <span class="stat-label">Completed</span>
         </div>
         <div class="stat">
-            <span class="stat-value" style="color:#34d399;">10</span>
+            <span class="stat-value" style="color:#7fa06d;">10</span>
             <span class="stat-label">Total Levels</span>
         </div>
         <div class="stat">
-            <span class="stat-value" style="color:#fbbf24;"><?= 10 - count($completed) ?></span>
+            <span class="stat-value" style="color:#cfa65c;"><?= 10 - count($completed) ?></span>
             <span class="stat-label">Remaining</span>
         </div>
     </div>

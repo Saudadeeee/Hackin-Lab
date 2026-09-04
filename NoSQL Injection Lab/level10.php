@@ -102,7 +102,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
             <div class="vuln-annotation">
                 <strong>Vulnerability:</strong>&nbsp; Each layer plugs one hole from an earlier level — literal
                 <code>$</code> (L8), operator objects on username (L9), and six named operators. But the
-                blacklist is not exhaustive: <code>$gt</code> is missing. Encode it as <code>$gt</code> to
+                blacklist is not exhaustive: <code>$gt</code> is missing. Encode it as <code>\u0024gt</code> to
                 beat L1, keep <code>username</code> a string to beat L2, and it sails through L3.
             </div>
         </div>

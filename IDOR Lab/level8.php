@@ -126,11 +126,11 @@ render_page_header('Level 8 — Predictable Password Reset Token', 'Computing Re
         <?php endif; ?>
         <?php endif; ?>
 
-        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">
                 <strong style="color:var(--text);">Compute the token in your browser console:</strong>
             </p>
-            <code style="display:block;font-size:0.82rem;color:#c9d1d9;background:var(--code-bg);padding:0.5rem;border-radius:4px;margin-bottom:0.75rem;">// JavaScript doesn't have md5 natively.
+            <code style="display:block;font-size:0.82rem;color:#c3c0b6;background:var(--code-bg);padding:0.5rem;border-radius: 0;margin-bottom:0.75rem;">// JavaScript doesn't have md5 natively.
 // Use this precomputed table:</code>
             <table class="data-table">
                 <thead><tr><th>Username</th><th>md5(username)</th></tr></thead>

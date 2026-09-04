@@ -135,7 +135,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <h3>&#x1F3C6; Chain Fired!</h3>
                 <p>Logger&rarr;FileViewer executed and read the secret.</p>
                 <code><?= htmlspecialchars($flag) ?></code>
-                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
             </div>
             <?php elseif ($ran): ?>
             <div class="message error">Chain did not reach the secret. Nest a <code>FileViewer</code> (with <code>source</code> = the secret path) inside <code>writer</code>.</div>

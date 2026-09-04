@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $levelId    = 5;
 $levelTitle = 'htmlspecialchars Without ENT_QUOTES';
@@ -11,7 +12,9 @@ $bio = $_GET['bio'] ?? '';
 
 // Mimic the vulnerable sanitisation from the code panel
 // ENT_COMPAT (default) escapes & < > " — but NOT single quotes
-$safe_bio = htmlspecialchars($bio); // default = ENT_COMPAT
+// PHP 8.1 changed the default flags to ENT_QUOTES|ENT_SUBSTITUTE, so the
+// pre-8.1 behaviour this level demonstrates is pinned explicitly.
+$safe_bio = htmlspecialchars($bio, ENT_COMPAT);
 
 $flag        = '';
 $flagMessage = '';
@@ -57,8 +60,8 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <pre><code><span class="php-keyword">&lt;?php</span>
 <span class="php-variable">$bio</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'bio'</span>] ?? <span class="php-string">''</span>;
 
-<span class="php-comment">// Default: ENT_COMPAT — escapes &amp;, &lt;, &gt;, " but NOT '</span>
-<span class="php-variable">$safe_bio</span> = htmlspecialchars(<span class="php-variable">$bio</span>);
+<span class="php-comment">// ENT_COMPAT — escapes &amp;, &lt;, &gt;, " but NOT '</span>
+<span class="php-variable">$safe_bio</span> = htmlspecialchars(<span class="php-variable">$bio</span>, ENT_COMPAT);
 <span class="php-keyword">?&gt;</span>
 
 <span class="php-comment">&lt;!-- Single-quoted attribute — ' is NOT escaped by ENT_COMPAT --&gt;</span>
@@ -80,8 +83,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <h3>Scenario</h3>
                 <p>A profile page reflects the <code>bio</code> GET parameter into a
                 <strong>single-quoted</strong> HTML attribute using
-                <code>htmlspecialchars($bio)</code> (no second argument — defaults to
-                <code>ENT_COMPAT</code>).</p>
+                <code>htmlspecialchars($bio, ENT_COMPAT)</code>.</p>
                 <p><code>ENT_COMPAT</code> encodes double quotes but leaves single quotes
                 untouched. Because the attribute uses single-quote delimiters, a
                 <code>'</code> in your input escapes the attribute context.</p>
@@ -142,19 +144,19 @@ $_flag_result = handle_inline_flag_submit($levelId);
                            placeholder='Enter your bio...'
                            style='width:100%; background:var(--surface2); color:var(--text);
                                   border:1px solid var(--border); padding:0.4rem 0.6rem;
-                                  border-radius:4px; font-family:inherit;'>
+                                  border-radius: 0; font-family:inherit;'>
                 </div>
                 <?php if ($bio !== ''): ?>
                 <div style="margin-top:0.75rem; padding:0.6rem 0.9rem; background:var(--bg);
                             border:1px solid var(--border); border-radius:var(--radius); font-size:0.8rem;">
                     <span style="color:var(--text-muted);">$safe_bio value (ENT_COMPAT applied):</span><br>
-                    <code style="font-size:0.78rem; color:#f87171; word-break:break-all;">
+                    <code style="font-size:0.78rem; color:#b5766e; word-break:break-all;">
                         <?= htmlspecialchars($safe_bio) ?>
                     </code>
                     <br>
                     <span style="color:var(--text-muted); margin-top:0.3rem; display:block;">
                         Raw single-quote count in $safe_bio:
-                        <strong style="color:#fbbf24;"><?= substr_count($safe_bio, "'") ?></strong>
+                        <strong style="color:#cfa65c;"><?= substr_count($safe_bio, "'") ?></strong>
                         (unchanged by ENT_COMPAT)
                     </span>
                 </div>
@@ -167,6 +169,8 @@ $_flag_result = handle_inline_flag_submit($levelId);
 
         </div><!-- /.challenge-panel -->
     </div><!-- /.challenge-layout -->
+
+    <?= xss_teach($levelId, ['input' => $bio, 'solved' => $flag !== '']) ?>
 
     <?= render_hint_section($hints) ?>
     <?= render_inline_flag_form($levelId, $_flag_result) ?>

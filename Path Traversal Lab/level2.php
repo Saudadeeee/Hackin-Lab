@@ -58,15 +58,23 @@ if (isset($_GET['page'])) {
             <h3>Vulnerable Source Code</h3>
             <div class="source-code">
                 <code><span class="php-keyword">&lt;?php</span>
-<span class="php-variable">$page</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'page'</span>] ?? <span class="php-string">'home'</span>;
-<span class="vuln-line"><span class="php-function">include</span>(<span class="php-variable">$page</span>);  <span class="php-comment">// VULNERABLE: no path restriction</span></span>
+<span class="php-variable">$page</span> = <span class="php-variable">$_GET</span>[<span class="php-string">'page'</span>];
+<span class="php-comment">// The classic bug here is include($page). This lab uses readfile()
+// so a .php target is disclosed instead of executed - the path
+// handling, and therefore the traversal, is byte for byte the same.</span>
+<span class="php-function">ob_start</span>();
+<span class="vuln-line"><span class="php-function">readfile</span>(<span class="php-variable">$page</span>);  <span class="php-comment">// VULNERABLE: no path restriction</span></span>
+<span class="php-variable">$content</span> = <span class="php-function">ob_get_clean</span>();
+<span class="php-keyword">echo</span> <span class="php-function">htmlspecialchars</span>(<span class="php-variable">$content</span>);
 <span class="php-keyword">?&gt;</span></code>
             </div>
             <div style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted); line-height:1.7;">
                 <strong style="color:var(--text);">What to look for:</strong><br>
-                <code>include()</code> is called with the raw <code>$_GET['page']</code> value.
+                The file function is called with the raw <code>$_GET['page']</code> value.
                 There is <strong>no base path prefix</strong>, no extension check, and no
-                sanitization — any absolute path on the filesystem is accessible.<br><br>
+                sanitization — any absolute path on the filesystem is accessible.
+                (<code>readfile()</code> stands in for <code>include()</code> so that a PHP
+                target is disclosed rather than executed; the traversal is identical.)<br><br>
                 <strong style="color:var(--text);">Goal:</strong>
                 Read <code>/var/secret/level2_flag.txt</code>
             </div>
@@ -77,7 +85,7 @@ if (isset($_GET['page'])) {
             <h3>Challenge</h3>
             <div class="scenario">
                 <strong>Scenario:</strong> A simple page router passes the <code>page</code>
-                GET parameter directly to <code>include()</code>. No path is prepended — supply
+                GET parameter straight to a file-read call. No path is prepended — supply
                 an absolute path to any file on the server.
             </div>
 

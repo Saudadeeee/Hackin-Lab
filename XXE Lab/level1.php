@@ -127,7 +127,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <h3>&#x1F3C6; Flag Captured!</h3>
                     <p>The entity resolved the secret file — its contents came back in the parsed output.</p>
                     <code><?= htmlspecialchars($flag) ?></code>
-                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
                 </div>
                 <?php elseif ($output !== null): ?>
                 <div class="message error">No flag in the resolved output yet. Declare an external entity that reads <code>/var/secret/flag1.txt</code> and reference it in the body.</div>

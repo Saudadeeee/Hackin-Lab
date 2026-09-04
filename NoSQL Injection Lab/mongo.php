@@ -241,15 +241,28 @@ function nosql_where_atom(array $doc, string $atom): bool
         }
     }
 
-    $v = nosql_where_val($doc, $atom);
+    // A bare atom with no comparison operator. If it does not resolve to a
+    // literal or a document field it is a ReferenceError in real Mongo's JS
+    // engine, so it must NOT quietly match every document — otherwise any
+    // non-empty junk would "solve" the $where level without a predicate.
+    $v = nosql_where_val($doc, $atom, $resolved);
+    if (!$resolved)                return false;
     if (is_bool($v))               return $v;
     if (is_int($v) || is_float($v)) return $v != 0;
     if (is_string($v))             return $v !== '';
     return (bool)$v;
 }
 
-function nosql_where_val(array $doc, string $t)
+/**
+ * Resolve one operand. $resolved is set false when the token is not a literal,
+ * a document field or `this.<field>` — i.e. when the lenient "bare word becomes
+ * a string" fallback had to be used. Comparisons stay lenient (so `role==admin`
+ * works unquoted); only a standalone atom cares, because there an unresolvable
+ * name is an error rather than a truthy value.
+ */
+function nosql_where_val(array $doc, string $t, ?bool &$resolved = null)
 {
+    $resolved = true;
     $t = trim($t);
     if ($t === '') return null;
     if (strlen($t) >= 2 &&
@@ -262,6 +275,7 @@ function nosql_where_val(array $doc, string $t)
     if (strcasecmp($t, 'null')  === 0) return null;
     if (preg_match('/^this\.([A-Za-z_][A-Za-z0-9_]*)$/', $t, $m)) return $doc[$m[1]] ?? null;
     if (preg_match('/^([A-Za-z_][A-Za-z0-9_]*)$/', $t) && array_key_exists($t, $doc)) return $doc[$t];
+    $resolved = false;
     return $t; // bare word → string literal
 }
 

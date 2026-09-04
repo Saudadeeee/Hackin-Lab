@@ -57,6 +57,15 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <code>Location</code> header with <strong>no allowlist and no validation</strong>. Whatever host
                 you supply is where the victim's browser goes.
             </div>
+            <div class="lk-box"><h4><span class="lk-tag">PROOF</span>See the real header</h4>
+                <div class="lk-body">
+                    <p>The level page models the redirect instead of performing it, because a genuine 302 would
+                    navigate you away before you could read the trace. <code>go.php</code> runs this same filter and,
+                    when it accepts, really does call <code>header('Location: ...')</code>:</p>
+                    <pre class="lk-sinkline">curl -i "http://localhost:8092/go.php?level=1&amp;next=&lt;your value&gt;"</pre>
+                    <p class="text-muted">A rejected value returns 400 with no <code>Location</code> at all.</p>
+                </div>
+            </div>
         </div>
 
         <!-- ── Right: Challenge Panel ── -->

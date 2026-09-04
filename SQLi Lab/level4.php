@@ -4,6 +4,7 @@
 
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 $_flag_result = handle_inline_flag_submit(4);
 
 // Database connection
@@ -48,10 +49,6 @@ if ($_POST) {
     }
 
     if (!$message) {
-        // Remove quotes and some special chars (but can be bypassed)
-        $username = str_replace(["'", '"', ';'], "", $username);
-        $password = str_replace(["'", '"', ';'], "", $password);
-
         // Query with role check
         $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password' AND role = 'admin'";
 
@@ -170,6 +167,8 @@ if ($_POST) {
                 </div>
             </div>
         </div>
+
+    <?= sqli_teach(4, ['input' => $_POST['username'] ?? '', 'input2' => $_POST['password'] ?? '', 'filter' => $blocked_words ?? [], 'filter_label' => 'WAF keyword list', 'sql' => $sql ?? '', 'error' => (isset($conn) && $conn instanceof mysqli && $conn->error !== '') ? $conn->error : '', 'rows' => (isset($result) && $result instanceof mysqli_result) ? $result->num_rows : null, 'solved' => !empty($success) || !empty($_flag_result['already_completed'])]) ?>
 
         <?php if ($show_hint): ?>
             <?= render_hint_section(get_level_hints(4), 'WAF Bypass Techniques'); ?>

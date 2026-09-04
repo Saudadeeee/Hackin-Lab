@@ -1,0 +1,17 @@
+services:
+  web:
+    build: .
+    container_name: browserpolicy_lab
+    ports:
+      - "8095:80"
+    volumes:
+      - ./:/var/www/html
+    # The lab talks to itself under several hostnames. legacy.* is the weak
+    # host inside the level-5 wildcard; portal.* and cdn.* appear in the
+    # allowlists the levels take apart. All three answer on this container.
+    extra_hosts:
+      - "portal.hackinlab.internal:127.0.0.1"
+      - "legacy.hackinlab.internal:127.0.0.1"
+      - "cdn.hackinlab.internal:127.0.0.1"
+      - "admin.hackinlab.internal:127.0.0.1"
+    restart: unless-stopped

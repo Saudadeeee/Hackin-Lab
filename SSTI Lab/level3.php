@@ -118,7 +118,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
             <div class="xss-output-section">
                 <h4>Live Output (server-rendered template):</h4>
                 <?php if ($run['blocked']): ?>
-                    <div class="output-box" style="color:#f87171;">[WAF BLOCKED] <?= htmlspecialchars($run['reason']) ?></div>
+                    <div class="output-box" style="color:#b5766e;">[WAF BLOCKED] <?= htmlspecialchars($run['reason']) ?></div>
                 <?php else: ?>
                     <div class="output-box"><?= trim($run['rendered']) !== '' ? htmlspecialchars($run['rendered']) : '(empty result)' ?></div>
                 <?php endif; ?>

@@ -71,6 +71,15 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <code>parse_url()</code> only recognises an authority after <code>//</code>. Browsers accept a
                 <em>single</em>-slash scheme and normalise it to a full URL.
             </div>
+            <div class="lk-box"><h4><span class="lk-tag">PROOF</span>See the real header</h4>
+                <div class="lk-body">
+                    <p>The level page models the redirect instead of performing it, because a genuine 302 would
+                    navigate you away before you could read the trace. <code>go.php</code> runs this same filter and,
+                    when it accepts, really does call <code>header('Location: ...')</code>:</p>
+                    <pre class="lk-sinkline">curl -i "http://localhost:8092/go.php?level=10&amp;next=&lt;your value&gt;"</pre>
+                    <p class="text-muted">A rejected value returns 400 with no <code>Location</code> at all.</p>
+                </div>
+            </div>
         </div>
 
         <!-- ── Right: Challenge Panel ── -->
@@ -90,12 +99,12 @@ $_flag_result = handle_inline_flag_submit($levelId);
                 <div style="font-weight:700; color:var(--text-muted); text-transform:uppercase;
                             letter-spacing:0.06em; font-size:0.76rem; margin-bottom:0.5rem;">Filter Coverage</div>
                 <div style="display:flex; flex-direction:column; gap:0.3rem;">
-                    <div><span style="color:#f87171;">Layer 1:</span> leading <code>//</code> (protocol-relative)</div>
-                    <div><span style="color:#f87171;">Layer 2:</span> any <code>\</code> backslash</div>
-                    <div><span style="color:#f87171;">Layer 3:</span> <code>javascript:</code> <code>data:</code> <code>vbscript:</code></div>
-                    <div><span style="color:#f87171;">Layer 4:</span> any <code>%</code> (percent-encoding)</div>
-                    <div><span style="color:#f87171;">Layer 5:</span> <code>parse_url()</code> host must be null or <code>*.example-bank.local</code></div>
-                    <div style="margin-top:0.35rem; color:#34d399;"><strong>Gap:</strong> browsers normalise <code>scheme:/host</code> (one slash) into <code>scheme://host</code>; <code>parse_url()</code> does not.</div>
+                    <div><span style="color:#b5766e;">Layer 1:</span> leading <code>//</code> (protocol-relative)</div>
+                    <div><span style="color:#b5766e;">Layer 2:</span> any <code>\</code> backslash</div>
+                    <div><span style="color:#b5766e;">Layer 3:</span> <code>javascript:</code> <code>data:</code> <code>vbscript:</code></div>
+                    <div><span style="color:#b5766e;">Layer 4:</span> any <code>%</code> (percent-encoding)</div>
+                    <div><span style="color:#b5766e;">Layer 5:</span> <code>parse_url()</code> host must be null or <code>*.example-bank.local</code></div>
+                    <div style="margin-top:0.35rem; color:#7fa06d;"><strong>Gap:</strong> browsers normalise <code>scheme:/host</code> (one slash) into <code>scheme://host</code>; <code>parse_url()</code> does not.</div>
                 </div>
             </div>
 

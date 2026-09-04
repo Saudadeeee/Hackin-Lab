@@ -130,7 +130,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <h3>&#x1F3C6; Flag Captured!</h3>
                     <p>The php://filter wrapper exfiltrated the PHP source; its base64 decodes to the flag.</p>
                     <code><?= htmlspecialchars($flag) ?></code>
-                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
                 </div>
                 <?php elseif ($output !== null): ?>
                 <div class="message error">Not there yet. Use <code>php://filter/convert.base64-encode/resource=/var/secret/flag2.php</code> as the entity target.</div>

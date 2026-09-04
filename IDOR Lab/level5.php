@@ -28,9 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
 
     if ($updatedUser && $updatedUser['role'] === 'admin') {
         $flagFound = true;
-        // Cleanup: reset alice's role back to 'user'
-        $db->prepare("UPDATE users SET role='user' WHERE id=?")->execute([$current_user_id]);
     }
+
+    // Cleanup: alice's row is shared reference data for levels 1, 3, 6 and 7,
+    // so restore it after the demonstration. $updatedUser was already read,
+    // so the result below still reports the role the injection actually set.
+    $db->prepare("UPDATE users SET username=?, email=?, role='user' WHERE id=?")
+       ->execute(['alice', 'alice@lab.local', $current_user_id]);
+
 
     $updateMessage = 'Profile updated. Role is now: ' . htmlspecialchars($updatedUser['role'] ?? 'unknown');
 }
@@ -124,13 +129,13 @@ render_page_header('Level 5 — Mass Assignment', 'Injecting Unintended Paramete
         <?php if ($flagFound): ?>
         <div class="message success">Mass assignment successful — you escalated your role to admin!</div>
         <div class="flag-display"><?= htmlspecialchars(get_flag_for_level(5)) ?></div>
-        <div class="message info" style="font-size:0.82rem;">Note: Your role has been automatically reset to <code>user</code> for lab integrity.</div>
+        <div class="message info" style="font-size:0.82rem;">Note: Your profile has been automatically reset to <code>alice</code> / <code>alice@lab.local</code> / <code>user</code> for lab integrity.</div>
         <?php endif; ?>
         <?php endif; ?>
 
-        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;"><strong style="color:var(--text);">Alternative method — JavaScript fetch:</strong></p>
-            <code style="display:block;font-size:0.78rem;color:#c9d1d9;white-space:pre-wrap;word-break:break-all;">fetch('/level5.php', {
+            <code style="display:block;font-size:0.78rem;color:#c3c0b6;white-space:pre-wrap;word-break:break-all;">fetch('/level5.php', {
   method: 'POST',
   body: new URLSearchParams({
     username: 'alice',

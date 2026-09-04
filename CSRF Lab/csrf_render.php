@@ -53,11 +53,11 @@ function csrf_render_level(array $c): void {
         .level-badge {
             font-size: 0.72rem; font-weight: 700; color: var(--text-faint);
             background: var(--surface3); border: 1px solid var(--border);
-            padding: 2px 8px; border-radius: 3px; letter-spacing: 0.08em; text-transform: uppercase;
+            padding: 2px 8px; border-radius: 0; letter-spacing: 0.08em; text-transform: uppercase;
         }
         .difficulty-badge {
             font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.06em; padding: 2px 8px; border-radius: 3px; border: 1px solid var(--border-mid);
+            letter-spacing: 0.06em; padding: 2px 8px; border-radius: 0; border: 1px solid var(--border-mid);
             color: var(--text-muted);
         }
         .difficulty-expert { color: var(--white); border-color: var(--border-hi); background: var(--surface3); }

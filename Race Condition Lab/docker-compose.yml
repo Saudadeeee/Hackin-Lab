@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    container_name: race_lab
+    ports:
+      - "8094:80"
+    volumes:
+      - ./:/var/www/html
+    restart: unless-stopped

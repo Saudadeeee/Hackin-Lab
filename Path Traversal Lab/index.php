@@ -48,7 +48,7 @@ $total     = count($levels);
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
         <p class="section-title">Challenges</p>
-        <a href="submit.php" class="submit-btn" style="text-decoration:none; padding:0.4rem 0.9rem; border-radius:6px; font-size:0.85rem; font-weight:500; color:#fff; background:var(--primary);">Submit a Flag</a>
+        <a href="submit.php" class="submit-btn" style="text-decoration:none; padding:0.4rem 0.9rem; border-radius: 0; font-size:0.85rem; font-weight:500; color:#c3c0b6; background:var(--primary);">Submit a Flag</a>
     </div>
 
     <div class="level-grid">
@@ -65,7 +65,7 @@ $total     = count($levels);
         <?php endforeach; ?>
     </div>
 
-    <div style="margin-top:2rem; padding:1.25rem; background:var(--surface); border:1px solid var(--border); border-radius:10px; font-size:0.88rem; color:var(--text-muted);">
+    <div style="margin-top:2rem; padding:1.25rem; background:var(--surface); border:1px solid var(--border); border-radius: 0; font-size:0.88rem; color:var(--text-muted);">
         <strong style="color:var(--text);">How to Play</strong>
         <ol style="margin-top:0.5rem; padding-left:1.25rem; display:flex; flex-direction:column; gap:0.4rem;">
             <li>Open a level page.</li>

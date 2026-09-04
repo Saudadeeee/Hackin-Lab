@@ -42,7 +42,7 @@ function get_level_hints(int $levelId): array
             'PHP files inside the web root are <em>executed</em> by the server, not shown as text. Give your file a <code>.php</code> extension.',
             'Put PHP code between tags: <code>&lt;?php /* code */ ?&gt;</code>. A tiny web shell can read files or run shell commands.',
             'The flag is baked on the server at <code>/var/secret/level1_flag.txt</code>. Read it with <code>&lt;?php readfile(\'/var/secret/level1_flag.txt\'); ?&gt;</code> or <code>system(\'cat ...\')</code>.',
-            'Working: filename <code>shell.php</code>, content <code>&lt;?php readfile(\'/var/secret/level1_flag.txt\'); ?&gt;</code>. Submit it, then click the stored-file link to run it. The panel also awards the flag the moment it detects executable PHP that passed the filter.',
+            'Working: filename <code>shell.php</code>, content <code>&lt;?php readfile(\'/var/secret/level1_flag.txt\'); ?&gt;</code>. Submit it, then click the stored-file link to run it. The panel awards the flag once it has requested the stored file back and confirmed the server really executed it.',
         ],
         2 => [
             'The filter uses an <strong>extension blocklist</strong>. Read exactly which extension(s) it rejects &mdash; it only blocks <code>.php</code>.',
@@ -363,23 +363,66 @@ function filter_level10(array $u): array
     return [true, 'Accepted: survived all four filter layers.'];
 }
 
+/**
+ * Proof of execution: ask Apache for the file we just stored.
+ *
+ * A static look at the filename and the bytes only says the payload *ought* to
+ * run. This actually requests it over HTTP. If PHP executed the file, the raw
+ * opening tag cannot survive into the response body; if Apache served it as
+ * plain text (handler misconfigured, extension not mapped, file never written)
+ * the tag comes straight back and the level has NOT been solved.
+ *
+ * @param string|null $storedRel web-relative path returned by store_upload()
+ */
+function upload_executed(?string $storedRel): bool
+{
+    if ($storedRel === null || $storedRel === '') return false;
+
+    $ctx = stream_context_create(['http' => [
+        'method'        => 'GET',
+        'timeout'       => 5,
+        'ignore_errors' => true,
+    ]]);
+    $body = @file_get_contents('http://127.0.0.1/' . ltrim($storedRel, '/'), false, $ctx);
+    if ($body === false) return false;
+
+    // A 404/403 body carries no PHP tag either, so the status must be checked.
+    $status = 0;
+    foreach ($http_response_header ?? [] as $h) {
+        if (preg_match('~^HTTP/\S+\s+(\d{3})~', $h, $m)) $status = (int) $m[1];
+    }
+    if ($status !== 200) return false;
+
+    // The stored bytes contained a PHP tag; if the response does not, it ran.
+    return stripos($body, '<?php') === false && strpos($body, '<?=') === false;
+}
+
 /* ============================================================
  * The authoritative flag gate.
  *
- * Re-applies the level's own filter and confirms that what survived is an
- * EXECUTABLE PHP payload (right kind of filename AND a working PHP tag).
+ * Re-applies the level's own filter, confirms that what survived LOOKS like an
+ * executable PHP payload (right kind of filename AND a working PHP tag), and
+ * then PROVES it by requesting the stored file back from Apache.
  * Never string-matches the flag.
  * ============================================================ */
-function verify_upload(int $level, string $name, string $content, string $mime = ''): bool
+function verify_upload(int $level, string $name, string $content, string $mime = '', ?string $storedRel = null): bool
 {
     if ($level < 1 || $level > 10) return false;
 
     $u = ['name' => $name, 'content' => $content, 'mime' => $mime];
 
-    // Level 7 is exploited by a malicious .htaccess (the "payload" that grants execution).
+    // Level 7 is exploited by a malicious .htaccess: the .htaccess itself is
+    // never executed, so the proof is that it survived the filter AND actually
+    // landed on disk with PHP-mapping directives in it. The shell the learner
+    // then uploads (shell.jpg) is proved by the generic path below.
     if ($level === 7) {
         [$accepted] = filter_level7($u);
-        return $accepted && htaccess_maps_php($name, $content);
+        if ($accepted && htaccess_maps_php($name, $content)) {
+            $stored = upload_base_dir() . '/level7/' . sanitize_store_name($name);
+            return is_file($stored) && htaccess_maps_php($name, (string) @file_get_contents($stored));
+        }
+        // Step 2: a non-script file that the uploaded .htaccess now runs as PHP.
+        return $accepted && has_php_code($content) && upload_executed($storedRel);
     }
 
     [$accepted] = call_user_func('filter_level' . $level, $u);
@@ -391,9 +434,13 @@ function verify_upload(int $level, string $name, string $content, string $mime =
     // ...and must contain a PHP tag that executes.
     if ($level === 9 || $level === 10) {
         // <?php is blocked here, so a surviving payload must use the short-echo tag.
-        return has_short_echo_tag($content);
+        if (!has_short_echo_tag($content)) return false;
+    } elseif (!has_php_code($content)) {
+        return false;
     }
-    return has_php_code($content);
+
+    // Finally: the server must really have run it.
+    return upload_executed($storedRel);
 }
 
 /**

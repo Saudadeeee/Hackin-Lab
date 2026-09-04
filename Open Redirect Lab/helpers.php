@@ -80,9 +80,9 @@ function get_level_hints(int $levelId): array {
         7 => [
             'The filter rejects raw <code>//</code> and <code>http(s)://</code>, but the value is passed through <code>urldecode()</code> <em>after</em> the check.',
             'If you encode the dangerous characters, the check sees a harmless string; decoding restores the exploit.',
-            'A forward slash <code>/</code> is <code>%2f</code> when URL-encoded. Two of them make a protocol-relative prefix once decoded.',
-            '<code>%2f%2fevil.attacker.example</code> does not start with <code>//</code>, but <code>urldecode()</code> turns it into <code>//evil.attacker.example</code>.',
-            'Working payloads: <code>?next=%2f%2fevil.attacker.example</code> &nbsp;|&nbsp; <code>?next=%2F%2Fevil.attacker.example</code>',
+            'A forward slash <code>/</code> is <code>%2f</code> when URL-encoded &mdash; but PHP already percent-decodes the query string once when it populates <code>$_GET</code>, so a plain <code>%2f</code> reaches the filter as a real <code>/</code>. You need one <em>extra</em> layer so a literal <code>%2f</code> is still there when <code>urldecode()</code> runs.',
+            'Send <code>%252f%252fevil.attacker.example</code>: the transport decode makes it <code>%2f%2fevil.attacker.example</code>, which does not start with <code>//</code>, and the extra <code>urldecode()</code> then makes that <code>//evil.attacker.example</code>.',
+            'Working payload in the address bar: <code>?next=%252f%252fevil.attacker.example</code> (or <code>%252F%252F</code>). Typing it into the box on this page instead? The browser percent-encodes what you type, so there you only write <code>%2f%2fevil.attacker.example</code> &mdash; either way the filter must see <code>%2f%2f</code> and <code>urldecode()</code> must turn it into <code>//</code>.',
         ],
         8 => [
             'The check only asks "does this point at a foreign <em>host</em>?" using <code>parse_url()</code>\'s host — a value with no host slips past.',
@@ -480,9 +480,9 @@ function render_redirect_result(array $vr): string {
             <div>
                 <span style="color:var(--text-muted);">Filter verdict:</span>
                 <?php if ($vr['allowed']): ?>
-                    <strong style="color:#34d399;">ALLOWED</strong>
+                    <strong style="color:#7fa06d;">ALLOWED</strong>
                 <?php else: ?>
-                    <strong style="color:#f87171;">BLOCKED</strong>
+                    <strong style="color:#b5766e;">BLOCKED</strong>
                 <?php endif; ?>
             </div>
             <div style="margin-top:0.35rem; color:var(--text-muted);"><?= htmlspecialchars($vr['reason']) ?></div>
@@ -490,24 +490,24 @@ function render_redirect_result(array $vr): string {
             <?php if ($vr['allowed'] && $vr['kind'] === 'crlf'): ?>
                 <div style="margin-top:0.65rem; color:var(--text-muted);">Injected response header(s):</div>
                 <?php foreach (($vr['injected'] ?? []) as $h): ?>
-                    <div><code style="color:#fbbf24; word-break:break-all;"><?= htmlspecialchars($h) ?></code></div>
+                    <div><code style="color:#cfa65c; word-break:break-all;"><?= htmlspecialchars($h) ?></code></div>
                 <?php endforeach; ?>
                 <?php if ($eff): ?>
                     <div style="margin-top:0.5rem; color:var(--text-muted);">Injected <code>Location</code> &rarr; browser would load:</div>
-                    <div><code style="color:#f87171; word-break:break-all;"><?= htmlspecialchars($eff['url']) ?></code></div>
+                    <div><code style="color:#b5766e; word-break:break-all;"><?= htmlspecialchars($eff['url']) ?></code></div>
                 <?php endif; ?>
 
             <?php elseif ($vr['allowed'] && $eff): ?>
                 <div style="margin-top:0.65rem; color:var(--text-muted);">Effective destination the browser would load:</div>
                 <div>
-                    <code style="color:<?= ($eff['offsite'] || $eff['dangerous']) ? '#f87171' : '#34d399' ?>; word-break:break-all;"><?= htmlspecialchars($eff['url']) ?></code>
+                    <code style="color:<?= ($eff['offsite'] || $eff['dangerous']) ? '#b5766e' : '#7fa06d' ?>; word-break:break-all;"><?= htmlspecialchars($eff['url']) ?></code>
                 </div>
                 <div style="margin-top:0.45rem;">
                     <span style="color:var(--text-muted);">Resolved host:</span>
                     <?php if ($eff['dangerous']): ?>
-                        <code style="color:#f87171;"><?= htmlspecialchars($eff['scheme']) ?>: (no host &mdash; code execution)</code>
+                        <code style="color:#b5766e;"><?= htmlspecialchars($eff['scheme']) ?>: (no host &mdash; code execution)</code>
                     <?php else: ?>
-                        <code style="color:<?= $eff['offsite'] ? '#f87171' : '#34d399' ?>;"><?= htmlspecialchars((string)$eff['host']) ?></code>
+                        <code style="color:<?= $eff['offsite'] ? '#b5766e' : '#7fa06d' ?>;"><?= htmlspecialchars((string)$eff['host']) ?></code>
                         <span style="color:var(--text-faint); font-size:0.75rem;">
                             <?= $eff['offsite'] ? '(off-allowlist / attacker-controlled)' : '(trusted)' ?>
                         </span>

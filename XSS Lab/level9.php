@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 
 $levelId    = 9;
 $levelTitle = 'Bypass XSS Blacklist';
@@ -55,6 +56,7 @@ if ($blocked) {
                 </span>
             </div>
         </div>
+        <?= xss_teach($levelId, ['input' => $xss_input, 'solved' => false]) ?>
         <div style="margin-top:1.25rem; display:flex; gap:0.75rem;">
             <a href="level9.php" class="btn btn-primary">&larr; Try Again</a>
             <a href="index.php" class="btn btn-secondary">Home</a>
@@ -206,6 +208,8 @@ $_flag_result = handle_inline_flag_submit($levelId);
 
         </div><!-- /.challenge-panel -->
     </div><!-- /.challenge-layout -->
+
+    <?= xss_teach($levelId, ['input' => $xss_input, 'solved' => $flag !== '']) ?>
 
     <?= render_hint_section($hints) ?>
     <?= render_inline_flag_form($levelId, $_flag_result) ?>

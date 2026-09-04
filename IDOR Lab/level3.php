@@ -92,14 +92,14 @@ render_page_header('Level 3 — Hidden Form Field Tampering', 'Trusting Client-S
         </form>
 
         <?php if ($submitted && $profile): ?>
-        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <table class="data-table">
                 <tbody>
                     <tr><td style="color:var(--text-muted);">ID</td><td><?= htmlspecialchars((string)$profile['id']) ?></td></tr>
                     <tr><td style="color:var(--text-muted);">Username</td><td><?= htmlspecialchars($profile['username']) ?></td></tr>
                     <tr><td style="color:var(--text-muted);">Email</td><td><?= htmlspecialchars($profile['email']) ?></td></tr>
                     <tr><td style="color:var(--text-muted);">Role</td>
-                        <td><span style="color:<?= $profile['role'] === 'admin' ? '#fca5a5' : '#6ee7b7' ?>;"><?= htmlspecialchars($profile['role']) ?></span></td>
+                        <td><span style="color:<?= $profile['role'] === 'admin' ? '#b5766e' : '#7fa06d' ?>;"><?= htmlspecialchars($profile['role']) ?></span></td>
                     </tr>
                 </tbody>
             </table>
@@ -122,7 +122,7 @@ render_page_header('Level 3 — Hidden Form Field Tampering', 'Trusting Client-S
                     <tr><td>1</td><td>alice</td><td>user</td></tr>
                     <tr><td>2</td><td>bob</td><td>user</td></tr>
                     <tr><td>3</td><td>charlie</td><td>user</td></tr>
-                    <tr><td>4</td><td>admin</td><td style="color:#fca5a5;">admin</td></tr>
+                    <tr><td>4</td><td>admin</td><td style="color:#b5766e;">admin</td></tr>
                     <tr><td>5</td><td>guest</td><td>user</td></tr>
                 </tbody>
             </table>

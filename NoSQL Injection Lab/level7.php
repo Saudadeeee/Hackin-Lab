@@ -87,7 +87,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
 
 <span class="php-comment">// Only $regex survives; $ne / $gt / $where / $in are all rejected</span>
 <span class="php-keyword">foreach</span> (<span class="php-function">operators_used</span>(<span class="php-variable">$body</span>) <span class="php-keyword">as</span> <span class="php-variable">$op</span>)
-    <span class="php-keyword">if</span> (<span class="php-variable">$op</span> !== <span class="php-string">'$regex'</span>) <span class="php-function">reject</span>();
+    <span class="php-keyword">if</span> (<span class="php-variable">$op</span> !== <span class="php-string">'$regex'</span> &amp;&amp; <span class="php-variable">$op</span> !== <span class="php-string">'$options'</span>) <span class="php-function">reject</span>();
 
 <span class="vuln-line"><span class="php-variable">$query</span> = [<span class="php-string">'username'</span> =&gt; <span class="php-variable">$body</span>[<span class="php-string">'username'</span>], <span class="php-string">'password'</span> =&gt; <span class="php-variable">$body</span>[<span class="php-string">'password'</span>]];</span>
 <span class="php-variable">$ok</span>    = <span class="php-function">nosql_has_admin</span>(<span class="php-function">mongo_find</span>(<span class="php-variable">$users</span>, <span class="php-variable">$query</span>));

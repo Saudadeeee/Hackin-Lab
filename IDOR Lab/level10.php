@@ -84,9 +84,9 @@ render_page_header('Level 10 — Race Condition: TOCTOU Access Control Bypass', 
 <span class="php-keyword">if</span> (<span class="php-variable">$action</span> === <span class="php-string">'create'</span>) {
     <span class="php-comment">// Create exclusive reward for any user</span>
     <span class="php-variable">$token</span> = <span class="php-function">bin2hex</span>(<span class="php-function">random_bytes</span>(<span class="php-string">4</span>));
-    <span class="php-variable">$db</span>-><span class="php-function">exec</span>(<span class="php-string">"INSERT INTO rewards
-        (user_id, token, claimed)
-        VALUES ($uid, '$token', 0)"</span>);
+    <span class="php-variable">$db</span>-><span class="php-function">prepare</span>(<span class="php-string">"INSERT INTO rewards
+        (user_id, token, claimed) VALUES (?, ?, 0)"</span>)
+       -><span class="php-function">execute</span>([<span class="php-variable">$uid</span>, <span class="php-variable">$token</span>]);
 
 } <span class="php-keyword">elseif</span> (<span class="php-variable">$action</span> === <span class="php-string">'claim'</span>) {
     <span class="php-comment">// CHECK: get latest unclaimed reward</span>
@@ -96,15 +96,14 @@ render_page_header('Level 10 — Race Condition: TOCTOU Access Control Bypass', 
          ORDER BY id DESC LIMIT 1"</span>
     )-><span class="php-function">fetch</span>();</span>
 
-    <span class="php-keyword">if</span> (<span class="php-variable">$reward</span> && <span class="php-variable">$reward</span>[<span class="php-string">'user_id'</span>] !== <span class="php-variable">$uid</span>) {
+    <span class="php-keyword">if</span> (<span class="php-variable">$reward</span> && (<span class="php-keyword">int</span>)<span class="php-variable">$reward</span>[<span class="php-string">'user_id'</span>] !== <span class="php-variable">$uid</span>) {
         <span class="php-comment">// Artificial 50ms window (TOCTOU gap)</span>
         <span class="vuln-line">        <span class="php-function">usleep</span>(<span class="php-string">50000</span>);</span>
         <span class="php-comment">// USE: update — no re-check of ownership!</span>
-        <span class="vuln-line">        <span class="php-variable">$db</span>-><span class="php-function">exec</span>(
+        <span class="vuln-line">        <span class="php-variable">$db</span>-><span class="php-function">prepare</span>(
             <span class="php-string">"UPDATE rewards SET claimed=1,
-             claimed_by=$uid
-             WHERE id="</span> . <span class="php-variable">$reward</span>[<span class="php-string">'id'</span>]
-        );</span>
+             claimed_by=? WHERE id=?"</span>
+        )-><span class="php-function">execute</span>([<span class="php-variable">$uid</span>, <span class="php-variable">$reward</span>[<span class="php-string">'id'</span>]]);</span>
     }
 }
 <span class="php-keyword">?&gt;</span></code></div>
@@ -129,7 +128,7 @@ render_page_header('Level 10 — Race Condition: TOCTOU Access Control Bypass', 
         </div>
 
         <!-- Step 1: Create reward for alice -->
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;margin-bottom:0.75rem;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;margin-bottom:0.75rem;">
             <p style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;">Step 1 — Create a reward for Alice (user_id=1)</p>
             <a href="level10.php?action=create&user_id=1" class="btn btn-primary" style="font-size:0.82rem;text-decoration:none;">
                 Create Reward for Alice (user_id=1)
@@ -137,7 +136,7 @@ render_page_header('Level 10 — Race Condition: TOCTOU Access Control Bypass', 
         </div>
 
         <!-- Step 2: Claim it as bob -->
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;margin-bottom:0.75rem;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;margin-bottom:0.75rem;">
             <p style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;">Step 2 — Claim it as Bob (user_id=2) before Alice does</p>
             <a href="level10.php?action=claim&user_id=2" class="btn btn-outline" style="font-size:0.82rem;text-decoration:none;">
                 Claim as Bob (user_id=2) — Exploit TOCTOU
@@ -156,9 +155,9 @@ render_page_header('Level 10 — Race Condition: TOCTOU Access Control Bypass', 
         </div>
 
         <?php if ($actionResult !== null): ?>
-        <div style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem;margin-bottom:0.75rem;">
+        <div style="background:var(--code-bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem;margin-bottom:0.75rem;">
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.3rem;">Action result:</p>
-            <pre style="font-size:0.82rem;color:#c9d1d9;white-space:pre-wrap;"><?= htmlspecialchars(json_encode($actionResult, JSON_PRETTY_PRINT)) ?></pre>
+            <pre style="font-size:0.82rem;color:#c3c0b6;white-space:pre-wrap;"><?= htmlspecialchars(json_encode($actionResult, JSON_PRETTY_PRINT)) ?></pre>
         </div>
         <?php if ($flagFound): ?>
         <div class="message success">TOCTOU exploited! Bob claimed a reward created for Alice!</div>
@@ -188,9 +187,9 @@ render_page_header('Level 10 — Race Condition: TOCTOU Access Control Bypass', 
         <?php endif; ?>
 
         <!-- Race condition simulation -->
-        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <p style="font-size:0.85rem;color:var(--text);margin-bottom:0.5rem;"><strong>Simulate real race condition (rapid requests):</strong></p>
-            <code style="display:block;font-size:0.78rem;color:#c9d1d9;background:var(--code-bg);padding:0.5rem;border-radius:4px;white-space:pre-wrap;">// JavaScript: fire 20 claim requests simultaneously as bob
+            <code style="display:block;font-size:0.78rem;color:#c3c0b6;background:var(--code-bg);padding:0.5rem;border-radius: 0;white-space:pre-wrap;">// JavaScript: fire 20 claim requests simultaneously as bob
 const base = '/level10.php';
 // Step 1: create a reward for alice
 await fetch(base + '?action=create&user_id=1');
@@ -234,7 +233,7 @@ async function raceSimulate() {
         const results = await Promise.all(reqs);
         const successes = results.filter(r => r.includes('claimed'));
         output.innerHTML = `Sent 20 claim requests. Claimed: ${successes.length}/20.<br>
-            <a href="level10.php?action=list" style="color:#ffffff;text-decoration:underline;">Reload to see reward table.</a>`;
+            <a href="level10.php?action=list" style="color:#c3c0b6;text-decoration:underline;">Reload to see reward table.</a>`;
         if (successes.length > 0) {
             setTimeout(() => location.reload(), 1500);
         }

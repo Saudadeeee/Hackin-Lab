@@ -4,6 +4,7 @@
 
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 $_flag_result = handle_inline_flag_submit(6);
 
 // Database connection
@@ -136,6 +137,8 @@ if ($_POST) {
                 </div>
             </div>
         </div>
+
+    <?= sqli_teach(6, ['input' => $_POST['username'] ?? '', 'input2' => $_POST['password'] ?? '', 'sql' => $sql ?? '', 'error' => (isset($conn) && $conn instanceof mysqli && $conn->error !== '') ? $conn->error : '', 'rows' => (isset($result) && $result instanceof mysqli_result) ? $result->num_rows : null, 'solved' => !empty($success) || !empty($_flag_result['already_completed'])]) ?>
 
         <?= render_hint_section(get_level_hints(6), 'Hints for Level 6'); ?>
 

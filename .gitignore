@@ -1,0 +1,24 @@
+# Runtime state. Every lab rebuilds these on first request; committing them
+# would ship one learner's progress to everyone else.
+*.sqlite
+*.sqlite-journal
+*.db
+
+# Per-learner state written by the labs that model a stateful application.
+*/state/*
+!*/state/.gitignore
+*/pastes/*
+!*/pastes/.gitignore
+*/data/*
+!*/data/.gitignore
+
+# Uploaded web shells and the files the labs write while being exploited.
+*/uploads/*/*
+!*/uploads/*/.gitkeep
+*_flag.txt
+*.log
+
+# The RSA keypair under "JWT Lab/keys/" is NOT ignored and is committed on
+# purpose: it is the issuer key the RS256 levels verify against, and levels 5
+# and 8 depend on the public half being public. It is a lab artefact, not a
+# secret. Everything in this repository is intentionally vulnerable.

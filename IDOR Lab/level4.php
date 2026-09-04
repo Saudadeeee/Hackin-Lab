@@ -84,7 +84,7 @@ render_page_header('Level 4 — Horizontal Privilege Escalation', 'Reading Messa
         </form>
 
         <?php if ($msg): ?>
-        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;">
                 Message #<?= htmlspecialchars((string)$msg['id']) ?> &mdash;
                 From: User #<?= htmlspecialchars((string)$msg['sender_id']) ?> &mdash;

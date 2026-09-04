@@ -1,9 +1,11 @@
 <?php
-// Level 1: Basic Login Form - Error Based SQL Injection
+// Level 1: Basic Login Form - Authentication Bypass
+// The database error is echoed back, which is how you map the query.
 // Goal: Login as admin using SQL injection
 
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 $_flag_result = handle_inline_flag_submit(1);
 
 mysqli_report(MYSQLI_REPORT_OFF);
@@ -29,10 +31,15 @@ if ($_POST) {
     // Vulnerable SQL query - directly concatenates user input
     $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
 
-    try {
-        $result = $conn->query($sql);
+    $result = $conn->query($sql);
 
-        if ($result && $result->num_rows > 0) {
+    // mysqli reporting is off, so a failed query returns false rather than
+    // throwing. Surface the error: reading it is how you learn the query shape.
+    if ($result === false) {
+        $message = "Database error: " . htmlspecialchars($conn->error);
+        $message .= "<br><br>SQL Query: " . htmlspecialchars($sql);
+    } else {
+        if ($result->num_rows > 0) {
             $userData = $result->fetch_assoc();
             if (($userData['role'] ?? '') === 'admin') {
                 $success = true;
@@ -48,9 +55,6 @@ if ($_POST) {
         } else {
             $message = "Login failed: Invalid username or password.";
         }
-    } catch (Exception $e) {
-        $message = "Database error: " . $e->getMessage();
-        $message .= "<br><br>SQL Query: " . htmlspecialchars($sql);
     }
 }
 
@@ -68,7 +72,7 @@ if ($_POST) {
     <div class="container">
         <div class="header">
             <h1>Level 1 - Basic Login</h1>
-            <p>Your first SQL injection challenge. Error messages will help you map the query.</p>
+            <p>Your first SQL injection challenge. The database error is echoed back to you, so a broken payload tells you the shape of the query.</p>
             <a href="index.php" class="back-btn">&larr; Back to Labs</a>
         </div>
 
@@ -83,23 +87,23 @@ if ($_POST) {
 
     <span class="php-comment">// Vulnerable SQL query - directly concatenates user input</span>
 <span class="vuln-line">    <span class="php-variable">$sql</span> = <span class="php-string">"SELECT * FROM users WHERE username = '<span class="php-variable">$username</span>' AND password = '<span class="php-variable">$password</span>'"</span>;</span>
-    <span class="php-keyword">try</span> {
-        <span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
+    <span class="php-variable">$result</span> = <span class="php-variable">$conn</span>-&gt;<span class="php-function">query</span>(<span class="php-variable">$sql</span>);
 
-        <span class="php-keyword">if</span> (<span class="php-variable">$result</span> &amp;&amp; <span class="php-variable">$result</span>-&gt;num_rows &gt; 0) {
-            <span class="php-variable">$userData</span> = <span class="php-variable">$result</span>-&gt;<span class="php-function">fetch_assoc</span>();
-            <span class="php-keyword">if</span> ((<span class="php-variable">$userData</span>[<span class="php-string">'role'</span>] ?? <span class="php-string">''</span>) === <span class="php-string">'admin'</span>) {
-                <span class="php-comment">// success — return flag</span>
-            }
-        }
-    } <span class="php-keyword">catch</span> (Exception <span class="php-variable">$e</span>) {
-        <span class="php-variable">$message</span> = <span class="php-string">"Database error: "</span> . <span class="php-variable">$e</span>-&gt;<span class="php-function">getMessage</span>();
+    <span class="php-comment">// A failed query returns false. The error text is handed straight</span>
+    <span class="php-comment">// back to the client, along with the statement that produced it.</span>
+<span class="vuln-line">    <span class="php-keyword">if</span> (<span class="php-variable">$result</span> === <span class="php-keyword">false</span>) {
+        <span class="php-variable">$message</span> = <span class="php-string">"Database error: "</span> . <span class="php-variable">$conn</span>-&gt;error;
         <span class="php-variable">$message</span> .= <span class="php-string">"&lt;br&gt;SQL Query: "</span> . <span class="php-function">htmlspecialchars</span>(<span class="php-variable">$sql</span>);
+    }</span> <span class="php-keyword">elseif</span> (<span class="php-variable">$result</span>-&gt;num_rows &gt; 0) {
+        <span class="php-variable">$userData</span> = <span class="php-variable">$result</span>-&gt;<span class="php-function">fetch_assoc</span>();
+        <span class="php-keyword">if</span> ((<span class="php-variable">$userData</span>[<span class="php-string">'role'</span>] ?? <span class="php-string">''</span>) === <span class="php-string">'admin'</span>) {
+            <span class="php-comment">// success — return flag</span>
+        }
     }
 }</code></pre>
                 </div>
                 <div class="vuln-annotation">
-                    <strong>Vulnerability:</strong>&nbsp; <code>$username</code> and <code>$password</code> are concatenated directly into the SQL string with no sanitisation. Injecting <code>' OR '1'='1</code> in the username field rewrites the WHERE clause and bypasses authentication.
+                    <strong>Vulnerability:</strong>&nbsp; <code>$username</code> and <code>$password</code> are concatenated directly into the SQL string with no sanitisation, so a quote in either field ends the literal and the rest of your input is parsed as SQL. A second, smaller flaw compounds it: the driver's error text and the failing statement are both returned to the client, which hands you the query's shape for free.
                 </div>
             </div>
 
@@ -135,6 +139,8 @@ if ($_POST) {
                 </div>
             </div>
         </div>
+
+    <?= sqli_teach(1, ['input' => $_POST['username'] ?? '', 'input2' => $_POST['password'] ?? '', 'sql' => $sql ?? '', 'error' => (isset($conn) && $conn instanceof mysqli && $conn->error !== '') ? $conn->error : '', 'rows' => (isset($result) && $result instanceof mysqli_result) ? $result->num_rows : null, 'solved' => !empty($success) || !empty($_flag_result['already_completed'])]) ?>
 
         <?= render_hint_section(get_level_hints(1), 'Hints for Level 1'); ?>
 

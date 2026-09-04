@@ -156,7 +156,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <h3>&#x1F3C6; Flag Captured!</h3>
                     <p>One encoding trick collapsed all three ASCII filters — the classic file read fired.</p>
                     <code><?= htmlspecialchars($flag) ?></code>
-                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
                 </div>
                 <?php elseif ($submitted && $blockedBy === ''): ?>
                 <div class="message error">Passed the filters but no flag — confirm the entity reads <code>/var/secret/flag10.txt</code> and is referenced in the body.</div>

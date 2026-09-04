@@ -6,6 +6,7 @@ session_start();
 
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 $_flag_result = handle_inline_flag_submit(16);
 // Database connection
 $host = $_ENV['DB_HOST'] ?? 'db';
@@ -52,7 +53,7 @@ if ($_POST) {
     }
 
     // Layer 3: Special characters
-    $special_chars = ["'", '"', '=', '<', '>', '(', ')'];
+    $special_chars = ['"', '=', '<', '>', '(', ')'];
     $has_special = false;
     foreach ($special_chars as $char) {
         if (strpos($username . $password, $char) !== false) {
@@ -160,7 +161,7 @@ if ($_POST) {
                 <div class="source-code">
                     <pre><code><span class="php-comment">// Layer 1: --, #, /*, */</span>
 <span class="php-comment">// Layer 2: UNION, SELECT, FROM, WHERE …</span>
-<span class="php-comment">// Layer 3: ', ", =, &lt;, &gt;, (, )</span>
+<span class="php-comment">// Layer 3: ", =, &lt;, &gt;, (, )</span>
 <span class="php-comment">// Layer 4: OR, AND, NOT</span>
 <span class="php-comment">// Layer 5: \s (any whitespace)</span>
 <span class="php-variable">$triggered</span> = <span class="php-variable">$layer1</span> + <span class="php-variable">$layer2</span>
@@ -244,6 +245,8 @@ if ($_POST) {
                 </div>
             </div>
         </div>
+
+    <?= sqli_teach(16, ['input' => $_POST['username'] ?? '', 'input2' => $_POST['password'] ?? '', 'filter' => $blocked_patterns ?? [], 'filter_label' => 'five WAF layers', 'sql' => $sql ?? '', 'error' => (isset($conn) && $conn instanceof mysqli && $conn->error !== '') ? $conn->error : '', 'rows' => (isset($result) && $result instanceof mysqli_result) ? $result->num_rows : null, 'solved' => !empty($success) || !empty($_flag_result['already_completed'])]) ?>
 
         <?= render_hint_section(get_level_hints(16), 'Hints for Level 16'); ?>
 

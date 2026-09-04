@@ -153,7 +153,7 @@ $_flag_result = handle_inline_flag_submit($levelId);
                     <h3>&#x1F3C6; Flag Captured!</h3>
                     <p>The UTF-16 bytes slipped past the ASCII filter and libxml parsed the DOCTYPE anyway.</p>
                     <code><?= htmlspecialchars($flag) ?></code>
-                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#818cf8;">Submit this flag &rarr;</a></p>
+                    <p style="margin-top:0.75rem;"><a href="submit.php" style="color:#6f9fb0;">Submit this flag &rarr;</a></p>
                 </div>
                 <?php elseif ($submitted && !$blocked): ?>
                 <div class="message error">Parsed, but no flag. Make sure the entity reads <code>/var/secret/flag7.txt</code> and is referenced in the body.</div>

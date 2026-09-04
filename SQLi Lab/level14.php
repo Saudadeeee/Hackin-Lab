@@ -6,6 +6,7 @@ session_start();
 
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/teaching.php';
 $_flag_result = handle_inline_flag_submit(14);
 
 // Database connection
@@ -31,15 +32,7 @@ if ($_POST) {
 
     $raw_input = "Username: " . htmlspecialchars($username) . " | Password: " . htmlspecialchars($password);
 
-    // Decode URL encoding and HTML entities
-    $username = urldecode($username);
-    $username = html_entity_decode($username, ENT_QUOTES);
-    $password = urldecode($password);
-    $password = html_entity_decode($password, ENT_QUOTES);
-
-    $decoded_input = "Username: " . htmlspecialchars($username) . " | Password: " . htmlspecialchars($password);
-
-    // Basic filtering on decoded input
+    // Filter FIRST, on the bytes as received.
     $dangerous_chars = ["'", '"', '=', 'OR', 'UNION', 'SELECT'];
     $blocked_chars = [];
 
@@ -49,9 +42,17 @@ if ($_POST) {
         }
     }
 
+    // ...then decode. The value the WAF inspected is not the value the query uses.
+    $username = urldecode($username);
+    $username = html_entity_decode($username, ENT_QUOTES);
+    $password = urldecode($password);
+    $password = html_entity_decode($password, ENT_QUOTES);
+
+    $decoded_input = "Username: " . htmlspecialchars($username) . " | Password: " . htmlspecialchars($password);
+
     if (!empty($blocked_chars)) {
         $message = "Security filter triggered!<br>";
-        $message .= "Dangerous characters detected after decoding: " . implode(', ', $blocked_chars) . "<br>";
+        $message .= "Dangerous characters detected in the raw input: " . implode(', ', $blocked_chars) . "<br>";
         $message .= "Raw input: <code>" . $raw_input . "</code><br>";
         $message .= "Decoded input: <code>" . $decoded_input . "</code><br>";
         $message .= "Try encoding your payload to bypass filters.";
@@ -113,14 +114,21 @@ if ($_POST) {
             <div class="code-panel">
                 <h3>Vulnerable Source Code</h3>
                 <div class="source-code">
-                    <pre><code><span class="php-comment">// Step 1: decode before checking</span>
+                    <pre><code><span class="php-comment">// Step 1: filter the bytes as received</span>
+<span class="php-comment">// blocked: ', ", =, OR, UNION, SELECT</span>
+<span class="vuln-line"><span class="php-keyword">foreach</span> (<span class="php-variable">$dangerous_chars</span> <span class="php-keyword">as</span> <span class="php-variable">$char</span>) {
+    <span class="php-keyword">if</span> (<span class="php-function">stripos</span>(<span class="php-variable">$username</span> . <span class="php-variable">$password</span>, <span class="php-variable">$char</span>) !== <span class="php-keyword">false</span>) {
+        <span class="php-variable">$blocked_chars</span>[] = <span class="php-variable">$char</span>;
+    }
+}</span>
+
+<span class="php-comment">// Step 2: decode AFTER the check — the value the filter</span>
+<span class="php-comment">// inspected is not the value the query receives</span>
 <span class="php-variable">$username</span> = <span class="php-function">urldecode</span>(<span class="php-variable">$username</span>);
 <span class="php-variable">$username</span> = <span class="php-function">html_entity_decode</span>(<span class="php-variable">$username</span>, ENT_QUOTES);
 <span class="php-variable">$password</span> = <span class="php-function">urldecode</span>(<span class="php-variable">$password</span>);
 <span class="php-variable">$password</span> = <span class="php-function">html_entity_decode</span>(<span class="php-variable">$password</span>, ENT_QUOTES);
 
-<span class="php-comment">// Step 2: filter AFTER decoding</span>
-<span class="php-comment">// blocked: ', ", =, OR, UNION, SELECT</span>
 <span class="php-keyword">if</span> (empty(<span class="php-variable">$blocked_chars</span>)) {
     <span class="php-comment">// VULNERABLE: decoded input in raw SQL</span>
 <span class="vuln-line">    <span class="php-variable">$sql</span> = <span class="php-string">"SELECT * FROM users"</span>
@@ -133,7 +141,7 @@ if ($_POST) {
 }</code></pre>
                 </div>
                 <div class="vuln-annotation">
-                    <strong>Vulnerability:</strong>&nbsp; The server decodes URL encoding and HTML entities <em>before</em> applying the keyword filter, then feeds the decoded string directly into SQL. Encoding the payload with a second encoding layer (or using a scheme the filter does not re-expand) lets dangerous characters survive the filter and reach the query.
+                    <strong>Vulnerability:</strong>&nbsp; The filter inspects the request bytes, and the application then <em>decodes</em> them before building the query. So the string the filter approved and the string the database parses are two different strings, and a character the filter would have blocked can be delivered in an encoded form that it does not recognise.
                 </div>
             </div>
 
@@ -185,6 +193,8 @@ if ($_POST) {
                 </div>
             </div>
         </div>
+
+    <?= sqli_teach(14, ['input' => $_POST['username'] ?? '', 'input2' => $_POST['password'] ?? '', 'filter' => $blocked_chars ?? [], 'filter_label' => 'blacklist over the RAW bytes', 'decoded' => $username ?? '', 'sql' => $sql ?? '', 'error' => (isset($conn) && $conn instanceof mysqli && $conn->error !== '') ? $conn->error : '', 'rows' => (isset($result) && $result instanceof mysqli_result) ? $result->num_rows : null, 'solved' => !empty($success) || !empty($_flag_result['already_completed'])]) ?>
 
         <?= render_hint_section(get_level_hints(14), 'Hints for Level 14'); ?>
 

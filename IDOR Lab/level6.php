@@ -91,11 +91,11 @@ render_page_header('Level 6 — Cookie Role Forgery', 'Vertical Privilege Escala
         </p>
         <?php endif; ?>
 
-        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;">
+        <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius: 0;padding:0.75rem 1rem;">
             <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;"><strong style="color:var(--text);">How to forge the cookie — choose one method:</strong></p>
 
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.3rem;"><strong style="color:var(--text);">Method 1 — Browser Console:</strong></p>
-            <code style="display:block;font-size:0.82rem;color:#c9d1d9;background:var(--code-bg);padding:0.5rem;border-radius:4px;margin-bottom:0.75rem;">document.cookie = "user_role=admin; path=/";</code>
+            <code style="display:block;font-size:0.82rem;color:#c3c0b6;background:var(--code-bg);padding:0.5rem;border-radius: 0;margin-bottom:0.75rem;">document.cookie = "user_role=admin; path=/";</code>
 
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.3rem;"><strong style="color:var(--text);">Method 2 — DevTools:</strong></p>
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.75rem;">
@@ -115,7 +115,7 @@ render_page_header('Level 6 — Cookie Role Forgery', 'Vertical Privilege Escala
 
         <div style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-muted);">
             <strong>Current Cookie Header:</strong>
-            <code style="display:block;margin-top:0.3rem;word-break:break-all;color:#c9d1d9;">
+            <code style="display:block;margin-top:0.3rem;word-break:break-all;color:#c3c0b6;">
                 <?= htmlspecialchars($_SERVER['HTTP_COOKIE'] ?? '(no cookies set)') ?>
             </code>
         </div>
