@@ -18,5 +18,9 @@
     {
         "author": "tester",
         "text": "<img src=x onerror=alert(1)>"
+    },
+    {
+        "author": "tester",
+        "text": "<img src=x onerror=alert(1)>"
     }
 ]

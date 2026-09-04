@@ -77,7 +77,7 @@
                     <?php 
                     $completed = isset($_COOKIE['completed_levels']) ? 
                         json_decode($_COOKIE['completed_levels'], true) : [];
-                    for($i = 1; $i <= 16; $i++): 
+                    for($i = 1; $i <= 17; $i++): 
                         $isLevelCompleted = in_array($i, $completed ?? []);
                         $buttonClass = $isLevelCompleted ? 'btn level-button completed' : 'btn level-button';
                         $completedIcon = $isLevelCompleted ? ' &check;' : '';

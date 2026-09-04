@@ -1,12 +1,12 @@
 <?php
 /**
- * SQLi Lab · teaching content for levels 9-16.
+ * SQLi Lab · teaching content for levels 9 and above.
  *
  * Kept in its own file only to keep teaching.php readable; it is included from
  * there and merged into the same content array.
  */
 
-function sqli_teach_content_9_16(int $level): array
+function sqli_teach_content_high(int $level): array
 {
     $c = [];
 
@@ -494,6 +494,81 @@ if (!$user || !password_verify($password, $user[\'password_hash\'])) {
              'learn' => 'It passes the WAF and reaches the parser, producing error 1064. That single fact is what makes the level solvable.'],
             ['q' => 'Is the pipe character blocked?', 'payload' => 'admin||1',
              'learn' => 'Passes. It is not a comment, a keyword, a listed special character, a named logical operator, or whitespace - and MySQL reads it as OR.'],
+        ],
+    ];
+
+
+    /* ----------------------------------------------------------------- 17 */
+    $c[17] = [
+        'model_title' => 'The error message as a read primitive',
+        'model' => '<p>Every technique so far needed somewhere for data to appear. A <code>UNION</code> needs a
+            row that gets printed; a boolean or time oracle needs an observable difference. This endpoint offers
+            none of that: the statement selects a <code>COUNT(*)</code> that the page compares and throws away, so
+            even an allowed <code>UNION</code> would have nothing to surface.</p>
+            <p>What the page does return is the driver&#39;s error text. That turns a diagnostic into a channel,
+            and the standard way to load it with data on MySQL is to hand a subquery to a function that reports the
+            value it choked on:</p>
+            <pre class="lk-sinkline">extractvalue(1, concat(0x7e, (SELECT &hellip;)))
+updatexml(1, concat(0x7e, (SELECT &hellip;)), 1)</pre>
+            <p>Both parse their second argument as an XPath expression. A leading <code>~</code> is not valid
+            XPath, so MySQL raises <code>XPATH syntax error</code> and quotes the offending string back &mdash;
+            your subquery&#39;s result, verbatim.</p>
+            <table class="lk-kv">
+                <tr><td>context</td><td><code>id = INPUT</code>, numeric. No quote to escape, so no quote filter can help.</td></tr>
+                <tr><td>window</td><td>32 characters: the <code>~</code> plus 31 of yours. Anything longer is silently cut.</td></tr>
+                <tr><td>paging</td><td><code>substring(value, start, 31)</code>, moving <code>start</code> by 31 each request.</td></tr>
+                <tr><td>quoting</td><td>String literals can be written as hex (<code>0x7365637265745f6d657373616765</code>) when quotes are inconvenient.</td></tr>
+            </table>
+            <p>Budget it before you start: a 55-character value is two requests, not one, and not fifty-five. That
+            is the difference between error-based extraction and the blind levels &mdash; here each request returns
+            31 characters rather than one bit.</p>',
+        'why' => '<p>Your subquery ran, its result was concatenated after a <code>~</code>, and MySQL rejected the
+            whole thing as invalid XPath &mdash; quoting the value back to you on the way out. The page then printed
+            that error verbatim, so the data crossed the boundary inside a diagnostic rather than inside a result
+            set.</p>
+            <p>The general lesson is about what counts as output. An endpoint that returns no data can still be a
+            read primitive if it returns <em>anything</em> that varies with the data: an error string, a status
+            code, a response time, a content length. When you are told "this endpoint does not return anything",
+            the next question is what it returns when it fails.</p>',
+        'fix_bad' => '$sql    = "SELECT COUNT(*) FROM users WHERE id = $orderId";
+$result = $conn->query($sql);
+
+if ($result === false) {
+    echo \'Lookup failed: \' . $conn->error;   // the whole channel
+}',
+        'fix_good' => '// Two independent fixes, and you want both.
+//
+// 1. Bind the parameter, so no subquery can be introduced at all.
+$st = $conn->prepare(\'SELECT COUNT(*) FROM users WHERE id = ?\');
+$st->bind_param(\'i\', $orderId);
+$st->execute();
+
+// 2. Never return the driver\'s error to the client. Log it with an id and
+//    show the id, so support can correlate without the caller learning
+//    anything about the schema.
+try {
+    $st->execute();
+} catch (mysqli_sql_exception $e) {
+    $ref = bin2hex(random_bytes(4));
+    error_log("[$ref] " . $e->getMessage());
+    http_response_code(500);
+    exit("Lookup failed. Reference: $ref");
+}
+
+// In production also set display_errors=Off. Verbose errors are a finding on
+// their own, independent of whether an injection is reachable.',
+        'fix_note' => sqli_fix_note('Suppressing the error text would have blocked this particular read while
+            leaving the injection itself intact &mdash; the boolean and timing channels from levels 5 and 6 still
+            work against an endpoint that says nothing. Fix the concatenation first; treat the error disclosure as
+            the second, separate defect it is.'),
+        'param' => 'order_id',
+        'probes' => [
+            ['q' => 'Is the context numeric, or quoted?', 'payload' => '3 AND 1=1',
+             'learn' => 'If this behaves like <code>3</code> and the trace shows no error, the value is being parsed as SQL in a numeric position &mdash; so nothing needs escaping.'],
+            ['q' => 'Does the page return the driver&#39;s error text?', 'payload' => '3 AND',
+             'learn' => 'A deliberate syntax error. What comes back tells you whether the error channel exists at all, which decides the whole approach.'],
+            ['q' => 'How wide is the error window?', 'payload' => '1 AND extractvalue(1,concat(0x7e,repeat(0x41,60)))',
+             'learn' => 'Sixty A&#39;s go in; count how many come back. That number is your page size for the rest of the extraction.'],
         ],
     ];
 

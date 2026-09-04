@@ -254,7 +254,7 @@ if ($_POST) {
 
         <div class="navigation">
             <a href="level15.php">&larr; Previous Level</a>
-            <span>Final Challenge!</span>
+            <a href="level17.php">Next Level &rarr;</a>
         </div>
     </div>
 </body>

@@ -78,10 +78,10 @@ function portal_labs(): array
          'note'  => 'Reflected, stored, DOM, then filters. Levels 1-2 are the warm-up; the rest belong to phase 1.',
          'tools' => []],
 
-        ['dir' => 'SQLi Lab', 'name' => 'SQL Injection', 'port' => 8080, 'levels' => 16,
+        ['dir' => 'SQLi Lab', 'name' => 'SQL Injection', 'port' => 8080, 'levels' => 17,
          'cookie' => 'completed_levels', 'phase' => 1, 'order' => 2,
          'class' => 'SQL injection',
-         'note'  => 'Levels 1-8 here, 9-16 in phase 2. The trace prints the assembled statement, so you never have to imagine the query.',
+         'note'  => 'Levels 1-8 here, 9-17 in phase 2. The trace prints the assembled statement, so you never have to imagine the query.',
          'tools' => []],
 
         ['dir' => 'Path Traversal Lab', 'name' => 'Path Traversal', 'port' => 8082, 'levels' => 10,

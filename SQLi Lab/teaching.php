@@ -593,7 +593,7 @@ $chk->execute();
     ];
 
     if ($level >= 9) {
-        return sqli_teach_content_9_16($level);
+        return sqli_teach_content_high($level);
     }
     return $c[$level] ?? [];
 }

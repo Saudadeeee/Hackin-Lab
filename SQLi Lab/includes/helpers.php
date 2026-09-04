@@ -23,6 +23,7 @@ function get_flag_for_level(int $levelId): string
         14 => 'FLAG{encoding_bypass}',
         15 => 'FLAG{space_bypass}',
         16 => 'FLAG{advanced_waf_bypass}',
+        17 => 'FLAG{error_based_extraction}',
     ];
 
     return $flags[$levelId] ?? 'FLAG{unknown_level}';
@@ -133,6 +134,13 @@ function get_level_hints(int $levelId): array
             '<strong>OR has a spelling the filter does not know.</strong> MySQL accepts <code>||</code> as a synonym for <code>OR</code>, and the pipe character is on none of the five lists.',
             '<strong>Precedence does the rest.</strong> <code>AND</code> binds tighter than <code>||</code>, so <code>username=&#39;x&#39; || (&#39;1&#39; AND password=&#39;y&#39;)</code> is true whenever the username matches, with no comment needed to discard the tail.',
             '<strong>Working payload:</strong> username <code>admin&#39;||&#39;1</code>, any password. No whitespace, no <code>=</code> of your own, no keyword, no comment.',
+        ],
+        17 => [
+            '<strong>Find the output channel.</strong> The query selects a <code>COUNT(*)</code> that the page compares and never prints, so there is no row to surface. Read what the page <em>does</em> return when the statement fails.',
+            '<strong>Make the database complain about your data.</strong> MySQL&#39;s XPath functions report the offending value inside the error text: <code>extractvalue(1, concat(0x7e, (SELECT &hellip;)))</code> raises <code>XPATH syntax error: &#39;~&lt;your data&gt;&#39;</code>. <code>updatexml()</code> does the same.',
+            '<strong>Mind the context.</strong> <code>id = $orderId</code> is numeric, so no quote is needed. Keep the statement valid: <code>1 AND extractvalue(1, concat(0x7e, (SELECT database())))</code>.',
+            '<strong>The window is 32 characters</strong> &mdash; the <code>~</code> marker plus 31 of your data. The target is 55 characters long, so one request cannot hold it. Page through with <code>substring(value, start, 31)</code>.',
+            '<strong>Working payloads:</strong> <code>1 AND extractvalue(1,concat(0x7e,(SELECT substring(mvalue,1,31) FROM meta WHERE mkey=0x7365637265745f6d657373616765)))</code>, then the same with <code>substring(mvalue,32,31)</code>. Join the two halves and submit. The hex literal is <code>secret_message</code>, which avoids needing quotes at all.',
         ],
     ];
 

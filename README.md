@@ -12,7 +12,7 @@ Hackin-Lab is a Docker-powered suite of **local, hands-on web-security challenge
 
 | Lab | Port | Levels | Vulnerability class |
 |-----|------|--------|---------------------|
-| [SQLi Lab](./SQLi%20Lab) | 8080 | 16 | SQL injection (union/blind/stacked/OUTFILE/second-order/INSERT/UPDATE/JSON/XPath/WAF) |
+| [SQLi Lab](./SQLi%20Lab) | 8080 | 17 | SQL injection (union/blind/error-based/stacked/OUTFILE/second-order/INSERT/UPDATE/JSON/XPath/WAF) |
 | [XSS Lab](./XSS%20Lab) | 8081 | 10 | Cross-Site Scripting (reflected/stored/DOM/filter & WAF bypass) |
 | [Path Traversal Lab](./Path%20Traversal%20Lab) | 8082 | 10 | Path traversal / LFI (wrappers, encoding, filter bypass) |
 | [IDOR Lab](./IDOR%20Lab) | 8083 | 10 | Broken access control / IDOR (JWT, mass-assignment, TOCTOU) |
@@ -34,7 +34,7 @@ Hackin-Lab is a Docker-powered suite of **local, hands-on web-security challenge
 | [Auth Reset Lab](./Auth%20Reset%20Lab) | 8099 | 10 | Auth & recovery (enumeration, predictable tokens, host-header poisoning, 2FA) |
 | [XPath LDAP Lab](./XPath%20LDAP%20Lab) | 8100 | 10 | XPath & LDAP filter injection (blind extraction, escaping failures) |
 
-**21 labs · 216 levels**, plus a portal on **8079**. Ports are unique (8079–8100) so everything runs side by side.
+**21 labs · 217 levels**, plus a portal on **8079**. Ports are unique (8079–8100) so everything runs side by side.
 
 ## The main menu
 
@@ -217,7 +217,7 @@ payload matching a pattern.
 cd "<Lab Name>" && docker compose exec web php /var/www/html/solve_check.php
 ```
 
-Current status: **216 levels verified solvable, 0 failing.**
+Current status: **217 levels verified solvable, 0 failing.**
 
 These tests exist because an audit found levels that had quietly stopped working
 and nothing was watching. Among them: four SQLi levels (one with a dead
